@@ -1,0 +1,14 @@
+# TODO list
+- update README
+- clean-up/remove LMFDB folder in AbVarFq
+- move relevant things from lovalace pAdicPosElt (the part about sparsify is missing here) add them to pAdicPosCMType.m
+- the first part of IsProductOfOrdersLMFDB (the one without the sorting) can be included in AlgEt
+- all Attach needs to be updated
+- in the label of the isomorphism classes we replaced some "." with "-". This might require some changes in the code or in the upload function
+- make a swipe of the Pic code to check that it matches with the paper
+    in particular: are the exponents starting from 0 or 1? (see referee report)
+    there might have been a sorting issue...[need to make sure that the magma convention overlaps with ours]
+
+
+# diary
+- I have renamed IsProduct to IsProductOfOrdersLMFDB

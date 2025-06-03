@@ -1,0 +1,50 @@
+/* vim: set syntax=magma :*/
+
+    SetDebugOnError(true);
+
+
+    fld:="~/266_wk_icm_rec/";
+    fld_pols:="~/266_wk_icm_rec/polarizations/";
+    fld_schema_wk:=fld cat "labelling/parallel/output/";
+    fld_m_files:="~/packages_github/AbVarFq/LMFDB/";
+
+    AttachSpec("~/packages_github/AlgEt/spec");
+    AttachSpec(fld_m_files cat "spec");
+    Attach(fld_m_files cat "isogenies_pols.m");
+    Attach(fld_m_files cat "ker_isog.m");
+
+    SetVerbose("AllPolarizations",1);
+
+    P<x>:=PolynomialRing(Integers());
+
+    N:=[2,3,4,6];
+
+    //SetProfile(true);
+    label:="2.11.a_ai_schema.txt";
+    g,q:=Explode(Split(label,"."));
+    g:=StringToInteger(g);
+    q:=StringToInteger(q);
+    file:=fld_schema_wk cat label;
+    t0:=Cputime();
+        ZFV:=LoadSchemaWKClasses(Read(file));
+    t_load:=Cputime(t0);
+    f:=DefiningPolynomial(Algebra(ZFV));
+    if IsCoprime(Coefficients(f)[g+1],q) then //is ordinary
+        printf "\n\n%o\n",label[1..#label-11];
+        printf "\t load wk_schema:          \t\t%o\n",t_load;
+        t0:=Cputime();
+            icm:=#ICM(ZFV);
+        t_icm:=Cputime(t0);
+        printf "\t compute icm (%o classes):\t\t%o\n",icm,t_icm;
+        // ii:=AllMinimalIsogenies(ZFV, N);
+        // _:=AllPolarizations(ZFV, pAdicPosCMType(Algebra(ZFV)) , N);
+        time ii:=IsogeniesByDegree(ZFV, N);
+    end if;
+
+    //SetProfile(false);
+    //G:=ProfileGraph();
+    //ProfilePrintByTotalTime(G);
+    
+
+
+

@@ -1,0 +1,64 @@
+/* vim: set syntax=magma :*/
+
+    SetDebugOnError(true);
+
+    fld:="~/266_wk_icm_rec/";
+    fld_pols:="~/266_wk_icm_rec/polarizations/";
+    fld_schema_wk:=fld cat "labelling/parallel/output/";
+    fld_m_files:="~/packages_github/AbVarFq/LMFDB/";
+
+    //AttachSpec(fld cat "AlgEt/spec"); Now outdated
+    AttachSpec("~/packages_github/AlgEt/spec");
+    //load "~/999_LMFDB_isogeny_label_functions.txt";
+    P<x>:=PolynomialRing(Integers());
+    Attach(fld_m_files cat "padictocc.m");
+    Attach(fld_m_files cat "labelling_wk_classes.m");
+    Attach(fld_m_files cat "polarizations.m");
+
+    "Loading labels...";
+    labels_ord_may_have_pp:=Split(Read(fld_pols cat "weil_sq_ord_may_have_pp.txt"));
+    "...done";
+
+    test_can_rep_ppav:=function(I,ppc)
+    // ppc is the canonical rep of a polarization
+        Nppc:=Norm(ppc);
+        S:=MultiplicatorRing(I);
+        US,uS:=UnitGroup(S);
+        sub:=sub< US | [(uS(g)*ComplexConjugate(uS(g)))@@uS : g in Generators(US) ]>;
+        if #sub eq 1 then
+            printf "early exit\n";
+            return true;
+        else
+            gens_sub:=[ uS(g) : g in Generators(sub) ];
+            CC:=CartesianProduct([ [-1,0,1] : i in [1..#gens_sub]]); 
+            return forall{ c : c in CC | Nppc eq Norm(ppc*&*[ gens_sub[i]^c[i] : i in [1..#gens_sub] ])};
+        end if;
+    end function;
+
+
+    timings:=[];
+    perc:=0; perc_old:=0; tot:=#labels_ord_may_have_pp;
+    for ilabel->label in labels_ord_may_have_pp do
+        label;
+        perc:=Truncate(100*ilabel/tot); if perc gt perc_old then printf "completed %o%% in %o seconds\n",perc,&+timings; perc_old:=perc; end if;
+        t0:=Cputime();
+        file:=fld_schema_wk cat label cat "_schema.txt";
+        R:=LoadSchemaWKClasses(Read(file));
+        str:=PrintPrincipalPolarizationsIsogenyClass(R);
+        S:=LoadPrincipalPolarizationsIsogenyClass(str);
+        ppavs:=PrincipalPolarizationsIsogenyClass(S);
+        // needs more debugging
+        PHI:=CMType(ppavs[1,2,1]);
+        for p in ppavs do
+            I:=p[1];
+            pps:=p[2];
+            for pp in pps do
+                _:=PeriodMatrix(I,pp,PHI);
+                ppc:=CanonicalRepresentativePolarization(I,pp);
+                assert test_can_rep_ppav(I,ppc);
+                //ppc eq pp;
+            end for;
+        end for;
+        t1:=Cputime(t0);
+        Append(~timings,t1);
+    end for;

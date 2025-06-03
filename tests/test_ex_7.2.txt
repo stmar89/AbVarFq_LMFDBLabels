@@ -1,0 +1,46 @@
+/* vim: set syntax=magma :*/
+
+    SetDebugOnError(true);
+
+    fld:="~/266_wk_icm_rec/";
+    fld_pols:="~/266_wk_icm_rec/polarizations/";
+    fld_schema_wk:=fld cat "labelling/parallel/output/";
+    fld_m_files:="~/packages_github/AbVarFq/LMFDB/";
+    AttachSpec("~/packages_github/AlgEt/spec");
+    AttachSpec(fld_m_files cat "spec");
+    Attach(fld_m_files cat "isogenies_pols.m");
+    Attach(fld_m_files cat "ker_isog.m");
+    P<x>:=PolynomialRing(Integers());
+
+    N:=[ x : x in [2..25] | IsPrimePower(x) ];
+    f:= x^4 + 2*x^3 - 7*x^2 + 22*x + 121;
+
+    g:=Degree(f) div 2;
+    q:=Truncate(ConstantCoefficient(f)^(1/g));
+
+    A:=EtaleAlgebra(f);
+    F:=PrimitiveElement(A); 
+    V:=q/F;
+    ZFV:=Order([F,V]);
+    t0:=Cputime();
+        icm:=#ICM(ZFV);
+    t_icm:=Cputime(t0);
+    printf "\t compute icm (%o classes):\t\t%o\n",icm,t_icm;
+    printf "\t compute pols deg in %o:\t\t",N;
+    t0:=Cputime();
+        all_pols:=AllPolarizations(ZFV, pAdicPosCMType(Algebra(ZFV)) , N);
+    t_pols:=Cputime(t0);
+    printf "%o\n",t_pols;
+
+    for I->pols_I in all_pols do
+        Keys(pols_I);
+    end for;
+    // this is a bit funny. not all classes have degree 4 and 9 assigned.
+    // none has degree 1.
+
+    for I->pols_I in all_pols do
+        MultiplicatorRing(I) eq ZFV , [ <k,#pols_I[k]> : k in Sort(Setseq(Keys(pols_I))) ];
+    end for;
+
+    // everything matches up!
+

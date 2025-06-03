@@ -1,0 +1,63 @@
+/* vim: set syntax=magma :*/
+
+    //SetDebugOnError(true);
+    SetColumns(0);
+
+    fld:="~/266_wk_icm_rec/";
+    fld_pols:="~/266_wk_icm_rec/polarizations/";
+    fld_schema_wk:=fld cat "labelling/parallel/output/";
+    fld_m_files:="~/packages_github/AbVarFq/LMFDB/";
+
+    SetClassGroupBounds("GRH");
+
+    AttachSpec("~/packages_github/AlgEt/spec");
+    AttachSpec(fld_m_files cat "spec");
+    Attach(fld_m_files cat "isogenies_pols.m");
+    Attach(fld_m_files cat "ker_isog.m");
+
+    SetVerbose("AllPolarizations",1);
+
+    P<x>:=PolynomialRing(Integers());
+   
+
+    RemoveBlanks:=function(str)
+    // given a string str removes the blank spaces
+        return &cat(Split(str," "));
+    end function;
+    for i in [1..10] do
+        N:=(2*3*5*7*11)^i;
+
+        label:="2.107.h_abp";
+        g,q:=Explode(Split(label,"."));
+        g:=StringToInteger(g);
+        q:=StringToInteger(q);
+        file:=fld_schema_wk cat label cat "_schema.txt";
+        t0:=Cputime();
+            ZFV:=LoadSchemaWKClasses(Read(file));
+        t_load:=Cputime(t0);
+        f:=DefiningPolynomial(Algebra(ZFV));
+        t0:=Cputime();
+            icm:=#ICM(ZFV);
+        t_icm:=Cputime(t0);
+        printf "\n\n%o\n",label[1..#label-11];
+        printf "\t load wk_schema:          \t\t%o\n",t_load;
+        printf "\t compute icm (%o classes):\t\t%o\n",icm,t_icm;
+        N1:=N*Exponent(Quotient(ZFV!!OneIdeal(MaximalOrder(Algebra(ZFV))),OneIdeal(ZFV)))^g;
+        t0:=Cputime();
+        min:=AllMinimalIsogenies(ZFV, N1);
+        t_min_isog:=Cputime(t0);
+        printf "\t compute minimal isog with N=%o:\t%o\n",N1,t_min_isog;
+        Is:=Setseq(Keys(min));
+        ds:=Sort(Setseq( Seqset(&cat[[ isog[1] : isog in min[I][J] ]  : I,J in Is ])));
+        num_per_deg:=AssociativeArray();
+        for d in ds do
+            num_per_deg[d]:=0;
+        end for;
+        for I,J in Is, d in ds do
+            num_per_deg[d] +:= #[ isog : isog in min[I][J] | isog[1] eq d];
+        end for;
+
+        t:=<g,q,icm,N1,t_min_isog,[<d,num_per_deg[d]> : d in ds]>;
+        i,t;
+    end for;
+

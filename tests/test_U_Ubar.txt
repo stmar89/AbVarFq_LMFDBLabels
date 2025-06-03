@@ -1,0 +1,94 @@
+/* vim: set syntax=magma :*/
+
+    //SetDebugOnError(true);
+
+    fld:="~/266_wk_icm_rec/";
+    fld_pols:="~/266_wk_icm_rec/polarizations/";
+    fld_schema_wk:=fld cat "labelling/parallel/output/";
+    fld_m_files:="~/packages_github/AbVarFq/LMFDB/";
+    fld_cm_type:=fld cat "pAdicPos/parallel2/output/";
+
+    SetClassGroupBounds("GRH");
+
+    AttachSpec("~/packages_github/AlgEt/spec");
+    AttachSpec(fld_m_files cat "spec");
+    Attach(fld_m_files cat "isogenies_pols.m");
+    Attach(fld_m_files cat "ker_isog.m");
+
+transversal_US_USplus:=function(S)
+// Given an order S, it returns a transveral in S of the quotient S^*/S^*_+, where
+// S^*_+ is the subgroups of S^* consisting of totally real totally positive units.
+    if not assigned S`transversal_US_USplus then
+        US,uS:=UnitGroup(S);
+        USplus:=TotallyRealPositiveUnitGroup(S);
+        S`transversal_US_USplus:=[ uS(t) : t in Transversal(US,USplus)];
+    end if;
+    return S`transversal_US_USplus;
+end function;
+
+transversal_USplus_USUSb:=function(S)
+// Given an order S=\bar{S}, it returns a transveral in S of the quotient S^*_+/<u\bar(u) : u in S^*> where
+// S^*_+ is the subgroups of S^* consisting of totally real totally positive units.
+    if not assigned S`transversal_USplus_USUSb then
+        assert IsConjugateStable(S);
+        US,uS:=UnitGroup(S);
+        USplus:=TotallyRealPositiveUnitGroup(S);
+        USUSb:=sub< USplus | [ USplus!((g*ComplexConjugate(g))@@uS) : g in [uS(g) : g in Generators(US) ]]>;
+        S`transversal_USplus_USUSb:=[ uS(t) : t in Transversal(USplus,USUSb)];
+    end if;
+    return S`transversal_USplus_USUSb;
+end function;
+
+transversal_USplus_USUSb_general:=function(S)
+// Given an order S, it returns a transveral in S of the quotient S^*_+/<u\bar(u) : u in S^*> where
+// S^*_+ is the subgroups of S^* consisting of totally real totally positive units.
+    if not assigned S`transversal_USplus_USUSb then
+        test,Sb:=IsConjugateStable(S);
+        if test then
+            _:=transversal_USplus_USUSb(S); // this caches the attribute
+        else
+            SSb:=S*Sb; // the smallest order containing both S and Sb
+            U,u:=UnitGroup(SSb);
+            US,uS:=UnitGroup(S);
+            gens_US:=[ uS(g) : g in Generators(US) ];
+            USUSb:=sub< U | [(g*ComplexConjugate(g))@@u : g in gens_US ] >;     // sub = < u * \bar u : u in S^* >
+            USplus:=TotallyRealPositiveUnitGroup(S);
+            USplus_USUSb:=sub<U | [ (uS(g))@@u : g in Generators(USplus) ] cat Setseq(Generators(USUSb)) >;
+            USUSb:=sub< USplus_USUSb | [ USplus_USUSb!g : g in Generators(USUSb) ]>;
+            S`transversal_USplus_USUSb:=[ u(t) : t in Transversal(USplus_USUSb,USUSb)];
+        end if;
+    end if;
+    return S`transversal_USplus_USUSb;
+end function;
+
+    //SetVerbose("AllPolarizations",1);
+
+    P<x>:=PolynomialRing(Integers());
+    "Loading schemas";
+    //files:=(Split(Pipe("ls " cat fld_schema_wk,"")));
+    files:=Reverse(Split(Pipe("ls " cat fld_schema_wk,"")));
+    "..Done";
+   
+    perc:=0; perc_old:=0; tot:=#files; ilabel:=0;
+    for file in files do
+        ilabel+:=1; perc:=Truncate(100*ilabel/tot); if perc gt perc_old then printf "\ncompleted %o%%",perc; perc_old:=perc; end if;
+        t0:=Cputime();
+            ZFV:=LoadSchemaWKClasses(Read(fld_schema_wk cat file));
+        t_load:=Cputime(t0);
+        printf ".";
+        oo:=OverOrders(ZFV);
+        for S in oo do
+            test,Sb:=IsConjugateStable(S);
+            if not test then
+                SSb:=S*Sb; // the smallest order containing both S and Sb
+                U,u:=UnitGroup(SSb);
+                US,uS:=UnitGroup(S);
+                gens_US:=[ uS(g) : g in Generators(US) ];
+                USUSb:=sub< U | [(g*ComplexConjugate(g))@@u : g in gens_US ] >;     // sub = < u * \bar u : u in S^* >
+                if not Index(U,USUSb) eq 1 then
+                    print ZFV;
+                end if;
+            end if;
+            //_:=transversal_USplus_USUSb_general(S);
+        end for;
+    end for;

@@ -1,0 +1,108 @@
+/* vim: set syntax=magma :*/
+
+    //SetDebugOnError(true);
+
+    fld:="~/266_wk_icm_rec/";
+    fld_pols:="~/266_wk_icm_rec/polarizations/";
+    fld_schema_wk:=fld cat "labelling/parallel/output/";
+    fld_m_files:="~/packages_github/AbVarFq/LMFDB/";
+    fld_cm_type:=fld cat "pAdicPos/parallel2/output/";
+
+    SetClassGroupBounds("GRH");
+
+    AttachSpec("~/packages_github/AlgEt/spec");
+    AttachSpec(fld_m_files cat "spec");
+    Attach(fld_m_files cat "isogenies_pols.m");
+    Attach(fld_m_files cat "ker_isog.m");
+
+    SetVerbose("AllPolarizations",1);
+
+    P<x>:=PolynomialRing(Integers());
+    "Loading schemas";
+    //files:=(Split(Pipe("ls " cat fld_schema_wk,"")));
+    files:=Reverse(Split(Pipe("ls " cat fld_cm_type,"")));
+    "..Done";
+   
+    file_out:=fld_pols cat "out_all_pols.txt";
+
+    size_cutoff:=50;
+    N:=[2,3,4,6,8,9];
+    sample_size:=1000;
+
+
+    RemoveBlanks:=function(str)
+    // given a string str removes the blank spaces
+        return &cat(Split(str," "));
+    end function;
+
+    timings:=[];
+
+    load_cm_type:=procedure(A,g,q,str)
+    // str:=label cat [den,[nums]]
+        F:=PrimitiveElement(A);
+        V:=q/F;
+        basis:=[ V^i : i in [g-1..0 by -1]] cat [F^i : i in [1..g]];
+        _,den_nums:=Explode(Split(str,":"));
+        den_nums_sp:=Split(den_nums[2..#den_nums-1],",");
+        denA:=StringToInteger(den_nums_sp[1]);
+        numsA:=eval(Join(den_nums_sp[2..#den_nums_sp],","));
+        coeffs:=[ n/denA : n in numsA ];
+        b := SumOfProducts(coeffs,basis);
+        PHI:=CMType(b);
+        A`pAdicPosCMType:=PHI;
+    end procedure;
+
+    perc:=0; perc_old:=0; tot:=sample_size; ilabel:=0;
+    repeat
+        file:=Random(files);
+        label:=file[1..#file-13];
+        g,q:=Explode(Split(label,"."));
+        g:=StringToInteger(g);
+        q:=StringToInteger(q);
+        file_wk:=fld_schema_wk cat label cat "_schema.txt";
+        size:=&+[ StringToInteger(Split(l,":")[3]) : l in Split(Read(file_wk)) ];
+        if size le size_cutoff then
+            ilabel+:=1; perc:=Truncate(100*ilabel/tot); if perc gt perc_old then printf "completed %o%%\n",perc; perc_old:=perc; end if;
+            t0:=Cputime();
+                ZFV:=LoadSchemaWKClasses(Read(file_wk));
+            t_load:=Cputime(t0);
+            A:=Algebra(ZFV);
+            f:=DefiningPolynomial(A);
+            if g gt 1 and IsCoprime(Coefficients(f)[g+1],q) then //is ordinary
+                t0:=Cputime();
+                    icm:=#ICM(ZFV);
+                t_icm:=Cputime(t0);
+                assert icm eq size;
+                printf "\n\n%o\n",label;
+                printf "\t load wk_schema:          \t\t%o\n",t_load;
+                printf "\t compute icm (%o classes):\t\t%o\n",icm,t_icm;
+                /*
+                t0:=Cputime();
+                    go:=false;
+                    prec:=50;
+                    repeat
+                        try
+                            PHI:=pAdicPosCMType(Algebra(ZFV) : precpAdic:=prec);
+                            go:=true;
+                        catch e
+                            prec *:=2;
+                        end try;
+                    until go; 
+                t_cm:=Cputime(t0);
+                printf "\t compute cm type:\t%o\n",t_cm;
+                */
+                t0:=Cputime();
+                load_cm_type(A,g,q,Read(fld_cm_type cat file));
+                assert assigned A`pAdicPosCMType;
+                PHI:=pAdicPosCMType(A);
+                printf "\t load cm_type:          \t\t%o\n",Cputime(t0);
+                t0:=Cputime();
+                _:=AllPolarizations(ZFV, PHI , N);
+                t_pols:=Cputime(t0);
+                printf "\t compute pols of degs %o:\t%o\n",N,t_pols;
+                t:=<g,q,icm,N,t_pols>;
+                Append(~timings,t);
+                fprintf file_out,"%o\n",RemoveBlanks(Sprintf("%o",t));
+            end if;
+        end if;
+    until #timings eq sample_size;

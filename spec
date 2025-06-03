@@ -1,0 +1,17 @@
+packages
+{
+IsProductOfOrdersLMFDB.m
+MonGenOrd.m
+Primes.m
+WeakClassesOrders.m
+Picardext.m
+ICMCanonicalRep.m
+padictocc.m
+pAdicPosCMType.m
+LoadpAdicPosCMType.m
+Isogenies.m
+KernelsOfIsogenies.m
+Polarizations.m
+genus2matching.m
+misc.m
+}
