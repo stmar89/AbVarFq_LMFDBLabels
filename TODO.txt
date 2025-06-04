@@ -1,13 +1,21 @@
-# TODO list
-- clean-up/remove LMFDB folder in AbVarFq
-- the first part of IsProductOfOrdersLMFDB (the one without the sorting) can be included in AlgEt
-- all Attach needs to be updated
+# TODO packages
 - in the label of the isomorphism classes we replaced some "." with "-". This might require some changes in the code or in the upload function
 - make a swipe of the Pic code to check that it matches with the paper
     - the test at the bottom of the file fails!!! Is it a but in AbelianInvariants (which returns an empty list when the group is trivial...)
     - are the exponents starting from 0 or 1? (see referee report)
     - there might have been a sorting issue...[need to make sure that the magma convention overlaps with ours]
+- several TODOs in Isogenies.m, about documenting and adding tests
 
+# TODO computation
+- all Attach in scripts needs to be updated
+- start making a plan: how many scripts? which temporary files?
+- update the scripts
+- add a script about pAdicPosElt
+- the size of the isogeny class needs to be recomputed as well. This should be a separate run.
+
+# NOT URGENT
+- the first part of IsProductOfOrdersLMFDB (the one without the sorting) can be included in AlgEt
+- clean-up/remove LMFDB folder in AbVarFq
 
 # diary
 - I have renamed IsProduct to IsProductOfOrdersLMFDB
