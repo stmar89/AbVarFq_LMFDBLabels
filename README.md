@@ -1,7 +1,7 @@
 ### Introduction
 This repository contains the Magma code implementing the labelling scheme for abelian varieties over a finite field in an isogeny class with commutative endomorphism algebra $`K`$ described in the referece below.<br>
 The isomorphism classes of these abelian varieties are functorially represented by fractional ideals in $`K`$.
-Hence, we label the corresponding ideal classes.
+Hence, we label the corresponding ideal classes.<br>
 In the ordinary case, we label also polarizations of the abelian varieties, represented by elements $`K`$.
 
 ### Reference
@@ -24,3 +24,6 @@ AttachSpec("~/CHIMP/CHIMP.spec");
 AttachSpec("~/AlgEt/spec");
 AttachSpec("~/AbVarFq_LMFDBLabels/spec");
 ```
+### Further info
+The folder `computation/` contains scripts for the computation and labeling of the isomorphism classes with polarizations used to populate (some entries of) the LMFDB tables `av_fq_isog`, `av_fq_weak_equivalences` and `av_fq_pol`.<br>
+See `computation/Makefile` for more details.
