@@ -1,7 +1,7 @@
 This repository contains the material for the labelling scheme of abelian varieties over a finite field in an isogeny class with commutative endomorphism algebra $`K`$.
 The isomorphism classes of these abelian varieties are functorially represented by fractional ideals in $`K`$.
 Hence, we label the corresponding ideal classes.
-In the ordianry case, we label also polarizations of the abelian varieties, represented by elements $`K`$.
+In the ordinary case, we label also polarizations of the abelian varieties, represented by elements $`K`$.
 
 ### Reference
 Edgar Costa, Taylor Dupuy, Stefano Marseglia, David Roe, Christelle Vincent<br>
