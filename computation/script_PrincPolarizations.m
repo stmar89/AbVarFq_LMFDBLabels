@@ -2,12 +2,14 @@
 /* vim: set syntax=magma :*/
 
 /*
+
 To compute:
 * av_fq_pol: label, isog_label, endomorphism_ring, isom_label, degree, kernel, aut_group, geom_aut_group (can say that it is equal to aut_group when End^0(Fqbar) is commutative; can check this from av_fq_endalg_data->divalg_dim for each factor in av_fq_endalg_factors), is_jacobian (say false if a product at all, none otherwise)
 * av_fq_weak_equivalences: label (for matching), pic_invs, pic_basis, is_product, product_partition, is_conjugate_stable, generator_over_ZFV, is_Zconductor_sum
 * av_fq_isog: pic_prime_gens
 
 */
+
 SetColumns(0);
 //SetDebugOnError(true);
 issue_file := Sprintf("%oavdata/issues", fld);
@@ -47,7 +49,7 @@ try
     A := Algebra(ZFV);
     if OpenTest(cmfile, "r") then
         cmdata := Split(Read(cmfile), ":")[2];
-        PHI := LoadpAdicPosCMType(ZFVBasis(A), cmdata);
+        PHI := LoadpAdicPosCMType(A, cmdata);
         assert assigned A`pAdicPosCMType;
     end if;
     av_fq_pol := [];

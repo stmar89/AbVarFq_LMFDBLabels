@@ -40,7 +40,7 @@ try
     A := Algebra(ZFV);
     if OpenTest(cmfile, "r") then
         cmdata := Split(Read(cmfile), ":")[2];
-        PHI := LoadpAdicPosCMType(ZFVBasis(A), cmdata);
+        PHI := LoadpAdicPosCMType(A, cmdata);
         assert assigned A`pAdicPosCMType;
     end if;
     av_fq_pol := [];

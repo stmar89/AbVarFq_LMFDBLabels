@@ -15,9 +15,8 @@ intrinsic ZFVBasis(A::AlgEtQ) -> SeqEnum[AlgEtQElt]
     if assigned A`ZFVBasis then
         return A`ZFVBasis;
     end if;
-    g:=Dimension(A) div 2;
+    g,q:=DimensionSizeFiniteField(A);
     F:=PrimitiveElement(A);
-    q:=Truncate(ConstantCoefficient(DefiningPolynomial(A))^(1/g));
     V:=q/F;
     basis:=[ V^i : i in [g-1..0 by -1]] cat [F^i : i in [1..g]];
     A`ZFVBasis := basis;
@@ -49,7 +48,6 @@ The canonical represenatative is defined as follows:
   All ideals I, weakly equivalent to I0, satisfying I*T=J_i are of the form I=u*L*I0 for unique u in U and L in K.
   We list all of them and define the canonical representative of the weak equivalence class of I0 to be the one 
   with smallest output of my_hnf(I,basis), sorted lexicographically, where basis = [ V^(g-1),...,V , 1 , F, ... F^g).
-  //TODO add REF to unpublished notes.
   }
 
     if not assigned S`WKICM_barCanonicalRepresentatives then

@@ -14,9 +14,8 @@ The output is a sequence of tpars <Mij,mij> where mij:J->Mij is the quotient map
     R:=Order(I);
     require Order(J) eq R : "The ideals are not defined over the same order";
     A:=Algebra(R);
-    g:=Dimension(A) div 2;
+    g,q:=DimensionSizeFiniteField(A);
     F:=PrimitiveElement(A);
-    q:=Truncate(ConstantCoefficient(DefiningPolynomial(A))^(1/g));
     V:=q/F;
 
     // M = J/L
@@ -65,9 +64,8 @@ end intrinsic;
     _<x>:=PolynomialRing(Integers());
     f:=x^8+16;
     A:=EtaleAlgebra(f);
-    g:=Dimension(A) div 2;
+    g,q:=DimensionSizeFiniteField(A);
     F:=PrimitiveElement(A);
-    q:=Truncate(ConstantCoefficient(DefiningPolynomial(A))^(1/g));
     V:=q/F;
     R:=Order([F,V]);
 
@@ -82,9 +80,8 @@ end intrinsic;
     _<x>:=PolynomialRing(Integers());
     f:=x^2+x+2;
     A:=EtaleAlgebra(f);
-    g:=Dimension(A) div 2;
+    g,q:=DimensionSizeFiniteField(A);
     F:=PrimitiveElement(A);
-    q:=Truncate(ConstantCoefficient(DefiningPolynomial(A))^(1/g));
     V:=q/F;
     R:=Order([F,V]);
 

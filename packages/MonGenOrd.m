@@ -25,8 +25,7 @@ intrinsic SmallestMonogenicGeneratorOverZFV(S::AlgEtQOrd,ZFV::AlgEtQOrd: limit:=
 {Returns a sequence of minimal monogenic generators of S over ZFV, if any is found, where minimal is with respect to the lenght of the string of printing with respect to the basis V^(g-1),...,V,1,F,...,F^g.}
     A:=Algebra(S);
     F:=PrimitiveElement(A);
-    g:=Dimension(A) div 2;
-    q:=Truncate(ConstantCoefficient(DefiningPolynomial(A))^(1/g));
+    g,q:=DimensionSizeFiniteField(A);
     V:=q/F;
     basis:=ZFVBasis(A);
     seq:=MonogenicGeneratorsOverOrder(S,ZFV : limit:=limit);

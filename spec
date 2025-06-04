@@ -8,7 +8,6 @@ Picardext.m
 ICMCanonicalRep.m
 padictocc.m
 pAdicPosCMType.m
-LoadpAdicPosCMType.m
 Isogenies.m
 KernelsOfIsogenies.m
 Polarizations.m

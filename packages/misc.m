@@ -3,6 +3,8 @@
 
 */
 
+declare attributes AlgEtQ : DimensionSizeFiniteField;
+
 //////////////////////
 // String manipulation
 //////////////////////
@@ -44,6 +46,20 @@ intrinsic my_hnf(I::AlgEtQIdl,basis::SeqEnum[AlgEtQElt]]) -> SeqEnum[RngIntElt]
     end for;
     ChangeUniverse(~out,Integers());
     return out;
+end intrinsic;
+
+//////////////////////
+// g and q from AlgEt
+//////////////////////
+
+intrinsic DimensionSizeFiniteField(A::AlgEtQ)->RngIntElt,RngIntElt
+{Given a commutative endomorpshim algebra A of some isogeny class of dimension g over Fq, it returns g,q.}
+    if not assigned A`DimensionSizeFiniteField then
+        g:=Dimension(A) div 2;
+        q:=Round(ConstantCoefficient(DefiningPolynomial(A))^(1/g));
+        A`DimensionSizeFiniteField:=<g,q>;
+    end if;
+    return Explode(A`DimensionSizeFiniteField);
 end intrinsic;
 
 //////////////////////
