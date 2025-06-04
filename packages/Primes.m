@@ -80,3 +80,8 @@ intrinsic SortSingularPrimes(S::AlgEtQOrd) -> SeqEnum[AlgEtIdl]
     return S`SingularPrimesSorted;
 end intrinsic;
 
+/*
+
+    
+
+*/

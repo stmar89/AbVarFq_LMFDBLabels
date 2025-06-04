@@ -56,10 +56,11 @@ intrinsic SmallestMonogenicGeneratorOverZFV(S::AlgEtQOrd,ZFV::AlgEtQOrd: limit:=
 end intrinsic;
 
 /*
-    // on diopahntus
+
+    AttachSpec("~/CHIMP/CHIMP.spec");
+    AttachSpec("~/AlgEt/spec");
+    AttachSpec("~/AbVarFq_LMFDBLabels/spec");
     SetDebugOnError(true);
-    AttachSpec("~/packages_github/AlgEt/spec");
-    AttachSpec("~/packages_github/AbVarFq/LMFDB/spec");
     _<x>:=PolynomialRing(Integers());
     f:=(x^2-2)*(x^2-3)*(x^2-5);
     A:=EtaleAlgebra(f);
@@ -67,42 +68,6 @@ end intrinsic;
     oo:=FindOverOrders(E);
     for S in oo do
         #MonogenicGeneratorsOverOrder(S,E);
-    end for;
-
-    // extensive test
-    fld := "~/266_wk_icm_rec/labelling/parallel/";
-    fld_wk := fld cat "wk_classes/";
-    fld_out := fld cat "output/";
-    issue_file:=fld cat "issue_wkicm.txt";
-    "Loading schemas";
-    files:=Reverse(Split(Pipe("ls " cat fld_out,"")));
-    "..Done";
-  
-    SetDebugOnError(true);
-    AttachSpec("~/packages_github/AlgEt/spec");
-    Attach("~/packages_github/AbVarFq/LMFDB/MonGenOrd.m");
-    Attach("~/packages_github/AbVarFq/LMFDB/labelling_wk_classes.m");
-
-    for ifile->file in files do
-        schema:=Read(fld_out cat file);
-        ZFV:=LoadSchemaWKClasses(schema);
-        f:=DefiningPolynomial(Algebra(ZFV));
-        if not IsIrreducible(f) and #OverOrders(ZFV) eq 1 then
-            assert IsMaximal(ZFV);
-            printf "!";
-        end if;
-        //if IsIrreducible(f) then
-        //    printf ".";
-        //    oo:=OverOrders(ZFV);
-        //    if #oo gt 1 then
-        //        for S in oo do
-        //            #MonogenicGeneratorsOverOrder(S,ZFV);
-        //            SmallestMonogenicGeneratorOverZFV(S,ZFV);
-        //        end for;
-        //    else
-        //        printf "!";
-        //    end if;
-        //end if;
     end for;
 
 */

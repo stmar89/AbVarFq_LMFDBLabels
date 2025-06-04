@@ -113,7 +113,7 @@ end intrinsic;
 intrinsic SaveCMType(PHI::AlgEtQCMType) -> MonStgElt
 {Given a CM-Type PHI of a commutative endomorphism algebra, it returns a string representing the coefficients of a PHI-positive element b with respect to the ZFVBasis, where b is chosen in so that this coefficients are small integers. A second string is returned with the same numerical values, but with [] replaced by \{\}.}
     A:=Domain(Homs(PHI)[1]);
-    basis:=ZFVBasis(A)
+    basis:=ZFVBasis(A);
     _,q:=DimensionSizeFiniteField(A);
     _,coeffs:=sparsify_CMType(PHI,basis,q);
     output:=RemoveBlanks(Sprint(coeffs));

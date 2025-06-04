@@ -67,8 +67,10 @@ end intrinsic;
 
 /*
     SetDebugOnError(true);
-    AttachSpec("~/packages_github/AlgEt/spec");
-    Attach("~/packages_github/AbVarFq/LMFDB/IsProductOfOrdersLMFDB.m");
+    AttachSpec("~/CHIMP/CHIMP.spec");
+    AttachSpec("~/AlgEt/spec");
+    AttachSpec("~/AbVarFq_LMFDBLabels/spec");
+
     _<x>:=PolynomialRing(Integers());
     f:=(x^2-2)*(x^2-3)*(x^2-5);
     A:=EtaleAlgebra(f);
@@ -79,31 +81,6 @@ end intrinsic;
     oo:=FindOverOrders(E);
     for S in oo do
         IsProductOfOrdersLMFDB(S);
-    end for;
-
-    // extensive test
-    fld := "~/266_wk_icm_rec/labelling/parallel/";
-    fld_wk := fld cat "wk_classes/";
-    fld_out := fld cat "output/";
-    issue_file:=fld cat "issue_wkicm.txt";
-    "Loading schemas";
-    files:=Split(Pipe("ls " cat fld_out,""));
-    "..Done";
-  
-    SetDebugOnError(true);
-    AttachSpec("~/packages_github/AlgEt/spec");
-    Attach("~/packages_github/AbVarFq/LMFDB/IsProductOfOrdersLMFDB.m");
-    Attach("~/packages_github/AbVarFq/LMFDB/labelling_wk_classes.m");
-
-    for ifile->file in files do
-        schema:=Read(fld_out cat file);
-        R:=LoadSchemaWKClasses(schema);
-        assert #WKICM(R) eq #Split(schema);
-        oo:=OverOrders(R);
-        for S in oo do
-            _:=IsProductOfOrdersLMFDB(S);
-        end for;
-        printf ".";
     end for;
 
 */

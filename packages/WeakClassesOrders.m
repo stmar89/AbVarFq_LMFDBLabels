@@ -200,7 +200,7 @@ The SortKey of S is consists of two integers N.i where:
 end intrinsic;
 
 
-intrinsic two_generating_set(I::AltEtQIdl,basis::SeqEnum[AlgEtQElt]) -> MonStgElt
+intrinsic two_generating_set(I::AlgEtQIdl,basis::SeqEnum[AlgEtQElt]) -> MonStgElt
 {Given an invertible ideal I over some order S and a basis of the algebra it returns a pair [ c,elt ] where c is the smallerst integer in I and elt is an element such that I = c*S + elt*S. Note that elt is not chosen canonically.}
     S:=Order(I);
     A:=Algebra(S);
@@ -441,6 +441,10 @@ intrinsic LoadSchemaWKClasses(str::MonStgElt)->AlgEtQOrd
     // note in an older version of FillSchema I put [] instead of {} in l[11].
     // the previous line is not affected by this mistake.
 
+
+    R`OverOrders:=oo;
+    wkR:=[];
+    // in this loop we popluate the attributes of each overorder and R`WKICM
     for iS in [1..#oo] do
         S:=oo[iS];
         labelS:=oo_labels[iS];
@@ -452,6 +456,10 @@ intrinsic LoadSchemaWKClasses(str::MonStgElt)->AlgEtQOrd
             I`MultiplicatorRing:=S;
             I`WELabel:=Join(Split(l[1],".")[4..6], "."); //N.i.j
             Append(~wkS,I);
+            IR:=R!!I;
+            IR`MultiplicatorRing:=S;
+            IR`WELabel:=I`WELabel;
+            Append(~wkR,IR);
         end for;
         assert2 forall{ i : i,j in [1..#wkS] | (i eq j) eq (IsWeakEquivalent(wkS[i],wkS[j])) }; //TIME consuming
         ffS:=S!!oo_cond[iS];
@@ -469,39 +477,42 @@ intrinsic LoadSchemaWKClasses(str::MonStgElt)->AlgEtQOrd
         S`WKICM_bar:=wkS;
         S`WKICM_barCanonicalRepresentatives:=wkS;
     end for;
-
-    R`OverOrders:=oo;
-    _:=WKICM(R); //to populate
-
+    R`WKICM:=wkR;
     return R;
 end intrinsic;
 
 /*
-    //SetDebugOnError(true);
-    "Loading input";
-    ord_cs_isog_classes:=Split(Read("~/266_wk_icm_rec/labelling/parallel/weil_sqfree_ord_cs.txt"));
-    fld_wk:="~/266_wk_icm_rec/labelling/parallel/wk_classes/";
+    SetDebugOnError(true);
+    AttachSpec("~/CHIMP/CHIMP.spec");
+    AttachSpec("~/AlgEt/spec");
+    AttachSpec("~/AbVarFq_LMFDBLabels/spec");
+    _<x>:=PolynomialRing(Integers());
+    f:=x^8+16;
+    A:=EtaleAlgebra(f);
+    R:=Order(ZFVBasis(A));
+    str:=FillSchema(R);
 
-    AttachSpec("~/266_wk_icm_rec/labelling/parallel/AlgEt/spec");
-    Attach("~/266_wk_icm_rec/labelling/parallel/labelling.m");
-
-    "Test is starting";
-    timings:=[];
-    perc:=0; perc_old:=0; tot:=#ord_cs_isog_classes;
-    for ifile->file in ord_cs_isog_classes do
-        perc:=Truncate(100*ifile/tot); if perc gt perc_old then printf "%o%% ",perc; perc_old:=perc; end if;
-        t0:=Cputime();
-            try
-                R:=LoadWKICM(Read(fld_wk cat file cat "_wkicm.txt"));
-            catch
-                e;
-                R:=LoadWKICM(Read(fld_wk cat file cat "_wkicm.txt_wkicm.txt"));
-            end try;
-            schema:=FillSchema(R);
-            assert #WKICM(R) eq #Split(schema);
-            //schema;
-        t1:=Cputime(t0);
-        Append(~timings,t1);
+    delete R,A;
+    R:=LoadSchemaWKClasses(str);
+    for S in OverOrders(R) do 
+        for I in WKICM_bar(S) do 
+            try 
+                WELabel(I); 
+            catch e 
+                e; 
+                IsMaximal(S); 
+            end try; 
+        end for; 
     end for;
-    "Total timings", &+(timings); 
+
+    delete R;
+    R:=LoadSchemaWKClasses(str);
+    for I in WKICM(R) do 
+        try 
+            WELabel(I); 
+        catch e 
+            e; 
+        end try; 
+    end for;
+
 */

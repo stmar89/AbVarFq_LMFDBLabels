@@ -29,7 +29,26 @@ end intrinsic;
 // Hermite Normal Form variant
 //////////////////////
 
-intrinsic my_hnf(I::AlgEtQIdl,basis::SeqEnum[AlgEtQElt]]) -> SeqEnum[RngIntElt]
+intrinsic my_hnf(I::AlgEtQOrd,basis::SeqEnum[AlgEtQElt]) -> SeqEnum[RngIntElt]
+{Given an order in an etale algebra A of dimension N over Q, and a Q-basis basis of A, it returns a sequence of integers [ den ] cat T where:
+- T are the g(g+1)/2 entries of a gxg upper triangular matrix, and
+- (1/den)*T is the HNF of the matrix representing any ZBasis of I with respect to basis.}
+    M:=Matrix(AbsoluteCoordinates(ZBasis(I),basis));
+    N:=Nrows(M);
+    den:=Denominator(M);
+    M:=ChangeRing(den*M,Integers());
+    M:=HermiteForm(M);
+    out:=[den];
+    for i in [1..N] do
+        for j in [i..N] do
+            Append(~out,M[i,j]);
+        end for;
+    end for;
+    ChangeUniverse(~out,Integers());
+    return out;
+end intrinsic;
+
+intrinsic my_hnf(I::AlgEtQIdl,basis::SeqEnum[AlgEtQElt]) -> SeqEnum[RngIntElt]
 {Given a fractional ideal over some order in an etale algebra A of dimension N over Q, and a Q-basis basis of A, it returns a sequence of integers [ den ] cat T where:
 - T are the g(g+1)/2 entries of a gxg upper triangular matrix, and
 - (1/den)*T is the HNF of the matrix representing any ZBasis of I with respect to basis.}
