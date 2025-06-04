@@ -5,6 +5,7 @@
     - are the exponents starting from 0 or 1? (see referee report)
     - there might have been a sorting issue...[need to make sure that the magma convention overlaps with ours]
 - several TODOs in Isogenies.m, about documenting and adding tests
+- some of the things computed in script_Principal... Should be moved in FillSchema since they are about av_fq_weak_equivalance classes
 
 # TODO computation
 - all Attach in scripts needs to be updated
