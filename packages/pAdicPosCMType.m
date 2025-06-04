@@ -134,3 +134,17 @@ intrinsic LoadpAdicPosCMType(A::AlgEtQ,str::MonStgElt)->AlgEtQCMType
 end intrinsic;
 
 
+/*
+    SetDebugOnError(true);
+    AttachSpec("~/CHIMP/CHIMP.spec");
+    AttachSpec("~/AlgEt/spec");
+    AttachSpec("~/AbVarFq_LMFDBLabels/spec");
+    _<x>:=PolynomialRing(Integers());
+    f:=x^8+x^4+16;
+    A:=EtaleAlgebra(f);
+    PHI:=pAdicPosCMType(A);
+    str:=SaveCMType(PHI);
+    PHI0:=LoadpAdicPosCMType(A,str);
+    assert PHI eq PHI0;
+
+*/
