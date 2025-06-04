@@ -4,8 +4,9 @@
 - all Attach needs to be updated
 - in the label of the isomorphism classes we replaced some "." with "-". This might require some changes in the code or in the upload function
 - make a swipe of the Pic code to check that it matches with the paper
-    in particular: are the exponents starting from 0 or 1? (see referee report)
-    there might have been a sorting issue...[need to make sure that the magma convention overlaps with ours]
+    - the test at the bottom of the file fails!!! Is it a but in AbelianInvariants (which returns an empty list when the group is trivial...)
+    - are the exponents starting from 0 or 1? (see referee report)
+    - there might have been a sorting issue...[need to make sure that the magma convention overlaps with ours]
 
 
 # diary

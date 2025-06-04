@@ -46,7 +46,7 @@ intrinsic ICM_CanonicalRepresentatives(ZFV::AlgEtQOrd) -> SeqEnum[AlgEtQIdl], As
 end intrinsic;
 
 intrinsic ICM_Identify(L::AlgEtQIdl, icm_lookup::Assoc) -> AlgEtQIdl, AlgEtQElt, AlgEtQOrd, AlgEtQIdl, GrpAbElt
-{Given an ideal L, together with the lookup table output by ICM_CanonicalRepresentatives, returns the canonical representative I in the same class of the ICM as L, together with an element of the etale algebra x so that L = x*I}
+{Given an ideal L, together with the lookup table output by ICM_CanonicalRepresentatives, returns the canonical representative I in the same class of the ICM as L, an element x so that L = x*I, the multiplicator ring S, the canonical representative W of its weak equivalence class, and the element g in Pic(S) representing the invertible S-ideal (L:W).}
     S := MultiplicatorRing(L);
     PS, pS := PicardGroup(S);
     wkS := WKICM_barCanonicalRepresentatives(S);
@@ -63,3 +63,19 @@ intrinsic ICM_Identify(L::AlgEtQIdl, icm_lookup::Assoc) -> AlgEtQIdl, AlgEtQElt,
     end for;
 end intrinsic;
 
+/*
+    SetDebugOnError(true);
+    AttachSpec("~/CHIMP/CHIMP.spec");
+    AttachSpec("~/AlgEt/spec");
+    AttachSpec("~/AbVarFq_LMFDBLabels/spec");
+    _<x>:=PolynomialRing(Integers());
+    f:=x^8+16;
+    A:=EtaleAlgebra(f);
+    R:=Order(ZFVBasis(A));
+    icm_can,icm_lookup:=ICM_CanonicalRepresentatives(R);
+
+    for L in ICM(R) do 
+        _:=ICM_Identify(L,icm_lookup);
+    end for;
+
+*/

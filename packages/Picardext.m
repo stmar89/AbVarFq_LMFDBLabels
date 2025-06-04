@@ -548,10 +548,19 @@ Note that this will pull back large ideals if the Picard group is large, so is p
 end intrinsic;
 
 /*
+    SetDebugOnError(true);
+    AttachSpec("~/CHIMP/CHIMP.spec");
+    AttachSpec("~/AlgEt/spec");
+    AttachSpec("~/AbVarFq_LMFDBLabels/spec");
+    _<x>:=PolynomialRing(Integers());
+    f:=x^8+16;
+    A:=EtaleAlgebra(f);
+    R:=Order(ZFVBasis(A));
+    TestCanonicalPicBases(R);
+
     TODO Add a list of tests:
         - are the canonical gens chosen consistently?
         - is the sorting of PicIteration consistent?
         - are the canonical ideal reps chosen consistently?
-
 
 */
