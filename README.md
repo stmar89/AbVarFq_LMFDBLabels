@@ -1,8 +1,8 @@
 ### Introduction
-This repository contains the Magma code implementing the labelling scheme for abelian varieties over a finite field in an isogeny class with commutative endomorphism algebra $`K`$ described in the referece below.<br>
+This repository contains the Magma code implementing the labelling scheme for abelian varieties over a finite field in an isogeny class with commutative endomorphism algebra $`K`$ described in the reference below.<br>
 The isomorphism classes of these abelian varieties are functorially represented by fractional ideals in $`K`$.
 Hence, we label the corresponding ideal classes.<br>
-In the ordinary case, we label also polarizations of the abelian varieties, represented by elements $`K`$.
+In the ordinary case, we label also polarizations of the abelian varieties, represented by elements of $`K`$.
 
 ### Reference
 Edgar Costa, Taylor Dupuy, Stefano Marseglia, David Roe, Christelle Vincent<br>
