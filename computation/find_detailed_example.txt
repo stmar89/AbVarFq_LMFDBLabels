@@ -1,0 +1,25 @@
+/* vim: set syntax=magma : */
+
+// we look for an order which is not Bass and has multiple singular primes above the same rational prime.
+
+    AttachSpec("~/CHIMP/CHIMP.spec");
+    AttachSpec("~/AlgEt/spec");
+    AttachSpec("~/AbVarFq_LMFDBLabels/spec");
+
+    P<x>:=PolynomialRing(Integers());
+
+    file:=POpen("cat ~/AbVarFq_LMFDBLabels/computation/weil_poly_sqfree_ord_cs.txt","r");
+    
+    repeat
+        s:=Gets(file);
+        h:=P!eval(s);
+        K:=EtaleAlgebra(h);
+        g,q:=DimensionSizeFiniteField(K);
+        F:=PrimitiveElement(K);
+        V:=q/F;
+        ZFV:=Order([F,V]);
+        ss:=[MinimalInteger(P):P in SingularPrimes(ZFV)];
+    until not IsBass(ZFV) and #ss ne #Seqset(ss);
+    IsogenyLabel(h);
+        
+

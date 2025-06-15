@@ -6,9 +6,9 @@ AttachSpec("~/CHIMP/CHIMP.spec");
 AttachSpec("~/AlgEt/spec");
 AttachSpec("~/AbVarFq_LMFDBLabels/spec");
 ```
-Consider the isogeny class with LMFDB label [`3.3.ab_ac_f`](https://abvar.lmfdb.xyz/Variety/Abelian/Fq/3/3/ab_ac_f). We start by defining the étale algebra `K`, which represents the endomorphism algebra, and will contain all deligne modules representing the isomorphism classes of the abelian varieties.
+Consider the isogeny class with LMFDB label [`2.101.abe_pm`](https://abvar.lmfdb.xyz/Variety/Abelian/Fq/2/101/abe_pm). We start by defining the étale algebra $K$, which represents the endomorphism algebra, and will contain all deligne modules representing the isomorphism classes of the abelian varieties.
 ```
-label:=3.3.ab_ac_f;
+label:="2.101.abe_pm";
 g,q,h:=LabelToPoly(label);
 K:=EtaleAlgebra(h);
 F:=PrimitiveElement(K);
@@ -30,4 +30,33 @@ for S in OverOrders(ZFV) do
     end for;
 end for;
 ```
+By looking at the labels produced, we see $ZFV$ has index $400$ in the maximal order of $K$ and that are several orders with the same index.
+We also see that there are orders which are the multiplicator ring of two weak equivalence classes, showing that $ZFV$ is not Gorenstein, but that the biggest Cohen Macaulay type is $2$.
+
+We now compute isomorphism classes and their polarizations.
+First, we compute a CM-type of $K$ satisfying the Shimura-Taniyama formula. This is stored in an attribute.
+```
+PHI:=pAdicPosCMType(K);
+```
+
+We now compute the principal polarizations:
+```
+time PPolIteration(ZFV);
+```
+
+
+
+Now, we compute all polarizations for degrees 4,9 and 25. This can take 4-5 minutes.
+```
+time all_pols:=AllPolarizations(ZFV,PHI,[4,9,25]);
+```
+
+`all_pols` is an associative array, with keys the canonical representatives of the isomorphism classes.
+```
+isom:=Setseq(Keys(all_pols));
+for I in isom do 
+    Keys(all_pols[I]); 
+end for;
+```
+
 

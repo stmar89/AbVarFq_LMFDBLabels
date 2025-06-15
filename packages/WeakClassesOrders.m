@@ -311,9 +311,11 @@ intrinsic FillSchema(R::AlgEtQOrd)->MonStgElt
     cond_classes:=[ labels_oo[Index(condO,ff)] : ff in condO ];
 
     output:="";
-    for iS->S in oo do
+    for iS in [1..#oo] do
+        S:=oo[iS];
         wkS:=WKICM_barCanonicalRepresentatives(S);
         assert #wkS eq #WKICM_bar(S);
+        S`WKICM_bar:=wkS;
         wkS_sort_keys:=SortKeysWKICM_bar(S);
         ParallelSort(~wkS_sort_keys,~wkS);
         n_sing:=#SingularPrimes(S);
@@ -332,6 +334,7 @@ intrinsic FillSchema(R::AlgEtQOrd)->MonStgElt
             sort_key:=wkS_sort_keys[j];
             label:=labelS cat Sprintf(".%o",j);
             I`WELabel:=label; // populate the attribute
+            
 
             we_number:=j;
             hnf:=my_hnf(I,basis);
