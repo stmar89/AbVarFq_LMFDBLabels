@@ -241,13 +241,18 @@ intrinsic two_generating_set(I::AlgEtQIdl,basis::SeqEnum[AlgEtQElt]) -> MonStgEl
 end intrinsic;
 
 intrinsic FillSchema(R::AlgEtQOrd)->MonStgElt
-{ see Table av_fq_weak_equivalences at https://github.com/roed314/root-unitary/blob/stage_based/postgres_schema.md  }
+{Given the ZFV Order of a squarefree isogeny class which is ordinary or over the prime field, it produces a string to fill the Table av_fq_weak_equivalences at https://github.com/roed314/root-unitary/blob/stage_based/postgres_schema.md. At the same time, it populates }
     A:=Algebra(R);
+    isog_label:=IsogenyLabel(DefiningPolynomial(A));
     F:=PrimitiveElement(A);
     basis:=ZFVBasis(A);
+    g,q:=DimensionSizeFiniteField(A); 
+    require R eq Order([F,q/F]): "the given orders is not the ZFV order of the isogeny class";
 
-    isog_label:=IsogenyLabel(DefiningPolynomial(A));
+    _:=WKICM(R); // this populates overorders and WKICM_bar
+    assert assigned R`OverOrders;
     oo:=OverOrders(R);
+    assert forall{S:S in oo|assigned S`WKICM_bar};
     oo_sort_keys:=SortKeysOrders(oo);
     ParallelSort(~oo_sort_keys,~oo);
 
@@ -276,8 +281,10 @@ intrinsic FillSchema(R::AlgEtQOrd)->MonStgElt
     // Populate min_oo: in the i-th entry we put the labels of the minimal overorders of oo[i].
     // The computation is done as follows:
     // adj_mat[i,j] = 1 if oo[i] subsetneq oo[j], and 0 otherwise (the adjacency matrix of the strinct inclusion graph)
-    // The transitive reduction of the the correspondig graph (which is the subgraph whose edges are the minimal inclusions) 
-    // is obtained by squaring the adj_mat and 
+    // The transitive reduction of the the corresponding graph 
+    // (which is the subgraph whose edges are the minimal inclusions) 
+    // is obtained by squaring the adj_mat.
+    // The minimal overorders of oo[i] are of the form oo[j] where adj_mat[i,j]=1 and (adj_mat^2)[i,j]=0
     adj_mat:=ZeroMatrix(Integers(),#oo);
     for i,j in [1..#oo] do
         if i ne j and oo[i] subset oo[j] then
@@ -444,7 +451,7 @@ intrinsic LoadSchemaWKClasses(str::MonStgElt)->AlgEtQOrd
 
     R`OverOrders:=oo;
     wkR:=[];
-    // in this loop we popluate the attributes of each overorder and R`WKICM
+    // in this loop we populate the attributes of each overorder and R`WKICM
     for iS in [1..#oo] do
         S:=oo[iS];
         labelS:=oo_labels[iS];
