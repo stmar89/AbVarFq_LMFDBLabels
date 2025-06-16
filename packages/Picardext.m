@@ -498,15 +498,17 @@ end intrinsic;
 intrinsic Random(G::GrpAuto : word_len:=40) -> GrpAutoElt
 {
 //TODO
-    }
+}
     gens := [<g, Order(g)> : g in Generators(G)];
     gens := [pair : pair in gens | pair[2] ne 1];
     r := Identity(G);
-    for i in [1..word_len] do
-        j := Random(1,#gens);
-        k := Random(0,gens[j][2]-1);
-        r *:= gens[j][1]^k;
-    end for;
+    if #gens ne 0 then
+        for i in [1..word_len] do
+            j := Random(1,#gens);
+            k := Random(0,gens[j][2]-1);
+            r *:= gens[j][1]^k;
+        end for;
+    end if;
     return r;
 end intrinsic;
 
