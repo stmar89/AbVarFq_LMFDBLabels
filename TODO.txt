@@ -8,9 +8,11 @@
 - some of the things computed in script_Principal... Should be moved in FillSchema since they are about av_fq_weak_equivalance classes
 
 # TODO computation
+- merge scripts for polarizations (so we comptue pics only once)
+- folders in scripts needs to be updated
 - all Attach in scripts needs to be updated
 - start making a plan: how many scripts? which temporary files?
-- update the scripts
+- update the script about WKclasses
 - add a script about pAdicPosElt
 - the size of the isogeny class needs to be recomputed as well. This should be a separate run.
 

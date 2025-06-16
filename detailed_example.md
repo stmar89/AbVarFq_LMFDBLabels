@@ -41,9 +41,9 @@ PHI:=pAdicPosCMType(K);
 
 We now compute the principal polarizations:
 ```
-time PPolIteration(ZFV);
+time all_ppols:=PPolIteration(ZFV);
 ```
-
+//TODO
 
 
 Now, we compute all polarizations for degrees 4,9 and 25. This can take 4-5 minutes.
@@ -58,5 +58,6 @@ for I in isom do
     Keys(all_pols[I]); 
 end for;
 ```
+//TODO
 
 
