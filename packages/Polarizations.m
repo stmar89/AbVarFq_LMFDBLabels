@@ -1,4 +1,4 @@
-/* vim: set syntax=magma :*/
+* vim: set syntax=magma :*/
 
 declare verbose AllPolarizations,1;
 
@@ -90,14 +90,53 @@ intrinsic PPolPossIteration(S::AlgEtQOrd) -> SeqEnum
     end if;
 end intrinsic;
 
+intrinsic PrincipalPolarizations(I::AlgEtQIdl,PHI::AlgEtQCMType)->SeqEnum[AlgEtQElt]
+{Given an ideal I and a CM-Type PHI, returns all the principal polarizations of I with respect to PHI.}
+
+    // First we test if there exists iso such that iso*I = Iv. If not, then I is not self-dual.
+    // Assume that there exists such an iso.
+    // Given iso1 with iso1*I=Iv, then iso1 is of the form iso1=v*iso, where v is in S^*.
+    // Given two principal polarizations l and l1, then there eixsts a totally real totally positive unit v of S such that l1=v*l.
+    // Moreover, (I,l) is isomorphic to (I,l1) as PPAV if and only if l1=u*\bar{u} for some u in S^*.
+    // Combining these facts, we get that to determine whether there is a principal polarization of I, it suffices to check
+    // elements of the form iso*v where v loops over a transversal of S^*/S^*_+,
+    // where S^*_+ is the subgroupsof S^* consisting of totally real totally positive units.
+    // If we find a principal polarization, say l, then all non-isomorphic one will be of the form l1=v*l, where v loops over a
+    // transversal of S^*_+/<u*\bar{u} : u in S^*>.
+
+    Iv:=TraceDualIdeal(ComplexConjugate(I));
+    test,iso:=IsIsomorphic(Iv,I); // iso*I eq Iv
+    if not test then
+        Ipols:=[PowerStructure(AlgEtQElt)|]; //empty sseq
+    else
+        S:=MultiplicatorRing(I);
+        got_one:=false;
+        for u in transversal_US_USplus(S) do
+            x:=u*iso;
+            if is_polarization(x,PHI) then
+                got_one:=true;
+                break;
+            end if;
+        end for;
+        if got_one then
+            Ipols:=[ x*t : t in transversal_USplus_USUSb(S) ];
+        else
+            Ipols:=[PowerStructure(AlgEtQElt)|]; //empty sseq
+        end if;
+    end if;
+    return Ipols;
+end intrinsic;
+
 intrinsic PPolIteration(ZFV::AlgEtQOrd) -> List
-{Given the Frobenius order, returns a list of quadruples <we, pic_ctr, I, den, nums, can>, where:
+{Given the Frobenius order, returns a list of quadruples <we, pic_ctr, I, den, nums, can, label>, where:
 - I is a fractional ZFV-ideal;
 - we is the distinguished representative of the weak equivalence class of I;
 - pic_ctr is the picard counter of I; //TODO ??? 
 - can is the distinguished representative of an isomorphism class of a polarization x0 of I;
-- den and nums are sequence of integers representing the lcm of the denominators of and the numerators of the coefficients of can wrt the ZFVBasis.}
+- den and nums are sequence of integers representing the lcm of the denominators of and the numerators of the coefficients of can wrt the ZFVBasis;
+- label is the label of the principally polarized abelian variety, in the format g.q.coeffs-N.i.j-1.k.}
     A := Algebra(ZFV);
+    isog_label:=IsogenyLabel(DefiningPolynomial(A));
     vprint User1: "Computing CM type..."; t0 := Cputime();
     prec := 30;
     while true do
@@ -132,18 +171,102 @@ intrinsic PPolIteration(ZFV::AlgEtQOrd) -> List
                 vprint User1: Sprintf("Computing principal polarizations at %o", Cputime(t0));
                 pp := PrincipalPolarizations(WEI, PHI);
                 vprint User1: Sprintf("Done computing principal polarizations at %o; iterating", Cputime(t0));
-                // TODO add labels
-                // change the next loop so that it produces also the labels (in part the part d.k) of each polarization.
-                // this requires sorting first.
+                sort_keys_pp:=[];
+                ans_pp:=[];
                 for pol in pp do
                     can, den, nums := DistinguishedRepresentativePolarizationConjugateStableOrder(WEI, pol);
+                    Append(~sort_keys_pp,[den] cat nums);
                     vprint User1: Sprintf("Done computing distinguished representative at %o", Cputime(t0));
-                    Append(~ans, <we, pic_ctr, I, den, nums, can>);
+                    Append(~ans_pp, <we, pic_ctr, I, den, nums, can>);
+                end for;
+                //we sort the polarizations to construct the labels
+                ParallelSort(~sort_keys_pp,~ans_pp);
+                // we construct the labels and append exerything to the output ans
+                for k->pol_data in ans_pp do
+                    label_kth_pol:=Sprintf("%o-1.%o",pol_data[1],pol_data[2],k);
+                    Append(~ans, <we, pic_ctr, I, den, nums, can,label_kth_pol>);
                 end for;
             end for;
         end for;
     end for;
     return ans;
+end intrinsic;
+
+intrinsic AllNonprincipalPolarizations(ZFV::AlgEtQOrd, PHI::AlgEtQCMType, degree_bounds::SeqEnum[RngIntElt])->Assoc
+{Given the Z[F,V] order of an isogeny squarefree class, a p-Adic positive CMType PHI it returns an associative array whose keys are the distinguished representatives of all isomorphism classes. The value of the array for the isomorphism class I is the tuple <pol,den,nums,dec> where:
+- pol is the distinguished representative of an isomorphism class of a polarizations of I;
+- den and nums are sequence of integers representing the lcm of the denominators of and the numerators of the coefficients of pol wrt the ZFVBasis;
+- dec is the output of DecompositionKernelOfIsogeny;
+- label is the label of the principally polarized abelian variety, in the format g.q.coeffs-N.i.j-1.k.}
+    require not 1 in degree_bounds : "Do not use AllNonprincipalPolarizations to compute principal polarizations";
+    isog_label:=IsogenyLabel(DefiningPolynomial(Algebra(ZFV)));
+    t_tot:=Cputime();
+    isom_cl, icm_lookup := ICM_DistinguishedRepresentatives(ZFV);
+    can_reps_of_duals:=AssociativeArray();
+    all_pols:=AssociativeArray(); // the output
+    for J in isom_cl do
+        Jv:=TraceDualIdeal(ComplexConjugate(J));
+        // I am looking for pol such that pol*J c Jv
+        JJ,JJ_to_Jv:=ICM_Identify(Jv,icm_lookup);
+        can_reps_of_duals[J]:=<JJ,JJ_to_Jv,Jv>;
+    end for;
+    t0:=Cputime();
+    all_isog:=IsogeniesByDegree(ZFV,degree_bounds : important_pairs:=[ < J , can_reps_of_duals[J][1] > : J in isom_cl ]);
+    vprintf AllPolarizations : "time spent on IsogeniesByDegree: %o\n",Cputime(t0);
+    t_can:=0;
+    for J in isom_cl do
+        assert assigned J`IsomLabel;
+        isom_label:=J`IsomLabel;
+        Jpols:=AssociativeArray(); // will contain all pols find, indexed by degree.
+        S:=MultiplicatorRing(J);
+        JJ,JJ_to_Jv,Jv:=Explode(can_reps_of_duals[J]);
+        for d ->isog_J_JJ_d in all_isog[myHash(J)][myHash(JJ)] do
+            if not IsSquare(d) then continue; end if; // the degree of a polarization has to be a square
+            pols_deg_d:=[];
+            for f in isog_J_JJ_d do
+                isog:=f[1]*JJ_to_Jv;
+                assert2 Index(JJ,f[1]*J) eq d;
+                assert2 Index(Jv,isog*J) eq d;
+                got_one:=false;
+                for v in transversal_US_USplus(S) do
+                    pp:=isog*v;
+                    if is_polarization(pp,PHI) then
+                        got_one:=true;
+                        break v;
+                    end if;
+                end for;
+                if got_one then
+                    pols_deg_d cat:= [ pp*t : t in transversal_USplus_USUSb_general(S) ]; // this might contains isomorphic copies
+                end if;
+            end for;
+            t_can_Jd:=Cputime();
+            pols_deg_d_up_to_iso:={};
+            for x0 in pols_deg_d do
+                pol,den,nums:=DistinguishedRepresentativePolarizationGeneral(J,x0);
+                Include(~pols_deg_d_up_to_iso, <pol,den,nums>); //isomorphic pols will have the same distinguished rep
+            end for;
+            t_can +:=Cputime(t_can_Jd);
+            assert2 forall{ pol : pol in pols_deg_d_up_to_iso | d eq Index(Jv,pol[1]*J) }; // sanity check
+            if #pols_deg_d_up_to_iso gt 0 then
+                // now, pols_deg_d_up_to_iso contains tuples <can,den,nums> each one representing an isomorphism class of polarizations of 
+                // J of degree d.
+                // we sort them to create the labels
+                Setseq(~pols_deg_d_up_to_iso);
+                sort_keys:=[ [pol[2]] cat pol[3] : pol in pols_deg_d_up_to_iso ];
+                ParallelSort(~sort_keys,~pols_deg_d_up_to_iso);
+                pols_deg_d_up_to_iso_with_labels:=[];
+                for k->pol in pols_deg_d_up_to_iso do
+                    label:=Sprintf("%o-%o.%o",isom_label,d,k);
+                    Append(~pols_deg_d_up_to_iso_with_labels,<pol[1],pol[2],pol[3],label>);
+                end for;
+                Jpols[d]:=[ < pol[1] , pol[2] , pol[3], DecompositionKernelOfIsogeny(J,Jv,pol[1]),pol[4] > : pol in pols_deg_d_up_to_iso_with_labels ];
+            end if;
+        end for;
+        all_pols[J]:=Jpols;
+    end for;
+    vprintf AllPolarizations : "time spent on computing distinguished reps and removing duplicates: %o\n",t_can;
+    vprintf AllPolarizations : "time spent on computing all polarizations: %o\n",Cputime(t_tot);
+    return all_pols;
 end intrinsic;
 
 intrinsic DistinguishedRepresentativePolarizationConjugateStableOrder(I::AlgEtQIdl,x0::AlgEtQElt) -> AlgEtQElt,RngIntElt,SeqEnum[RngIntElt]
@@ -196,70 +319,6 @@ The output consists of pol,den,nums where
     nums := [den*c : c in sort_keys_candidates[1]];
 
     return candidates[1], den, nums;
-end intrinsic;
-
-intrinsic AllNonprincipalPolarizations(ZFV::AlgEtQOrd, PHI::AlgEtQCMType, degree_bounds::SeqEnum[RngIntElt])->Assoc
-{Given the Z[F,V] order of an isogeny squarefree class, a p-Adic positive CMType PHI it returns an associative array whose keys are the distinguished representatives of all isomorphism classes. The value of the array for the isomorphism class I is the tuple <pol,den,nums,dec> where:
-- pol is the distinguished representative of an isomorphism class of a polarizations of I;
-- den and nums are sequence of integers representing the lcm of the denominators of and the numerators of the coefficients of pol wrt the ZFVBasis;
-- dec is the output of DecompositionKernelOfIsogeny.}
-    require not 1 in degree_bounds : "Do not use AllNonprincipalPolarizations to compute principal polarizations";
-    t_tot:=Cputime();
-    isom_cl, icm_lookup := ICM_DistinguishedRepresentatives(ZFV);
-    can_reps_of_duals:=AssociativeArray();
-    all_pols:=AssociativeArray(); // the output
-    for J in isom_cl do
-        Jv:=TraceDualIdeal(ComplexConjugate(J));
-        // I am looking for pol such that pol*J c Jv
-        JJ,JJ_to_Jv:=ICM_Identify(Jv,icm_lookup);
-        can_reps_of_duals[J]:=<JJ,JJ_to_Jv,Jv>;
-    end for;
-    t0:=Cputime();
-    all_isog:=IsogeniesByDegree(ZFV,degree_bounds : important_pairs:=[ < J , can_reps_of_duals[J][1] > : J in isom_cl ]);
-    vprintf AllPolarizations : "time spent on IsogeniesByDegree: %o\n",Cputime(t0);
-    t_can:=0;
-    for J in isom_cl do
-        Jpols:=AssociativeArray(); // will contain all pols find, indexed by degree.
-        S:=MultiplicatorRing(J);
-        JJ,JJ_to_Jv,Jv:=Explode(can_reps_of_duals[J]);
-        for d ->isog_J_JJ_d in all_isog[myHash(J)][myHash(JJ)] do
-            if not IsSquare(d) then continue; end if; // the degree of a polarization has to be a square
-            pols_deg_d:=[];
-            for f in isog_J_JJ_d do
-                isog:=f[1]*JJ_to_Jv;
-                assert2 Index(JJ,f[1]*J) eq d;
-                assert2 Index(Jv,isog*J) eq d;
-                got_one:=false;
-                for v in transversal_US_USplus(S) do
-                    pp:=isog*v;
-                    if is_polarization(pp,PHI) then
-                        got_one:=true;
-                        break v;
-                    end if;
-                end for;
-                if got_one then
-                    pols_deg_d cat:= [ pp*t : t in transversal_USplus_USUSb_general(S) ]; // this might contains isomorphic copies
-                end if;
-            end for;
-            t_can_Jd:=Cputime();
-            pols_deg_d_up_to_iso:={};
-            for x0 in pols_deg_d do
-                pol,den,nums:=DistinguishedRepresentativePolarizationGeneral(J,x0);
-                Include(~pols_deg_d_up_to_iso, <pol,den,nums>); //isomorphic pols will have the same distinguished rep
-            end for;
-            t_can +:=Cputime(t_can_Jd);
-            assert2 forall{ pol : pol in pols_deg_d_up_to_iso | d eq Index(Jv,pol[1]*J) }; // sanity check
-            if #pols_deg_d_up_to_iso gt 0 then
-                // TODO now that I have the reps of the polarizations of degree d, I should sort them to produce the 
-                // labels (d.k) and add the label to the output
-                Jpols[d]:=[ < pol[1] , pol[2] , pol[3], DecompositionKernelOfIsogeny(J,Jv,pol[1]) > : pol in pols_deg_d_up_to_iso ];
-            end if;
-        end for;
-        all_pols[J]:=Jpols;
-    end for;
-    vprintf AllPolarizations : "time spent on computing distinguished reps and removing duplicates: %o\n",t_can;
-    vprintf AllPolarizations : "time spent on computing all polarizations: %o\n",Cputime(t_tot);
-    return all_pols;
 end intrinsic;
 
 intrinsic DistinguishedRepresentativePolarizationGeneral(I::AlgEtQIdl,x0::AlgEtQElt) -> AlgEtQElt,RngIntElt,SeqEnum[RngIntElt]

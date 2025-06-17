@@ -328,7 +328,7 @@ intrinsic FillSchema(R::AlgEtQOrd)->MonStgElt
         N:=indices_oo[iS];
         pic_size:=#PicardGroup(S);
         multiplicator_ring:=labels_oo[iS];
-        labelS:=Sprintf("%o.%o",isog_label,multiplicator_ring);
+        labelS:=Sprintf("%o-%o",isog_label,multiplicator_ring);
         for j in [1..#wkS] do
             I:=wkS[j];
             sort_key:=wkS_sort_keys[j];

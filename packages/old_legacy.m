@@ -73,42 +73,6 @@ intrinsic PeriodMatricesDistinguishedLift(label, directory, prec) -> SeqEnum, Se
     return res, fields;
 end intrinsic;
 
-intrinsic PrincipalPolarizations(I::AlgEtQIdl,PHI::AlgEtQCMType)->SeqEnum[AlgEtQElt]
-{Given an ideal I and a CM-Type PHI, returns all the principal polarizations of I with respect to PHI.}
-
-    // First we test if there exists iso such that iso*I = Iv. If not, then I is not self-dual.
-    // Assume that there exists such an iso.
-    // Given iso1 with iso1*I=Iv, then iso1 is of the form iso1=v*iso, where v is in S^*.
-    // Given two principal polarizations l and l1, then there eixsts a totally real totally positive unit v of S such that l1=v*l.
-    // Moreover, (I,l) is isomorphic to (I,l1) as PPAV if and only if l1=u*\bar{u} for some u in S^*.
-    // Combining these facts, we get that to determine whether there is a principal polarization of I, it suffices to check
-    // elements of the form iso*v where v loops over a transversal of S^*/S^*_+,
-    // where S^*_+ is the subgroupsof S^* consisting of totally real totally positive units.
-    // If we find a principal polarization, say l, then all non-isomorphic one will be of the form l1=v*l, where v loops over a
-    // transversal of S^*_+/<u*\bar{u} : u in S^*>.
-
-    Iv:=TraceDualIdeal(ComplexConjugate(I));
-    test,iso:=IsIsomorphic(Iv,I); // iso*I eq Iv
-    if not test then
-        Ipols:=[PowerStructure(AlgEtQElt)|]; //empty sseq
-    else
-        S:=MultiplicatorRing(I);
-        got_one:=false;
-        for u in transversal_US_USplus(S) do
-            x:=u*iso;
-            if is_polarization(x,PHI) then
-                got_one:=true;
-                break;
-            end if;
-        end for;
-        if got_one then
-            Ipols:=[ x*t : t in transversal_USplus_USUSb(S) ];
-        else
-            Ipols:=[PowerStructure(AlgEtQElt)|]; //empty sseq
-        end if;
-    end if;
-    return Ipols;
-end intrinsic;
 
 intrinsic PrincipalPolarizationsIsogenyClass(R::AlgEtQOrd)->SeqEnum
 {Returns a sequence of tuples < I, [x1,...,xn] > where (I,x1),...,(I,xn) represent the isomorphism classes of PPAVs corresponding with underlying AV given by I. Ideally, R=Z[F,V]. Important: isomorphism classes without a principal polarization are not returned (sometimes not even computed).}

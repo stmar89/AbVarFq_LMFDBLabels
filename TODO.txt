@@ -1,6 +1,5 @@
 # TODO packages
-- in the label of the isomorphism classes we replaced some "." with "-". This might require some changes in the code or in the upload function
-- add Labels to PPolIteration and AllNonprinc... (see TODOs)
+- Check WELabel and IsomLabel : "-" in the right spots, and sometimes is of the form g.q.coeff-N.i.j sometimes only N.i.j (loading function)
 - make a swipe of the Pic code to check that it matches with the paper
     - there might have been a sorting issue...[need to make sure that the magma convention overlaps with ours]
 - several TODOs in Isogenies.m, about documenting and adding tests

@@ -58,6 +58,7 @@ try
 
                     //we, pic_ctr, I, den, nums := Explode(nppol);
                     pieces := Split(I`IsomLabel, ".");
+                    //TODO I think that the entry label below should be label_pol, of the form g.q.coeffs-N.i.j-1.k
                     poldata["label"] := Sprintf("%o.%o", label, I`IsomLabel);
                     poldata["isog_label"] := label;
                     poldata["endomorphism_ring"] := Join(pieces[1..2], ".");

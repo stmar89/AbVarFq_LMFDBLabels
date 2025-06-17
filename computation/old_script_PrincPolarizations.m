@@ -85,7 +85,8 @@ try
     if IsCoprime(Coefficients(h)[(Degree(h) div 2)+1], p) then
         for ppol in PPolIteration(ZFV) do
             poldata := AssociativeArray();
-            we, pic_ctr, I, den, nums := Explode(ppol);
+            we, pic_ctr, I, den, nums, _, label_pol := Explode(ppol);
+            //TODO I think that the entry label below should be label_pol, of the form g.q.coeffs-N.i.j-1.k
             S := MultiplicatorRing(I);
             pieces := Split(we, ".");
             poldata["label"] := Sprintf("%o.%o.%o", label, we, pic_ctr);
