@@ -1,13 +1,12 @@
 # TODO packages
 - in the label of the isomorphism classes we replaced some "." with "-". This might require some changes in the code or in the upload function
+- add Labels to PPolIteration and AllNonprinc... (see TODOs)
 - make a swipe of the Pic code to check that it matches with the paper
-    - the test at the bottom of the file fails!!! Is it a but in AbelianInvariants (which returns an empty list when the group is trivial...)
-    - are the exponents starting from 0 or 1? (see referee report)
     - there might have been a sorting issue...[need to make sure that the magma convention overlaps with ours]
 - several TODOs in Isogenies.m, about documenting and adding tests
-- some of the things computed in script_Principal... Should be moved in FillSchema since they are about av_fq_weak_equivalance classes
 
 # TODO computation
+- I have added some entries to the outputs of PPolIteration and AllNonprinc... including the labels of the polarizations. 
 - merge scripts for polarizations (so we comptue pics only once)
 - folders in scripts needs to be updated
 - all Attach in scripts needs to be updated
@@ -22,3 +21,4 @@
 
 # diary
 - I have renamed IsProduct to IsProductOfOrdersLMFDB
+- more renamings of intrinsics. see commits ...

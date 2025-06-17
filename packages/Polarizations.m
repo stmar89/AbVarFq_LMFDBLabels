@@ -119,6 +119,7 @@ intrinsic PPolIteration(ZFV::AlgEtQOrd) -> List
             continue;
         end if; // if true, there can't be any PPAV with this endomorphism ring
         vprint User1: "Computing WKICM_bar for over order #", Sctr;
+        // wkimS := WKICM_bar(S); 20250617: I have changed this line into the next one.
         wkimS := WKICM_barDistinguishedRepresentatives(S);
         vprint User1: Sprintf("Done computing WKICM_bar at %o; computing possible picard iteration", Cputime(t0));
         ppol_poss := PPolPossIteration(S);
@@ -131,6 +132,9 @@ intrinsic PPolIteration(ZFV::AlgEtQOrd) -> List
                 vprint User1: Sprintf("Computing principal polarizations at %o", Cputime(t0));
                 pp := PrincipalPolarizations(WEI, PHI);
                 vprint User1: Sprintf("Done computing principal polarizations at %o; iterating", Cputime(t0));
+                // TODO add labels
+                // change the next loop so that it produces also the labels (in part the part d.k) of each polarization.
+                // this requires sorting first.
                 for pol in pp do
                     can, den, nums := DistinguishedRepresentativePolarizationConjugateStableOrder(WEI, pol);
                     vprint User1: Sprintf("Done computing distinguished representative at %o", Cputime(t0));
@@ -246,6 +250,8 @@ intrinsic AllNonprincipalPolarizations(ZFV::AlgEtQOrd, PHI::AlgEtQCMType, degree
             t_can +:=Cputime(t_can_Jd);
             assert2 forall{ pol : pol in pols_deg_d_up_to_iso | d eq Index(Jv,pol[1]*J) }; // sanity check
             if #pols_deg_d_up_to_iso gt 0 then
+                // TODO now that I have the reps of the polarizations of degree d, I should sort them to produce the 
+                // labels (d.k) and add the label to the output
                 Jpols[d]:=[ < pol[1] , pol[2] , pol[3], DecompositionKernelOfIsogeny(J,Jv,pol[1]) > : pol in pols_deg_d_up_to_iso ];
             end if;
         end for;
