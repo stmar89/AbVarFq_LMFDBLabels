@@ -1,11 +1,10 @@
 # TODO packages
-- Check WELabel and IsomLabel : "-" in the right spots, and sometimes is of the form g.q.coeff-N.i.j sometimes only N.i.j (loading function)
 - make a swipe of the Pic code to check that it matches with the paper
     - there might have been a sorting issue...[need to make sure that the magma convention overlaps with ours]
 - several TODOs in Isogenies.m, about documenting and adding tests
 
 # TODO computation
-- I have added some entries to the outputs of PPolIteration and AllNonprinc... including the labels of the polarizations. 
+- I have added some entries to the outputs of PPolIteration and AllNonprinc... including the labels of the polarizations. Modify the scripts accordingly.
 - merge scripts for polarizations (so we comptue pics only once)
 - folders in scripts needs to be updated
 - all Attach in scripts needs to be updated

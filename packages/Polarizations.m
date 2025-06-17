@@ -1,4 +1,4 @@
-* vim: set syntax=magma :*/
+/* vim: set syntax=magma :*/
 
 declare verbose AllPolarizations,1;
 
@@ -134,7 +134,7 @@ intrinsic PPolIteration(ZFV::AlgEtQOrd) -> List
 - pic_ctr is the picard counter of I; //TODO ??? 
 - can is the distinguished representative of an isomorphism class of a polarization x0 of I;
 - den and nums are sequence of integers representing the lcm of the denominators of and the numerators of the coefficients of can wrt the ZFVBasis;
-- label is the label of the principally polarized abelian variety, in the format g.q.coeffs-N.i.j-1.k.}
+- label is the label of the principally polarized abelian variety, in the format g.q.coeffs-N.i.w.j-1.k.}
     A := Algebra(ZFV);
     isog_label:=IsogenyLabel(DefiningPolynomial(A));
     vprint User1: "Computing CM type..."; t0 := Cputime();
@@ -183,7 +183,7 @@ intrinsic PPolIteration(ZFV::AlgEtQOrd) -> List
                 ParallelSort(~sort_keys_pp,~ans_pp);
                 // we construct the labels and append exerything to the output ans
                 for k->pol_data in ans_pp do
-                    label_kth_pol:=Sprintf("%o-1.%o",pol_data[1],pol_data[2],k);
+                    label_kth_pol:=Sprintf("%o.%o-1.%o",pol_data[1],pol_data[2],k);
                     Append(~ans, <we, pic_ctr, I, den, nums, can,label_kth_pol>);
                 end for;
             end for;
@@ -193,11 +193,11 @@ intrinsic PPolIteration(ZFV::AlgEtQOrd) -> List
 end intrinsic;
 
 intrinsic AllNonprincipalPolarizations(ZFV::AlgEtQOrd, PHI::AlgEtQCMType, degree_bounds::SeqEnum[RngIntElt])->Assoc
-{Given the Z[F,V] order of an isogeny squarefree class, a p-Adic positive CMType PHI it returns an associative array whose keys are the distinguished representatives of all isomorphism classes. The value of the array for the isomorphism class I is the tuple <pol,den,nums,dec> where:
+{Given the Z[F,V] order of an isogeny squarefree class, a p-Adic positive CMType PHI it returns an associative array whose keys are the distinguished representatives of all isomorphism classes. The value of the array for the isomorphism class I is the tuple <pol,den,nums,dec,label> where:
 - pol is the distinguished representative of an isomorphism class of a polarizations of I;
 - den and nums are sequence of integers representing the lcm of the denominators of and the numerators of the coefficients of pol wrt the ZFVBasis;
 - dec is the output of DecompositionKernelOfIsogeny;
-- label is the label of the principally polarized abelian variety, in the format g.q.coeffs-N.i.j-1.k.}
+- label is the label of the principally polarized abelian variety, in the format g.q.coeffs-N.i.w.j-1.k.}
     require not 1 in degree_bounds : "Do not use AllNonprincipalPolarizations to compute principal polarizations";
     isog_label:=IsogenyLabel(DefiningPolynomial(Algebra(ZFV)));
     t_tot:=Cputime();
@@ -251,7 +251,7 @@ intrinsic AllNonprincipalPolarizations(ZFV::AlgEtQOrd, PHI::AlgEtQCMType, degree
                 // now, pols_deg_d_up_to_iso contains tuples <can,den,nums> each one representing an isomorphism class of polarizations of 
                 // J of degree d.
                 // we sort them to create the labels
-                Setseq(~pols_deg_d_up_to_iso);
+                pols_deg_d_up_to_iso:=Setseq(pols_deg_d_up_to_iso);
                 sort_keys:=[ [pol[2]] cat pol[3] : pol in pols_deg_d_up_to_iso ];
                 ParallelSort(~sort_keys,~pols_deg_d_up_to_iso);
                 pols_deg_d_up_to_iso_with_labels:=[];

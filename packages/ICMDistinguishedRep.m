@@ -1,7 +1,8 @@
 /* vim: set syntax=magma :*/
 
 declare attributes AlgEtQOrd: ICM_DistinguishedRepresentatives, RepresentativeMinimalIsogeniesTo;
-declare attributes AlgEtQIdl: IsomLabel, WErep, Pelt;
+declare attributes AlgEtQIdl: IsomLabel, // g.q.coeffs-N.i.w.j
+                              WErep, Pelt;
 
 is_weak_eq_same_mult_ring:=function(I,J)
 // I and J have the same mult ring, and are defined over it

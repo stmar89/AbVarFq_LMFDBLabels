@@ -4,7 +4,7 @@
 */
     
 declare attributes AlgEtQ : ZFVBasis;
-declare attributes AlgEtQIdl : WELabel; // stores the label N.i.j of the weak eq class see FillSchema
+declare attributes AlgEtQIdl : WELabel; // stores the label g.q.coeff-N.i.w of the weak eq class see FillSchema
 declare attributes AlgEtQOrd : WKICM_barDistinguishedRepresentatives, // a sequence, indexed as WKICM_bar, containing the 
                                                                 // distinguished representative of each weak class
                                WELabel; // stores the label N.i.1 of the order as a weak eq class see FillSchema
@@ -273,7 +273,7 @@ intrinsic FillSchema(R::AlgEtQOrd)->MonStgElt
             i:=1;
             current_index:=N;
         end if;
-        label_S:=Sprintf("%o.%o",N,i);
+        label_S:=Sprintf("%o-%o.%o",isog_label,N,i);
         Append(~labels_oo,label_S);
     end for;
 
@@ -328,7 +328,8 @@ intrinsic FillSchema(R::AlgEtQOrd)->MonStgElt
         N:=indices_oo[iS];
         pic_size:=#PicardGroup(S);
         multiplicator_ring:=labels_oo[iS];
-        labelS:=Sprintf("%o-%o",isog_label,multiplicator_ring);
+        labelS:=Sprintf("%o",multiplicator_ring);
+        S`WELabel:=labelS;
         for j in [1..#wkS] do
             I:=wkS[j];
             sort_key:=wkS_sort_keys[j];
@@ -383,7 +384,7 @@ intrinsic FillSchema(R::AlgEtQOrd)->MonStgElt
 end intrinsic;
 
 intrinsic WELabel(I::AlgEtQIdl)->MonStgElt
-{Returns the WELabel of the weak equivalence class of I, which of the form N.i.j where N.i determines the multiplicator ring of I and j is determined by the SortKey.}
+{Returns the WELabel of the weak equivalence class of I, which of the form N.i.w where N.i determines the multiplicator ring of I and w is determined by the SortKey.}
     return I`WELabel;
 end intrinsic;
 
@@ -415,7 +416,7 @@ intrinsic LoadSchemaWKClasses(str::MonStgElt)->AlgEtQOrd
 //  17 conductor_Sindex,
 //  18 conductor_Oindex,
 //  19 condutor_class
-    g,q,f:=LabelToPoly(lines[1][1]);
+    g,q,f:=LabelToPoly(Split(lines[1][1],"-")[1]);
     A:=EtaleAlgebra(f);
     F:=PrimitiveElement(A);
     V:=q/F;
@@ -437,7 +438,7 @@ intrinsic LoadSchemaWKClasses(str::MonStgElt)->AlgEtQOrd
 
     oo:=[ Order(zb_in_A(braces_to_seq_of_seqs(l[6]),eval(l[7]))) : l in lines | l[8] eq "t" ];
     oo_labels:=[ l[4] : l in lines | l[8] eq "t" ];
-    oo_indices:=[ eval(Split(l,".")[1]) : l in oo_labels ];
+    oo_indices:=[ eval(Split(Split(l,"-")[2],".")[1]) : l in oo_labels ];
     assert #{ x : x in oo_indices | x eq 1} eq 1; 
     O:=oo[Index(oo_indices,1)];
     assert IsMaximal(O);
@@ -464,7 +465,7 @@ intrinsic LoadSchemaWKClasses(str::MonStgElt)->AlgEtQOrd
         for l in linesS do
             I:=Ideal(S,zb_in_A(braces_to_seq_of_seqs(l[6]),eval(l[7])));
             I`MultiplicatorRing:=S;
-            I`WELabel:=Join(Split(l[1],".")[4..6], "."); //N.i.j
+            I`WELabel:=l[1]; //g.q.coeffs-N.i.w
             Append(~wkS,I);
             IR:=R!!I;
             IR`MultiplicatorRing:=S;
