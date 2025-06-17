@@ -425,15 +425,17 @@ end intrinsic;
 intrinsic Random(G::GrpAuto : word_len:=40) -> GrpAutoElt
 {
 //TODO
-    }
+}
     gens := [<g, Order(g)> : g in Generators(G)];
     gens := [pair : pair in gens | pair[2] ne 1];
     r := Identity(G);
-    for i in [1..word_len] do
-        j := Random(1,#gens);
-        k := Random(0,gens[j][2]-1);
-        r *:= gens[j][1]^k;
-    end for;
+    if #gens ne 0 then
+        for i in [1..word_len] do
+            j := Random(1,#gens);
+            k := Random(0,gens[j][2]-1);
+            r *:= gens[j][1]^k;
+        end for;
+    end if;
     return r;
 end intrinsic;
 
@@ -466,6 +468,7 @@ Note that this will pull back large ideals if the Picard group is large, so is p
         S`PicardGroup := <P, pmap2>;
         printf "Finished resetting Picard group in %o\n", Cputime()-t0; t0:=Cputime();
     end for;
+    delete ZFV`CanonicalPicBases;
     G2 := CanonicalPicBases(ZFV);
     for i in [1..#oo] do
         G12 := [(G2[i][j] @ pmaps2[i] @@ pmaps1[i]) : j in [1..#G2[i]]];

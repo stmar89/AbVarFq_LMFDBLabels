@@ -6,7 +6,7 @@ AttachSpec("~/CHIMP/CHIMP.spec");
 AttachSpec("~/AlgEt/spec");
 AttachSpec("~/AbVarFq_LMFDBLabels/spec");
 ```
-Consider the isogeny class with LMFDB label [`2.101.abe_pm`](https://abvar.lmfdb.xyz/Variety/Abelian/Fq/2/101/abe_pm). We start by defining the étale algebra $K$, which represents the endomorphism algebra, and will contain all deligne modules representing the isomorphism classes of the abelian varieties.
+Consider the isogeny class with LMFDB label [`2.101.abe_pm`](https://abvar.lmfdb.xyz/Variety/Abelian/Fq/2/101/abe_pm). We start by defining the étale algebra `K`, which represents the endomorphism algebra, and will contain all deligne modules representing the isomorphism classes of the abelian varieties.
 ```
 label:="2.101.abe_pm";
 g,q,h:=LabelToPoly(label);
@@ -20,7 +20,7 @@ This is all done under the hood by the following function, whose output we don't
 ```
 _:=FillSchema(ZFV);
 ```
-We loop over all the overorders of ZFV, which represent the endomorphisms rings of the abelian varieties, and print the canonical representatives of all weak equivalence classes with their labels.
+We loop over all the overorders of `ZFV`, which represent the endomorphisms rings of the abelian varieties, and print the canonical representatives of all weak equivalence classes with their labels.
 ```
 for S in OverOrders(ZFV) do
     assert assigned S`WKICM_barCanonicalRepresentatives;
@@ -30,11 +30,11 @@ for S in OverOrders(ZFV) do
     end for;
 end for;
 ```
-By looking at the labels produced, we see $ZFV$ has index $400$ in the maximal order of $K$ and that are several orders with the same index.
-We also see that there are orders which are the multiplicator ring of two weak equivalence classes, showing that $ZFV$ is not Gorenstein, but that the biggest Cohen Macaulay type is $2$.
+By looking at the labels produced, we see `ZFV` has index 400 in the maximal order of `K` and that are several orders with the same index.
+We also see that there are orders which are the multiplicator ring of two weak equivalence classes, showing that `ZFV` is not Gorenstein, but that the biggest Cohen Macaulay type is 2.
 
 We now compute isomorphism classes and their polarizations.
-First, we compute a CM-type of $K$ satisfying the Shimura-Taniyama formula. This is stored in an attribute.
+First, we compute a CM-type of `K` satisfying the Shimura-Taniyama formula. This is stored in an attribute.
 ```
 PHI:=pAdicPosCMType(K);
 ```
@@ -48,7 +48,7 @@ time all_ppols:=PPolIteration(ZFV);
 
 Now, we compute all polarizations for degrees 4,9 and 25. This can take 4-5 minutes.
 ```
-time all_pols:=AllPolarizations(ZFV,PHI,[4,9,25]);
+time all_pols:=AllNonprincipalPolarizations(ZFV,PHI,[4,9,25]);
 ```
 
 `all_pols` is an associative array, with keys the canonical representatives of the isomorphism classes.
