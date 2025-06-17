@@ -38,25 +38,18 @@ First, we compute a CM-type of `K` satisfying the Shimura-Taniyama formula. This
 ```
 PHI:=pAdicPosCMType(K);
 ```
-
-We now compute the principal polarizations:
+We now compute the principal polarizations and print their labels:
 ```
 time all_ppols:=PPolIteration(ZFV);
-```
-//TODO
-
-
-Now, we compute all polarizations for degrees 4,9 and 25. This can take 4-5 minutes.
-```
-time all_pols:=AllNonprincipalPolarizations(ZFV,PHI,[4,9,25]);
-```
-
-`all_pols` is an associative array, with keys the distinguished representatives of the isomorphism classes.
-```
-isom:=Setseq(Keys(all_pols));
-for I in isom do 
-    Keys(all_pols[I]); 
+for pol in all_ppols do
+    pol[7];
 end for;
 ```
-//TODO
+Now, we compute all polarizations for degrees 4,9 and 25. This can take 4-5 minutes. Then, for each isomorphism class, we print a sequence of pairs <d,n_d> where d is in [4,9,25] and n_d is the number of non-isomorphic polarizations of degree d. If n_d=0 the pair is not printed.
+```
+time all_pols:=AllNonprincipalPolarizations(ZFV,PHI,[4,9,25]);
+for J in Keys(all_pols) do
+    J`IsomLabel,[<d,#all_pols[J][d]> : d in Keys(all_pols[J])];
+end for;
+```
 
