@@ -5,7 +5,7 @@
     
 declare attributes AlgEtQ : ZFVBasis;
 declare attributes AlgEtQIdl : WELabel; // stores the label N.i.j of the weak eq class see FillSchema
-declare attributes AlgEtQOrd : WKICM_barCanonicalRepresentatives, // a sequence, indexed as WKICM_bar, containing the 
+declare attributes AlgEtQOrd : WKICM_barDistinguishedRepresentatives, // a sequence, indexed as WKICM_bar, containing the 
                                                                 // canonical representative of each weak class
                                WELabel; // stores the label N.i.1 of the order as a weak eq class see FillSchema
 
@@ -23,7 +23,7 @@ intrinsic ZFVBasis(A::AlgEtQ) -> SeqEnum[AlgEtQElt]
     return basis;
 end intrinsic;
 
-intrinsic WKICM_barCanonicalRepresentatives(S::AlgEtQOrd)->SeqEnum[AlgEtQIdl]
+intrinsic WKICM_barDistinguishedRepresentatives(S::AlgEtQOrd)->SeqEnum[AlgEtQIdl]
 {Let S be an order in an étale algebra K=Q[F]=Q[x]/(h), where h is a squarefree q-Weil polynomial. This intrinsic returns a sequence of canonical representatives of the classes in WKICM_bar(S), in the same order.
 The canonical represenatative is defined as follows:
 - If S is Gorenstein then there is only one weak class with multiplcator ring S, which will be represented by OneIdeal(S).
@@ -50,10 +50,10 @@ The canonical represenatative is defined as follows:
   with smallest output of my_hnf(I,basis), sorted lexicographically, where basis = [ V^(g-1),...,V , 1 , F, ... F^g).
   }
 
-    if not assigned S`WKICM_barCanonicalRepresentatives then
+    if not assigned S`WKICM_barDistinguishedRepresentatives then
         cm:=CohenMacaulayType(S);
         if cm eq 1 then
-            S`WKICM_barCanonicalRepresentatives:=[OneIdeal(S)];
+            S`WKICM_barDistinguishedRepresentatives:=[OneIdeal(S)];
         else
             if cm eq 2 then
                 pp:=NonGorensteinPrimes(S);
@@ -61,7 +61,7 @@ The canonical represenatative is defined as follows:
                 d:=Index(St,OneIdeal(S));
                 dSt:=d*St; // dSt c S.
                 if #pp eq 1 then
-                    S`WKICM_barCanonicalRepresentatives:=[OneIdeal(S),dSt];
+                    S`WKICM_barDistinguishedRepresentatives:=[OneIdeal(S),dSt];
                 else
                     pows:=[];
                     for P in pp do
@@ -80,7 +80,7 @@ The canonical represenatative is defined as follows:
                         assert IsInvertible(L) select L eq OneIdeal(S) else L ne OneIdeal(S);
                         Append(~out,L);
                     end for;
-                    S`WKICM_barCanonicalRepresentatives:=out;
+                    S`WKICM_barDistinguishedRepresentatives:=out;
                 end if;
             else //general case
                 pp:=SingularPrimes(S);
@@ -153,11 +153,11 @@ The canonical represenatative is defined as follows:
                         Append(~wkS_can,candidates[1]);
                     end if;
                 end for;
-                S`WKICM_barCanonicalRepresentatives:=wkS_can;
+                S`WKICM_barDistinguishedRepresentatives:=wkS_can;
             end if;
         end if;
     end if;
-    return S`WKICM_barCanonicalRepresentatives;
+    return S`WKICM_barDistinguishedRepresentatives;
 end intrinsic;
 
 intrinsic seq_of_dims(I::AlgEtQIdl) -> SeqEnum[RngIntElt]
@@ -174,7 +174,7 @@ intrinsic SortKeysWKICM_bar(S::AlgEtQOrd) -> SeqEnum[SeqEnum[RngIntElt]]
 {Given an order S, it returns the sequence of SortKeys of the classes in WKICM_bar(S). The SortKey is a sequence of integers consistsing of two parts, dims cat hnf_can, defined as follows:
 - dims is the output of seq_of_dims(I) for any representative of the class.
 - if S has Cohen Maulay type <=2, then hnf_can is left empty, otherwise is the output of my_hnf(I_can), 
-  where I_can is the canonical representative of the class. See WKICM_barCanonicalRepresentatives for the 
+  where I_can is the canonical representative of the class. See WKICM_barDistinguishedRepresentatives for the 
   definition of canonical representative.
 Note that from the SortKey, and the order S, one can always reconstruct the canonical representative of the class.
 }
@@ -183,7 +183,7 @@ Note that from the SortKey, and the order S, one can always reconstruct the cano
         return [ seq_of_dims(I) : I in WKICM_bar(S) ];
     else
         basis:=ZFVBasis(Algebra(S));
-        return [ seq_of_dims(I) cat my_hnf(I,basis) : I in WKICM_barCanonicalRepresentatives(S) ];
+        return [ seq_of_dims(I) cat my_hnf(I,basis) : I in WKICM_barDistinguishedRepresentatives(S) ];
     end if;
 end intrinsic;
 
@@ -313,7 +313,7 @@ intrinsic FillSchema(R::AlgEtQOrd)->MonStgElt
     output:="";
     for iS in [1..#oo] do
         S:=oo[iS];
-        wkS:=WKICM_barCanonicalRepresentatives(S);
+        wkS:=WKICM_barDistinguishedRepresentatives(S);
         assert #wkS eq #WKICM_bar(S);
         S`WKICM_bar:=wkS;
         wkS_sort_keys:=SortKeysWKICM_bar(S);
@@ -485,7 +485,7 @@ intrinsic LoadSchemaWKClasses(str::MonStgElt)->AlgEtQOrd
         end for;
         S`MinimalOverOrders:=min_oo_at_primes;
         S`WKICM_bar:=wkS;
-        S`WKICM_barCanonicalRepresentatives:=wkS;
+        S`WKICM_barDistinguishedRepresentatives:=wkS;
     end for;
     R`WKICM:=wkR;
     return R;

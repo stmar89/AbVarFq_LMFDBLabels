@@ -11,6 +11,6 @@ Attach("LMFDB/Picardext.m");
 schema := Read(base * "output/" * isocls);
 R:=LoadSchemaWKClasses(schema);
 t0 := Cputime();
-B:=CanonicalPicBasis(R);
+B:=DistinguishedPicBasis(R);
 printf "Complete in %o\n", Cputime() - t0;
 quit;

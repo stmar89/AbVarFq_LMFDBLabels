@@ -55,11 +55,11 @@ try
     av_fq_pol := [];
     av_fq_we := [];
     av_fq_isog := AssociativeArray();
-    _, cangens := CanonicalPicGenerators(ZFV);
-    _ := CanonicalPicBases(ZFV); // sets CanonicalPicBasis for each S
+    _, cangens := DistinguishedPicGenerators(ZFV);
+    _ := DistinguishedPicBases(ZFV); // sets DistinguishedPicBasis for each S
     av_fq_isog["pic_prime_gens"] := print_ivec(cangens);
     for S in OverOrders(ZFV) do
-        Pbasis, construction := CanonicalPicBasis(S);
+        Pbasis, construction := DistinguishedPicBasis(S);
         invs, construction := Explode(construction);
         Sdata := AssociativeArray();
         Sdata["label"] := WELabel(S);

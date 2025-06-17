@@ -5,7 +5,7 @@ MonGenOrd.m
 Primes.m
 WeakClassesOrders.m
 Picardext.m
-ICMCanonicalRep.m
+ICMDistinguishedRep.m
 padictocc.m
 pAdicPosCMType.m
 Isogenies.m

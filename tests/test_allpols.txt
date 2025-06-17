@@ -74,7 +74,7 @@
         output_naive_label:=AssociativeArray();
         ZFV:=LoadSchemaWKClasses(Read(fld_wk_schema cat label cat "_schema.txt"));
         A:=Algebra(ZFV);
-        icm:=ICM_CanonicalRepresentatives(ZFV);
+        icm:=ICM_DistinguishedRepresentatives(ZFV);
         basis:=ZFVBasis(A);
         PHI:=LoadpAdicPosCMType(basis,Split(Read(fld_pAdciPosCMType cat label cat "_pAdicPos.txt"),":")[2]);
 

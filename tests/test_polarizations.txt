@@ -54,7 +54,7 @@
             pps:=p[2];
             for pp in pps do
                 _:=PeriodMatrix(I,pp,PHI);
-                ppc:=CanonicalRepresentativePolarization(I,pp);
+                ppc:=DistinguishedRepresentativePolarization(I,pp);
                 assert test_can_rep_ppav(I,ppc);
                 //ppc eq pp;
             end for;

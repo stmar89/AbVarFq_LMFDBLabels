@@ -9,7 +9,7 @@ intrinsic LoadPPAVs(label, directory : prec := 100) -> SeqEnum
     g, q, f := LabelToPoly(label);
 
     R := LoadSchemaWKClasses(Read(directory cat "/wk_classes/" cat label cat "_schema.txt"));
-    reps_isom, _ := ICM_CanonicalRepresentatives(R);
+    reps_isom, _ := ICM_DistinguishedRepresentatives(R);
     isom_labels := [label cat "." cat r`IsomLabel : r in reps_isom];
 
     A := Algebra(reps_isom[1]);
@@ -58,7 +58,7 @@ intrinsic LoadPPAVs(label, directory : prec := 100) -> SeqEnum
     return res;
 end intrinsic;
 
-intrinsic PeriodMatricesCanonicalLift(label, directory, prec) -> SeqEnum, SeqEnum
+intrinsic PeriodMatricesDistinguishedLift(label, directory, prec) -> SeqEnum, SeqEnum
 { returns the period matrices associated to PPAVs in a isogeny class, by loading precomputed data, see LoadPPAVS }
     CC := ComplexFieldExtra(prec);
     ppavs := LoadPPAVs(label, directory);
@@ -238,7 +238,7 @@ intrinsic NonprincipalPolarizations(ZFV::AlgEtQOrd, PHI::AlgEtQCMType, degree_bo
 //TODO
 .}
     t_tot := Cputime();
-    isom_cl, icm_lookup := ICM_CanonicalRepresentatives(ZFV);
+    isom_cl, icm_lookup := ICM_DistinguishedRepresentatives(ZFV);
     can_reps_of_duals := AssociativeArray();
     all_pols := AssociativeArray(); // the output
     t0 := Cputime();
@@ -277,7 +277,7 @@ intrinsic NonprincipalPolarizations(ZFV::AlgEtQOrd, PHI::AlgEtQCMType, degree_bo
             t_can_Jd:=Cputime();
             pols_deg_d_up_to_iso:={};
             for x0 in pols_deg_d do
-                pol,seq:=CanonicalRepresentativePolarizationGeneral(J,x0);
+                pol,seq:=DistinguishedRepresentativePolarizationGeneral(J,x0);
                 Include(~pols_deg_d_up_to_iso, <pol,seq>); //isomorphic pols will have the same canonical rep
             end for;
             t_can +:=Cputime(t_can_Jd);

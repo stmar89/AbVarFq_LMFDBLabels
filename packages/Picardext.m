@@ -2,12 +2,12 @@
 
 // All of these attributes are caches for the intrinsics of the same name
 declare attributes AlgEtQOrd:
-        CanonicalPicGenerators,
-        CanonicalPicBasis,
-        CanonicalPicBases,
+        DistinguishedPicGenerators,
+        DistinguishedPicBasis,
+        DistinguishedPicBases,
         BasisBar,
         TraceDualPic,
-        CanonicalPicardGroup;
+        DistinguishedPicardGroup;
 
 // TODO add description of the functions below.
 
@@ -45,7 +45,7 @@ function MakeSPrime(S, P, O_asProd, i)
     return MakeSPrime2(S, MakeOPrime(O, P, O_asProd, i));
 end function;
 
-function CanonicalPrimeIdealsOverPrime(i, p, S, O_asProd, F_asProd, F_indexes)
+function DistinguishedPrimeIdealsOverPrime(i, p, S, O_asProd, F_asProd, F_indexes)
     OL := O_asProd[i];
     FL := F_asProd[i];
     Find := F_indexes[i];
@@ -78,21 +78,21 @@ function CanonicalPrimeIdealsOverPrime(i, p, S, O_asProd, F_asProd, F_indexes)
     return SLp;
 end function;
 
-intrinsic CanonicalPicGenerators(S::AlgEtQOrd) -> SeqEnum, SeqEnum, SeqEnum
+intrinsic DistinguishedPicGenerators(S::AlgEtQOrd) -> SeqEnum, SeqEnum, SeqEnum
 {Given an order, produces a deterministic sequence of prime ideals that generate Pic(S).  Namely, we iterate through primes (ordered first by norm and then by LMFDB labels of their components within ideals of the same norm), including a prime ideal if it enlarges the subgroup of Pic(S) generated up to now.
 The output is three sequences of the same length:
 - the sequence of elements of Pic(S)
 - the sequence of quadruples <i, p, pcnt, m> describing which component i of the algebra the ideal is nonmaximal for, p a rational prime and pcnt the counter for prime ideals of the component above p in the LMFDB ordering, and m the order of this element of the Picard group
 - the sequence of prime ideals of S.}
-    if assigned S`CanonicalPicGenerators then
-        return Explode(S`CanonicalPicGenerators);
+    if assigned S`DistinguishedPicGenerators then
+        return Explode(S`DistinguishedPicGenerators);
     end if;
     P, pmap := PicardGroup(S);
     Pgens := [];
     construction := [];
     ideals := [];
     if #P eq 1 then
-        S`CanonicalPicGenerators := <Pgens, construction, ideals>;
+        S`DistinguishedPicGenerators := <Pgens, construction, ideals>;
         return Pgens, construction, ideals;
     end if;
     O_asProd, F_asProd, F_indexes := asProdData(S);
@@ -114,7 +114,7 @@ The output is three sequences of the same length:
         // this is used to create a list of primes of norm q for all powers of p.
         if k eq 1 then
             for i in [1..#O_asProd] do
-                primes_above_p[<i, p>] := CanonicalPrimeIdealsOverPrime(i, p, S, O_asProd, F_asProd, F_indexes);
+                primes_above_p[<i, p>] := DistinguishedPrimeIdealsOverPrime(i, p, S, O_asProd, F_asProd, F_indexes);
             end for;
         end if;
         for i in [1..#O_asProd] do
@@ -129,7 +129,7 @@ The output is three sequences of the same length:
                         Append(~ideals, Sprime);
                         Psub := sub<P|Pgens>;
                         if #Psub eq #P then
-                            S`CanonicalPicGenerators := <Pgens, construction, ideals>;
+                            S`DistinguishedPicGenerators := <Pgens, construction, ideals>;
                             return Pgens, construction, ideals;
                         end if;
                     end if;
@@ -139,9 +139,9 @@ The output is three sequences of the same length:
     end while;
 end intrinsic;
 
-intrinsic CanonicalPicGenerators(S::AlgEtQOrd, construction::SeqEnum) -> SeqEnum
+intrinsic DistinguishedPicGenerators(S::AlgEtQOrd, construction::SeqEnum) -> SeqEnum
 {A version that produces the canonical generators using the saved construction, and returned as prime ideals in the maximal order of S together with their orders in Pic(S) (so that the computation of Pic(S) isn't required).
-Note that the returned generators are not independent; see CanonicalPicBasis.
+Note that the returned generators are not independent; see DistinguishedPicBasis.
 //TODO what is the 'saved construction'?}
     O_asProd, F_asProd, F_indexes := asProdData(S);
     O := MaximalOrder(Algebra(S));
@@ -150,7 +150,7 @@ Note that the returned generators are not independent; see CanonicalPicBasis.
     for quad in construction do
         i, p, pcnt, ord := Explode(quad);
         if not IsDefined(primes_above_p, <i,p>) then
-            primes_above_p[<i,p>] := CanonicalPrimeIdealsOverPrime(O_asProd[i], p, F_asProd[i], F_indexes[i]);
+            primes_above_p[<i,p>] := DistinguishedPrimeIdealsOverPrime(O_asProd[i], p, F_asProd[i], F_indexes[i]);
         end if;
         Lp := primes_above_p[<i,p>];
         Append(~gens, MakeOPrime(O, Lp[pcnt], O_asProd, i));
@@ -226,12 +226,12 @@ intrinsic GensToBasis(S::AlgEtQOrd, gens::SeqEnum) -> SeqEnum, SeqEnum
     return basis, <invs, construction>;
 end intrinsic;
 
-intrinsic CanonicalPicBases(ZFV::AlgEtQOrd) -> List, List, List, List
+intrinsic DistinguishedPicBases(ZFV::AlgEtQOrd) -> List, List, List, List
 {Find an abelian basis for the Picard group of each overorder of ZFV using a deterministic method.
 //TODO Document the 'deterministic method'.
 }
-    if assigned ZFV`CanonicalPicBases then
-        return Explode(ZFV`CanonicalPicBases);
+    if assigned ZFV`DistinguishedPicBases then
+        return Explode(ZFV`DistinguishedPicBases);
     end if;
     vprint User1: "Starting OverOrders"; t0 := Cputime();
     oo := OverOrders(ZFV);
@@ -240,8 +240,8 @@ intrinsic CanonicalPicBases(ZFV::AlgEtQOrd) -> List, List, List, List
     vprint User1: "Starting PicardGroup"; t0 := Cputime();
     P0, pmap0 := PicardGroup(ZFV);
     vprint User1: "PicardGroup finished", Cputime() - t0; t0 := Cputime();
-    ZFVgens, gens_construction, gen_ideals := CanonicalPicGenerators(ZFV);
-    vprint User1: "CanonicalPicGenerators finished", Cputime() - t0; t0:=Cputime();
+    ZFVgens, gens_construction, gen_ideals := DistinguishedPicGenerators(ZFV);
+    vprint User1: "DistinguishedPicGenerators finished", Cputime() - t0; t0:=Cputime();
     igens := [pmap0(P0.k) : k in [1..Ngens(P0)]];
     vprint User1: "igens finished", Cputime() - t0;
     bases := [* *];
@@ -270,28 +270,28 @@ intrinsic CanonicalPicBases(ZFV::AlgEtQOrd) -> List, List, List, List
         Sideals := [S!!gen_ideals[u] : u in [1..#gen_ideals]];
         Append(~basis_ideals, [&*[Sideals[u]^bcon[2][v][u] : u in [1..#gen_ideals]] : v in [1..#basis]]);
     end for;
-    ZFV`CanonicalPicBases := <bases, basis_constructions, pic_maps, basis_ideals>;
+    ZFV`DistinguishedPicBases := <bases, basis_constructions, pic_maps, basis_ideals>;
     for i in [1..#oo] do
         S := oo[i];
         P := PicardGroup(S);
         assert &and[Parent(b) eq P : b in bases[i]];
-        S`CanonicalPicBasis := <bases[i], basis_constructions[i], pic_maps[i], basis_ideals[i]>;
+        S`DistinguishedPicBasis := <bases[i], basis_constructions[i], pic_maps[i], basis_ideals[i]>;
     end for;
     return bases, basis_constructions, pic_maps, basis_ideals;
 end intrinsic;
 
-intrinsic CanonicalPicBasis(S::AlgEtQOrd) -> SeqEnum, SeqEnum, Map
+intrinsic DistinguishedPicBasis(S::AlgEtQOrd) -> SeqEnum, SeqEnum, Map
 {
 //TODO
     }
-    if not assigned S`CanonicalPicBasis then
-        error "You must first call CanonicalPicBases(ZFV) on the Frobenius order ZFV";
+    if not assigned S`DistinguishedPicBasis then
+        error "You must first call DistinguishedPicBases(ZFV) on the Frobenius order ZFV";
     end if;
-    return Explode(S`CanonicalPicBasis);
+    return Explode(S`DistinguishedPicBasis);
 end intrinsic;
 
-intrinsic CanonicalPicBasis(S::AlgEtQOrd, gens::SeqEnum, basis_info::Tup) -> SeqEnum
-{Given an order S, a sequence gens of ideals of the maximal order of S (as output by CanonicalPicGenerators(ZFV, gen_info)) that generate Pic(ZFV), and basis_info as output by the other version of CanonicalPicBasis, return a sequence of ideals of S that forms a basis for Pic(S)}
+intrinsic DistinguishedPicBasis(S::AlgEtQOrd, gens::SeqEnum, basis_info::Tup) -> SeqEnum
+{Given an order S, a sequence gens of ideals of the maximal order of S (as output by DistinguishedPicGenerators(ZFV, gen_info)) that generate Pic(ZFV), and basis_info as output by the other version of DistinguishedPicBasis, return a sequence of ideals of S that forms a basis for Pic(S)}
     invs, construction := Explode(basis_info);
     assert &and[#cons eq #gens : cons in construction];
     basis := [&*[gens[j]^construction[i][j] : j in [1..#gens]] : i in [1..#construction]];
@@ -322,39 +322,39 @@ end intrinsic;
 
 intrinsic IdealFromPosition(pos::RngIntElt, ZFV::AlgEtQOrd, S::AlgEtQOrd, gen_info::SeqEnum, basis_info::Tup) -> AlgEtQIdl
 {Given a an integer pos between 1 and #Pic(S) and saved information, computes an ideal that is equivalent in the Picard group to the one produced in position pos in the iteration.
-gen_info - second part of output of CanonicalPicGenerators(ZFV) //TODO I don't understand this line
+gen_info - second part of output of DistinguishedPicGenerators(ZFV) //TODO I don't understand this line
 //TODO what are gen_info and basis_info
 Note that if you're calling this for many different pos, it's probably better to compute gens and basis and use another form of IdealFromPosition.
 //TODO What are 'gens' and 'basis'. How do I compute them?
 }
-    gens := CanonicalPicGenerators(ZFV, gen_info);
+    gens := DistinguishedPicGenerators(ZFV, gen_info);
     invs, construction := Explode(basis_info);
-    basis := CanonicalPicBasis(S, gens, basis_info);
+    basis := DistinguishedPicBasis(S, gens, basis_info);
     return IdealFromPosition(pos, basis, invs);
 end intrinsic;
 
-intrinsic CanonicalPicardGroup(S::AlgEtQOrd) -> GrpAb, Map
-{A version of PicardGroup, with the same semantics, but not depending on any random choices and stable across changes to Magma.  You must call CanonicalPicBases on ZFV first.}
-    if assigned S`CanonicalPicardGroup then
-        return Explode(S`CanonicalPicardGroup);
+intrinsic DistinguishedPicardGroup(S::AlgEtQOrd) -> GrpAb, Map
+{A version of PicardGroup, with the same semantics, but not depending on any random choices and stable across changes to Magma.  You must call DistinguishedPicBases on ZFV first.}
+    if assigned S`DistinguishedPicardGroup then
+        return Explode(S`DistinguishedPicardGroup);
     end if;
     P, pmap := PicardGroup(S);
-    basis, bcon, _, ideals := CanonicalPicBasis(S);
+    basis, bcon, _, ideals := DistinguishedPicBasis(S);
     invs, con := Explode(bcon);
     A := AbelianGroup(invs);
     AtoP := iso<A->P|basis>;
     new_pmap := map<P->Codomain(pmap)| rep:->&*[ideals[i]^v[i] : i in [1..#ideals]] where v:=Eltseq(rep@@AtoP),
                                        id:->id@@pmap>;
-    S`CanonicalPicardGroup := <P, new_pmap>;
+    S`DistinguishedPicardGroup := <P, new_pmap>;
     return P, new_pmap;
 end intrinsic;
 
 intrinsic PicIteration(S::AlgEtQOrd, basis::SeqEnum : filter:=0, include_pic_elt:=false) -> SeqEnum
-{Iterates over the elements of the Picard group in a consistent order, using a filter function on Pic(S).  basis_info should be an entry in the *first* part of the output of CanonicalPicBases(S), and filter should take a single element of Pic(S) as input and return a boolean (the ideal is included if the output is true).  The output is a sequence of pairs <I,i>, where I is an ideal and i is the index of that ideal in the overall iteration.
+{Iterates over the elements of the Picard group in a consistent order, using a filter function on Pic(S).  basis_info should be an entry in the *first* part of the output of DistinguishedPicBases(S), and filter should take a single element of Pic(S) as input and return a boolean (the ideal is included if the output is true).  The output is a sequence of pairs <I,i>, where I is an ideal and i is the index of that ideal in the overall iteration.
 // TODO the output consists of triples if include_pic_elt is true. Please add a comment about this vararg.
 // TODO Is the Ideal in the output canonical? It should be for our purposes.
 }
-    P, pmap := CanonicalPicardGroup(S);
+    P, pmap := DistinguishedPicardGroup(S);
     if #P eq 1 then
         if filter cmpeq 0 or filter(P.0) then
             if include_pic_elt then
@@ -439,8 +439,8 @@ intrinsic Random(G::GrpAuto : word_len:=40) -> GrpAutoElt
     return r;
 end intrinsic;
 
-intrinsic TestCanonicalPicBases(ZFV::AlgEtQOrd)
-{The algorithm for computing the Picard group of S uses randomness; here we check that two different runs of PicardGroup(S) yield the same choice of generators out of CanonicalPicBases.
+intrinsic TestDistinguishedPicBases(ZFV::AlgEtQOrd)
+{The algorithm for computing the Picard group of S uses randomness; here we check that two different runs of PicardGroup(S) yield the same choice of generators out of DistinguishedPicBases.
 Note that this will pull back large ideals if the Picard group is large, so is probably best restricted to small Pic(S).}
     t0:=Cputime();
     oo := OverOrders(ZFV);
@@ -454,7 +454,7 @@ Note that this will pull back large ideals if the Picard group is large, so is p
         Append(~pics, P);
         Append(~pmaps1, pmap);
     end for;
-    G1 := CanonicalPicBases(ZFV);
+    G1 := DistinguishedPicBases(ZFV);
     printf "Finished computing canonical basis in %o\n", Cputime()-t0; t0:=Cputime();
     pmaps2 := [* *];
     for i in [1..#oo] do
@@ -468,8 +468,8 @@ Note that this will pull back large ideals if the Picard group is large, so is p
         S`PicardGroup := <P, pmap2>;
         printf "Finished resetting Picard group in %o\n", Cputime()-t0; t0:=Cputime();
     end for;
-    delete ZFV`CanonicalPicBases;
-    G2 := CanonicalPicBases(ZFV);
+    delete ZFV`DistinguishedPicBases;
+    G2 := DistinguishedPicBases(ZFV);
     for i in [1..#oo] do
         G12 := [(G2[i][j] @ pmaps2[i] @@ pmaps1[i]) : j in [1..#G2[i]]];
         assert G12 eq G1[i];
@@ -486,7 +486,7 @@ end intrinsic;
     f:=x^8+16;
     A:=EtaleAlgebra(f);
     R:=Order(ZFVBasis(A));
-    TestCanonicalPicBases(R);
+    TestDistinguishedPicBases(R);
 
     TODO Add a list of tests:
         - are the canonical gens chosen consistently?

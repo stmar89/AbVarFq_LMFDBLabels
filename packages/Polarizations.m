@@ -69,7 +69,7 @@ intrinsic PPolPossIteration(S::AlgEtQOrd) -> SeqEnum
 //TODO what does it do?
 }
     vprint User1: "Looking up canonical Pic basis";
-    basis := CanonicalPicBasis(S);
+    basis := DistinguishedPicBasis(S);
     if IsGorenstein(S) and IsConjugateStable(S) and #PicardGroup(S) gt 1 then
         basisbar := BasisBar(S);
         tdp := TraceDualPic(S);
@@ -104,7 +104,7 @@ intrinsic PPolIteration(ZFV::AlgEtQOrd) -> List
         end try;
     end while;
     vprint User1: Sprintf("Done with CM type in %o; computing canonical bases...", Cputime(t0)); t0 := Cputime();
-    bases := CanonicalPicBases(ZFV); // sets CanonicalPicBasis for overorders
+    bases := DistinguishedPicBases(ZFV); // sets DistinguishedPicBasis for overorders
     vprint User1: Sprintf("Done computing canonical Pic bases in %o; starting through over orders", Cputime(t0)); t0 := Cputime();
     ans := [* *];
     for Sctr->S in OverOrders(ZFV) do
@@ -127,7 +127,7 @@ intrinsic PPolIteration(ZFV::AlgEtQOrd) -> List
                 pp := PrincipalPolarizations(WEI, PHI);
                 vprint User1: Sprintf("Done computing principal polarizations at %o; iterating", Cputime(t0));
                 for pol in pp do
-                    can, den, nums := CanonicalRepresentativePolarization(WEI, pol);
+                    can, den, nums := DistinguishedRepresentativePolarization(WEI, pol);
                     vprint User1: Sprintf("Done computing canonical representative at %o", Cputime(t0));
                     Append(~ans, <we, pic_ctr, I, den, nums, can>);
                 end for;
@@ -137,7 +137,7 @@ intrinsic PPolIteration(ZFV::AlgEtQOrd) -> List
     return ans;
 end intrinsic;
 
-intrinsic CanonicalRepresentativePolarization(I::AlgEtQIdl,x0::AlgEtQElt) -> AlgEtQElt,SeqEnum[FldRatElt]
+intrinsic DistinguishedRepresentativePolarization(I::AlgEtQIdl,x0::AlgEtQElt) -> AlgEtQElt,SeqEnum[FldRatElt]
 {Given an ideal I and an element x0 representing a polarization for I, we want to look at the set x0*u*\bar(u) where u runs over the units of (I:I)=S. We compute the image of this set via the Log map. We use ShortestVectors on this lattice, pullback the output in the algebra, computhe the action of the torsion units of S on these elements, represent them with respect to [V^(g-1),...,V,1,F,...,F^g], sort them with respec to the lexigographic order of their coefficients and take the smallest.}
 
     S:=MultiplicatorRing(I);
@@ -193,7 +193,7 @@ intrinsic AllNonprincipalPolarizations(ZFV::AlgEtQOrd, PHI::AlgEtQCMType, degree
     //TODO this intrisc misses principal polarizations. I guess this is a feature, which we forgot to document in the description of the intrinsic. Added the require belo
     require not 1 in degree_bounds : "Do not use AllNonprincipalPolarizations to compute principal polarizations";
     t_tot:=Cputime();
-    isom_cl, icm_lookup := ICM_CanonicalRepresentatives(ZFV);
+    isom_cl, icm_lookup := ICM_DistinguishedRepresentatives(ZFV);
     can_reps_of_duals:=AssociativeArray();
     all_pols:=AssociativeArray(); // the output
     for J in isom_cl do
@@ -232,7 +232,7 @@ intrinsic AllNonprincipalPolarizations(ZFV::AlgEtQOrd, PHI::AlgEtQCMType, degree
             t_can_Jd:=Cputime();
             pols_deg_d_up_to_iso:={};
             for x0 in pols_deg_d do
-                pol,den,nums:=CanonicalRepresentativePolarizationGeneral(J,x0);
+                pol,den,nums:=DistinguishedRepresentativePolarizationGeneral(J,x0);
                 Include(~pols_deg_d_up_to_iso, <pol,den,nums>); //isomorphic pols will have the same canonical rep
             end for;
             t_can +:=Cputime(t_can_Jd);
@@ -248,13 +248,13 @@ intrinsic AllNonprincipalPolarizations(ZFV::AlgEtQOrd, PHI::AlgEtQCMType, degree
     return all_pols;
 end intrinsic;
 
-intrinsic CanonicalRepresentativePolarizationGeneral(I::AlgEtQIdl,x0::AlgEtQElt) -> AlgEtQElt,SeqEnum[FldRatElt]
+intrinsic DistinguishedRepresentativePolarizationGeneral(I::AlgEtQIdl,x0::AlgEtQElt) -> AlgEtQElt,SeqEnum[FldRatElt]
 {Given an ideal I and an element x0 representing a polarization for I, we want to look at the set x0*u*\bar(u) where u runs over the units of (I:I)=S. We compute the image of this set via the Log map. We use ShortestVectors on this lattice, pullback the output in the algebra, computhe the action of the torsion units of S on these elements, represent them with respect to [V^(g-1),...,V,1,F,...,F^g], sort them with respect to the lexigographic order of their coefficients and take the smallest.}
-// this is very similar to the code of CanonicalRepresentativePolarization
+// this is very similar to the code of DistinguishedRepresentativePolarization
     S:=MultiplicatorRing(I);
     test,Sb:=IsConjugateStable(S);
     if test then 
-        return CanonicalRepresentativePolarization(I,x0);
+        return DistinguishedRepresentativePolarization(I,x0);
     end if;
 
     A:=Algebra(x0);
@@ -276,7 +276,7 @@ intrinsic CanonicalRepresentativePolarizationGeneral(I::AlgEtQIdl,x0::AlgEtQElt)
 
     homs:=[homs[2*k-1] : k in [1..g]]; //one per conjugate pair to define the Log map
 
-    // this bit is different from CanonicalRepresentativePolarization
+    // this bit is different from DistinguishedRepresentativePolarization
     SSb:=S*Sb; // the smallest order containing both S and Sb
     U,u:=UnitGroup(SSb);
     US,uS:=UnitGroup(S);

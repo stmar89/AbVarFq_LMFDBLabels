@@ -23,8 +23,8 @@ _:=FillSchema(ZFV);
 We loop over all the overorders of `ZFV`, which represent the endomorphisms rings of the abelian varieties, and print the canonical representatives of all weak equivalence classes with their labels.
 ```
 for S in OverOrders(ZFV) do
-    assert assigned S`WKICM_barCanonicalRepresentatives;
-    wkS:=WKICM_barCanonicalRepresentatives(S);
+    assert assigned S`WKICM_barDistinguishedRepresentatives;
+    wkS:=WKICM_barDistinguishedRepresentatives(S);
     for I in wkS do
         WELabel(I);
     end for;
