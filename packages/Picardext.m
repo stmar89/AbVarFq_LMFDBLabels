@@ -140,7 +140,7 @@ The output is three sequences of the same length:
 end intrinsic;
 
 intrinsic DistinguishedPicGenerators(S::AlgEtQOrd, construction::SeqEnum) -> SeqEnum
-{A version that produces the canonical generators using the saved construction, and returned as prime ideals in the maximal order of S together with their orders in Pic(S) (so that the computation of Pic(S) isn't required).
+{A version that produces the distinguished generators using the saved construction, and returned as prime ideals in the maximal order of S together with their orders in Pic(S) (so that the computation of Pic(S) isn't required).
 Note that the returned generators are not independent; see DistinguishedPicBasis.
 //TODO what is the 'saved construction'?}
     O_asProd, F_asProd, F_indexes := asProdData(S);
@@ -352,7 +352,7 @@ end intrinsic;
 intrinsic PicIteration(S::AlgEtQOrd, basis::SeqEnum : filter:=0, include_pic_elt:=false) -> SeqEnum
 {Iterates over the elements of the Picard group in a consistent order, using a filter function on Pic(S).  basis_info should be an entry in the *first* part of the output of DistinguishedPicBases(S), and filter should take a single element of Pic(S) as input and return a boolean (the ideal is included if the output is true).  The output is a sequence of pairs <I,i>, where I is an ideal and i is the index of that ideal in the overall iteration.
 // TODO the output consists of triples if include_pic_elt is true. Please add a comment about this vararg.
-// TODO Is the Ideal in the output canonical? It should be for our purposes.
+// TODO Is the Ideal in the output distinguished? It should be for our purposes.
 }
     P, pmap := DistinguishedPicardGroup(S);
     if #P eq 1 then
@@ -397,7 +397,7 @@ intrinsic PicIteration(S::AlgEtQOrd, basis::SeqEnum : filter:=0, include_pic_elt
 end intrinsic;
 
 intrinsic BasisBar(S::AlgEtQOrd) -> SeqEnum
-{Returns the conjugates of the non-canonical basis elements.}
+{Returns the conjugates of the non-distinguished basis elements.}
     if assigned S`BasisBar then
         return S`BasisBar;
     end if;
@@ -455,7 +455,7 @@ Note that this will pull back large ideals if the Picard group is large, so is p
         Append(~pmaps1, pmap);
     end for;
     G1 := DistinguishedPicBases(ZFV);
-    printf "Finished computing canonical basis in %o\n", Cputime()-t0; t0:=Cputime();
+    printf "Finished computing distinguished basis in %o\n", Cputime()-t0; t0:=Cputime();
     pmaps2 := [* *];
     for i in [1..#oo] do
         P := pics[i]; pmap := pmaps1[i];
@@ -489,8 +489,8 @@ end intrinsic;
     TestDistinguishedPicBases(R);
 
     TODO Add a list of tests:
-        - are the canonical gens chosen consistently?
+        - are the distinguished gens chosen consistently?
         - is the sorting of PicIteration consistent?
-        - are the canonical ideal reps chosen consistently?
+        - are the distinguished ideal reps chosen consistently?
 
 */

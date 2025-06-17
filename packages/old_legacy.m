@@ -146,7 +146,7 @@ intrinsic PrincipalPolarizationsIsogenyClass(R::AlgEtQOrd)->SeqEnum
 end intrinsic;
 
 intrinsic PrintPrincipalPolarizationsIsogenyClass(R::AlgEtQOrd)->MonStgElt
-{Given the order R=Z[F,V] of an ordinary squarefree isogeny class, it computes the principal polarizatons and return a string that can printed to file. This string can be loaded back in magma using LoadPrincipalPolarizationsIsogenyClass. The output is not canonical.}
+{Given the order R=Z[F,V] of an ordinary squarefree isogeny class, it computes the principal polarizatons and return a string that can printed to file. This string can be loaded back in magma using LoadPrincipalPolarizationsIsogenyClass. The output is not distinguished.}
     A:=Algebra(R);
     nf:=Components(A);
     nf_poly:=[ Coefficients((DefiningPolynomial(K))) : K in nf ];
@@ -174,7 +174,7 @@ intrinsic PrintPrincipalPolarizationsIsogenyClass(R::AlgEtQOrd)->MonStgElt
 end intrinsic;
 
 intrinsic LoadPrincipalPolarizationsIsogenyClass(str::MonStgElt)->AlgEtQOrd
-{Given a string produced with PrintPrincipalPolarizationsIsogenyClass, it returns the orders Z[F,V] after populating the attribute PrincipalPolarizationIsogenyClass, which contains the output of PrincipalPolarizationIsogneyClass. The string doesn't need to describe canonical representatives.}
+{Given a string produced with PrintPrincipalPolarizationsIsogenyClass, it returns the orders Z[F,V] after populating the attribute PrincipalPolarizationIsogenyClass, which contains the output of PrincipalPolarizationIsogneyClass. The string doesn't need to describe distinguished representatives.}
     data:=eval(str);
     PP:=PolynomialRing(Rationals());
     ff:=[ PP!f : f in data[1]];
@@ -234,7 +234,7 @@ intrinsic PeriodMatrix(I::AlgEtQIdl,x0::AlgEtQElt,phi::AlgEtQCMType) -> AlgMatEl
 end intrinsic;
 
 intrinsic NonprincipalPolarizations(ZFV::AlgEtQOrd, PHI::AlgEtQCMType, degree_bounds::SeqEnum[RngIntElt])->Assoc
-{Given the Z[F,V] order of an isogeny squarefree class, a p-Adic positive CMType PHI it returns an associative array whose keys are the canonical representatives of all isomorphism classes.
+{Given the Z[F,V] order of an isogeny squarefree class, a p-Adic positive CMType PHI it returns an associative array whose keys are the distinguished representatives of all isomorphism classes.
 //TODO
 .}
     t_tot := Cputime();
@@ -278,7 +278,7 @@ intrinsic NonprincipalPolarizations(ZFV::AlgEtQOrd, PHI::AlgEtQCMType, degree_bo
             pols_deg_d_up_to_iso:={};
             for x0 in pols_deg_d do
                 pol,seq:=DistinguishedRepresentativePolarizationGeneral(J,x0);
-                Include(~pols_deg_d_up_to_iso, <pol,seq>); //isomorphic pols will have the same canonical rep
+                Include(~pols_deg_d_up_to_iso, <pol,seq>); //isomorphic pols will have the same distinguished rep
             end for;
             t_can +:=Cputime(t_can_Jd);
             assert2 forall{ pol : pol in pols_deg_d_up_to_iso | d eq Index(Iv, pol[1]*I) }; // sanity check
@@ -288,7 +288,7 @@ intrinsic NonprincipalPolarizations(ZFV::AlgEtQOrd, PHI::AlgEtQCMType, degree_bo
         end for;
         all_pols[I]:=Ipols;
     end for;
-    vprintf AllPolarizations : "time spent on computing canonical reps and removing duplicates: %o\n",t_can;
+    vprintf AllPolarizations : "time spent on computing distinguished reps and removing duplicates: %o\n",t_can;
     vprintf AllPolarizations : "time spent on computing all polarizations: %o\n",Cputime(t_tot);
     return all_pols;
 end intrinsic;

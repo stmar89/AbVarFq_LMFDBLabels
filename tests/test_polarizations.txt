@@ -20,7 +20,7 @@
     "...done";
 
     test_can_rep_ppav:=function(I,ppc)
-    // ppc is the canonical rep of a polarization
+    // ppc is the distinguished rep of a polarization
         Nppc:=Norm(ppc);
         S:=MultiplicatorRing(I);
         US,uS:=UnitGroup(S);
@@ -54,7 +54,7 @@
             pps:=p[2];
             for pp in pps do
                 _:=PeriodMatrix(I,pp,PHI);
-                ppc:=DistinguishedRepresentativePolarization(I,pp);
+                ppc:=DistinguishedRepresentativePolarizationConjugateStableOrder(I,pp);
                 assert test_can_rep_ppav(I,ppc);
                 //ppc eq pp;
             end for;

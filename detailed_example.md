@@ -15,12 +15,12 @@ F:=PrimitiveElement(K);
 V:=q/F;
 ZFV:=Order([F,V]);
 ```
-Now, we compute the weak equivalence classes, their canonical representatives, and the labels.
+Now, we compute the weak equivalence classes, their distinguished representatives, and the labels.
 This is all done under the hood by the following function, whose output we don't actually need here (it is a string needed to populate the corresponding table in the LMFDB database).
 ```
 _:=FillSchema(ZFV);
 ```
-We loop over all the overorders of `ZFV`, which represent the endomorphisms rings of the abelian varieties, and print the canonical representatives of all weak equivalence classes with their labels.
+We loop over all the overorders of `ZFV`, which represent the endomorphisms rings of the abelian varieties, and print the distinguished representatives of all weak equivalence classes with their labels.
 ```
 for S in OverOrders(ZFV) do
     assert assigned S`WKICM_barDistinguishedRepresentatives;
@@ -51,7 +51,7 @@ Now, we compute all polarizations for degrees 4,9 and 25. This can take 4-5 minu
 time all_pols:=AllNonprincipalPolarizations(ZFV,PHI,[4,9,25]);
 ```
 
-`all_pols` is an associative array, with keys the canonical representatives of the isomorphism classes.
+`all_pols` is an associative array, with keys the distinguished representatives of the isomorphism classes.
 ```
 isom:=Setseq(Keys(all_pols));
 for I in isom do 

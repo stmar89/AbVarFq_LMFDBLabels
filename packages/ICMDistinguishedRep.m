@@ -14,7 +14,7 @@ is_weak_eq_same_mult_ring:=function(I,J)
 end function;
 
 intrinsic ICM_DistinguishedRepresentatives(ZFV::AlgEtQOrd) -> SeqEnum[AlgEtQIdl], Assoc
-{Given the Frobenius order of a squafree isogeny class it returns the canonical representatives of the isomorphism classes. Each ideal has a label attached to it.}
+{Given the Frobenius order of a squafree isogeny class it returns the distinguished representatives of the isomorphism classes. Each ideal has a label attached to it.}
     if assigned ZFV`ICM_DistinguishedRepresentatives then
         return Explode(ZFV`ICM_DistinguishedRepresentatives);
     end if;
@@ -46,7 +46,7 @@ intrinsic ICM_DistinguishedRepresentatives(ZFV::AlgEtQOrd) -> SeqEnum[AlgEtQIdl]
 end intrinsic;
 
 intrinsic ICM_Identify(L::AlgEtQIdl, icm_lookup::Assoc) -> AlgEtQIdl, AlgEtQElt, AlgEtQOrd, AlgEtQIdl, GrpAbElt
-{Given an ideal L, together with the lookup table output by ICM_DistinguishedRepresentatives, returns the canonical representative I in the same class of the ICM as L, an element x so that L = x*I, the multiplicator ring S, the canonical representative W of its weak equivalence class, and the element g in Pic(S) representing the invertible S-ideal (L:W).}
+{Given an ideal L, together with the lookup table output by ICM_DistinguishedRepresentatives, returns the distinguished representative I in the same class of the ICM as L, an element x so that L = x*I, the multiplicator ring S, the distinguished representative W of its weak equivalence class, and the element g in Pic(S) representing the invertible S-ideal (L:W).}
     S := MultiplicatorRing(L);
     PS, pS := PicardGroup(S);
     wkS := WKICM_barDistinguishedRepresentatives(S);

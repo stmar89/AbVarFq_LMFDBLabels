@@ -38,7 +38,7 @@ end intrinsic;
 
 // The following two intrinsics give representative isogenies under the action of Pic(Z[F,V]).  
 intrinsic RepresentativeMinimalIsogenies(ZFV::AlgEtQOrd, N::RngIntElt : degrees:=[])->Assoc
-{Given the ZFV order of a squarefree isogeny class, it returns an associative array, indexed by the canonical representatives J of isomorphism classes, in which each entry contains an associative array with data describing isogenies to J. This data consists of a tuple ... 
+{Given the ZFV order of a squarefree isogeny class, it returns an associative array, indexed by the distinguished representatives J of isomorphism classes, in which each entry contains an associative array with data describing isogenies to J. This data consists of a tuple ... 
 //TODO finish descr
 }
     if not assigned ZFV`RepresentativeMinimalIsogeniesTo then
@@ -75,7 +75,7 @@ intrinsic RepresentativeMinimalIsogenies(ZFV::AlgEtQOrd, N::RngIntElt : degrees:
             I, x, IS, IWE, Ig := ICM_Identify(L, icm_lookup);
             assert2 Index(J, x*I) eq deg;
             Ig, Ker := DistinguishedCosetRep(Ig@@P0Pmap, Kernel(P0Pmap));
-            Append(~min_isog[myHash(IWE)][we_hashes[j]], <deg, x, Ig, Ker, I, L>); // x is a minimal isogeny from I to J of degree deg=#(J/L); I = IWE * Ig as canonical representatives
+            Append(~min_isog[myHash(IWE)][we_hashes[j]], <deg, x, Ig, Ker, I, L>); // x is a minimal isogeny from I to J of degree deg=#(J/L); I = IWE * Ig as distinguished representatives
         end for;
     end for;
     ZFV`RepresentativeMinimalIsogeniesTo[<N, degrees>] := min_isog;
@@ -165,7 +165,7 @@ end intrinsic;
 
 // Old version for comparison; use RepresentativeMinimalIsogenies instead
 intrinsic AllMinimalIsogenies(ZFV::AlgEtQOrd, N::RngIntElt : degrees:=0)->Assoc
-{Given the ZFV order of a squarefree isogeny class, it returns an associative array, indexed by the canonical representatives J of isomorphism classes, in which each entry contains an associative array with data describing isogenies to J. This data consists of a tuple ... 
+{Given the ZFV order of a squarefree isogeny class, it returns an associative array, indexed by the distinguished representatives J of isomorphism classes, in which each entry contains an associative array with data describing isogenies to J. This data consists of a tuple ... 
 //TODO finish descr
 }
     isom_cl, icm_lookup := ICM_DistinguishedRepresentatives(ZFV);
@@ -194,7 +194,7 @@ end intrinsic;
 
 intrinsic IsogeniesByDegree(ZFV::AlgEtQOrd, degree_bounds::SeqEnum : important_pairs:=0) -> Assoc
 {Given the ZFV order of a squarefree isogeny class, together with a sequence of integers, return an associative array A so that A[I][J][d] consists of all isogenies of degree d from I to J for all integers d dividing any element of degree_bounds.  Each isogeny is stored as a pair <x,L> where x is an element mapping I into J and L = x*I (which is a submodule of J of an appropriate index).}
-    // imporant pairs, if given, should be a list of tuples <I,J> of canonical representatives (see note below for how they're used)
+    // imporant pairs, if given, should be a list of tuples <I,J> of distinguished representatives (see note below for how they're used)
     N := LCM(degree_bounds);
     degrees := {};
     proper_degrees := {};

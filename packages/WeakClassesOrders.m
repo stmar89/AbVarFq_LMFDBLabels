@@ -6,7 +6,7 @@
 declare attributes AlgEtQ : ZFVBasis;
 declare attributes AlgEtQIdl : WELabel; // stores the label N.i.j of the weak eq class see FillSchema
 declare attributes AlgEtQOrd : WKICM_barDistinguishedRepresentatives, // a sequence, indexed as WKICM_bar, containing the 
-                                                                // canonical representative of each weak class
+                                                                // distinguished representative of each weak class
                                WELabel; // stores the label N.i.1 of the order as a weak eq class see FillSchema
 
 
@@ -24,8 +24,8 @@ intrinsic ZFVBasis(A::AlgEtQ) -> SeqEnum[AlgEtQElt]
 end intrinsic;
 
 intrinsic WKICM_barDistinguishedRepresentatives(S::AlgEtQOrd)->SeqEnum[AlgEtQIdl]
-{Let S be an order in an étale algebra K=Q[F]=Q[x]/(h), where h is a squarefree q-Weil polynomial. This intrinsic returns a sequence of canonical representatives of the classes in WKICM_bar(S), in the same order.
-The canonical represenatative is defined as follows:
+{Let S be an order in an étale algebra K=Q[F]=Q[x]/(h), where h is a squarefree q-Weil polynomial. This intrinsic returns a sequence of distinguished representatives of the classes in WKICM_bar(S), in the same order.
+The distinguished represenatative is defined as follows:
 - If S is Gorenstein then there is only one weak class with multiplcator ring S, which will be represented by OneIdeal(S).
 - If S has Cohen Macaulay type 2, then 
     -- put dSt:=d*St, where St is the TraceDualIdeal(S) and d is the smallest integer such that dSt c S.
@@ -43,10 +43,10 @@ The canonical represenatative is defined as follows:
     -- let T be Ti such that Gi is smallest, if there is more than one with the same size, pick the i with Pi of smallest SortKey.
     -- let K be a set of representatives of the classes in the ker, such that LT=T.
     -- let U be a transversal of (T^*/S^*).
-    -- By recursion, let J1,...,Js be the canonical representatives of WKICM_bar(T).
+    -- By recursion, let J1,...,Js be the distinguished representatives of WKICM_bar(T).
   Each class in WKICM_bar admits a representative I0 such that I0*T=Ji for a unique idex i.
   All ideals I, weakly equivalent to I0, satisfying I*T=J_i are of the form I=u*L*I0 for unique u in U and L in K.
-  We list all of them and define the canonical representative of the weak equivalence class of I0 to be the one 
+  We list all of them and define the distinguished representative of the weak equivalence class of I0 to be the one 
   with smallest output of my_hnf(I,basis), sorted lexicographically, where basis = [ V^(g-1),...,V , 1 , F, ... F^g).
   }
 
@@ -174,9 +174,9 @@ intrinsic SortKeysWKICM_bar(S::AlgEtQOrd) -> SeqEnum[SeqEnum[RngIntElt]]
 {Given an order S, it returns the sequence of SortKeys of the classes in WKICM_bar(S). The SortKey is a sequence of integers consistsing of two parts, dims cat hnf_can, defined as follows:
 - dims is the output of seq_of_dims(I) for any representative of the class.
 - if S has Cohen Maulay type <=2, then hnf_can is left empty, otherwise is the output of my_hnf(I_can), 
-  where I_can is the canonical representative of the class. See WKICM_barDistinguishedRepresentatives for the 
-  definition of canonical representative.
-Note that from the SortKey, and the order S, one can always reconstruct the canonical representative of the class.
+  where I_can is the distinguished representative of the class. See WKICM_barDistinguishedRepresentatives for the 
+  definition of distinguished representative.
+Note that from the SortKey, and the order S, one can always reconstruct the distinguished representative of the class.
 }
     cm:=CohenMacaulayType(S);
     if cm le 2 then
@@ -201,7 +201,7 @@ end intrinsic;
 
 
 intrinsic two_generating_set(I::AlgEtQIdl,basis::SeqEnum[AlgEtQElt]) -> MonStgElt
-{Given an invertible ideal I over some order S and a basis of the algebra it returns a pair [ c,elt ] where c is the smallerst integer in I and elt is an element such that I = c*S + elt*S. Note that elt is not chosen canonically.}
+{Given an invertible ideal I over some order S and a basis of the algebra it returns a pair [ c,elt ] where c is the smallerst integer in I and elt is an element such that I = c*S + elt*S. Note that elt is not chosen distinguishedly.}
     S:=Order(I);
     A:=Algebra(S);
     if I eq OneIdeal(S) then
