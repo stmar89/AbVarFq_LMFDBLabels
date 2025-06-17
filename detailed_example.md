@@ -47,7 +47,7 @@ end for;
 ```
 Now, we compute all polarizations for degrees 4,9 and 25. This can take 4-5 minutes. Then we print their labels.
 ```
-time all_pols:=AllNonprincipalPolarizations(ZFV,PHI,[4]);
+time all_pols:=AllNonprincipalPolarizations(ZFV,PHI,[4,9,25]);
 for pol in all_pols do
     pol[5];
 end for;
