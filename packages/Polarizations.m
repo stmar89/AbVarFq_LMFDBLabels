@@ -91,9 +91,12 @@ intrinsic PPolPossIteration(S::AlgEtQOrd) -> SeqEnum
 end intrinsic;
 
 intrinsic PPolIteration(ZFV::AlgEtQOrd) -> List
-{Given the Frobenius order, returns a list of quadruples <we, pic_ctr, I, den, nums, can>, where I is an ideal in the weak equivalence class we with picard group counter pic_ctr, and den (resp. nums) is the denominator (resp. numerators) of the coefficients of the distinguished representative can of the polarization (wrt the ZFVBasis).
-//TODO improve this description
-}
+{Given the Frobenius order, returns a list of quadruples <we, pic_ctr, I, den, nums, can>, where:
+- I is a fractional ZFV-ideal;
+- we is the distinguished representative of the weak equivalence class of I;
+- pic_ctr is the picard counter of I; //TODO ??? 
+- can is the distinguished representative of an isomorphism class of a polarization x0 of I;
+- den and nums are sequence of integers representing the lcm of the denominators of and the numerators of the coefficients of can wrt the ZFVBasis.}
     A := Algebra(ZFV);
     vprint User1: "Computing CM type..."; t0 := Cputime();
     prec := 30;
@@ -116,7 +119,7 @@ intrinsic PPolIteration(ZFV::AlgEtQOrd) -> List
             continue;
         end if; // if true, there can't be any PPAV with this endomorphism ring
         vprint User1: "Computing WKICM_bar for over order #", Sctr;
-        wkimS := WKICM_bar(S);
+        wkimS := WKICM_barDistinguishedRepresentatives(S);
         vprint User1: Sprintf("Done computing WKICM_bar at %o; computing possible picard iteration", Cputime(t0));
         ppol_poss := PPolPossIteration(S);
         vprint User1: Sprintf("Done computing picard iteration at %o; iterating", Cputime(t0));
@@ -192,11 +195,10 @@ The output consists of pol,den,nums where
 end intrinsic;
 
 intrinsic AllNonprincipalPolarizations(ZFV::AlgEtQOrd, PHI::AlgEtQCMType, degree_bounds::SeqEnum[RngIntElt])->Assoc
-{Given the Z[F,V] order of an isogeny squarefree class, a p-Adic positive CMType PHI it returns an associative array whose keys are the distinguished representatives of all isomorphism classes. The value of the array for the isomorphism class I is the tuple <pol,den,nums,...> where:
+{Given the Z[F,V] order of an isogeny squarefree class, a p-Adic positive CMType PHI it returns an associative array whose keys are the distinguished representatives of all isomorphism classes. The value of the array for the isomorphism class I is the tuple <pol,den,nums,dec> where:
 - pol is the distinguished representative of an isomorphism class of a polarizations of I;
-- den and nums are sequence of integers representing the lcm of the denominators of and the numerators of the coefficients of pol wrt the ZFVBasis.
-//TODO
-.}
+- den and nums are sequence of integers representing the lcm of the denominators of and the numerators of the coefficients of pol wrt the ZFVBasis;
+- dec is the output of DecompositionKernelOfIsogeny.}
     require not 1 in degree_bounds : "Do not use AllNonprincipalPolarizations to compute principal polarizations";
     t_tot:=Cputime();
     isom_cl, icm_lookup := ICM_DistinguishedRepresentatives(ZFV);
