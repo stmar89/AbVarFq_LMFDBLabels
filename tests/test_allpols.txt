@@ -79,10 +79,10 @@
         PHI:=LoadpAdicPosCMType(basis,Split(Read(fld_pAdciPosCMType cat label cat "_pAdicPos.txt"),":")[2]);
 
         t0:=Cputime();
-        output_new_label:=AllPolarizations(ZFV,PHI,degrees);
+        output_new_label:=AllNonprincipalPolarizations(ZFV,PHI,degrees);
         output_new[label]:=output_new_label;
         t_new:=Cputime(t0);
-        printf "AllPolarizations takes %o secs\n",t_new;
+        printf "AllNonprincipalPolarizations takes %o secs\n",t_new;
 
         t0:=Cputime();
         for I in icm do

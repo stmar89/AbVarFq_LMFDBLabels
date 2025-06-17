@@ -37,7 +37,7 @@
         t_icm:=Cputime(t0);
         printf "\t compute icm (%o classes):\t\t%o\n",icm,t_icm;
         // ii:=AllMinimalIsogenies(ZFV, N);
-        // _:=AllPolarizations(ZFV, pAdicPosCMType(Algebra(ZFV)) , N);
+        // _:=AllNonprincipalPolarizations(ZFV, pAdicPosCMType(Algebra(ZFV)) , N);
         time ii:=IsogeniesByDegree(ZFV, N);
     end if;
 

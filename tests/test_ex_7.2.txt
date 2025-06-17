@@ -28,7 +28,7 @@
     printf "\t compute icm (%o classes):\t\t%o\n",icm,t_icm;
     printf "\t compute pols deg in %o:\t\t",N;
     t0:=Cputime();
-        all_pols:=AllPolarizations(ZFV, pAdicPosCMType(Algebra(ZFV)) , N);
+        all_pols:=AllNonprincipalPolarizations(ZFV, pAdicPosCMType(Algebra(ZFV)) , N);
     t_pols:=Cputime(t0);
     printf "%o\n",t_pols;
 

@@ -97,7 +97,7 @@
                 PHI:=pAdicPosCMType(A);
                 printf "\t load cm_type:          \t\t%o\n",Cputime(t0);
                 t0:=Cputime();
-                _:=AllPolarizations(ZFV, PHI , N);
+                _:=AllNonprincipalPolarizations(ZFV, PHI , N);
                 t_pols:=Cputime(t0);
                 printf "\t compute pols of degs %o:\t%o\n",N,t_pols;
                 t:=<g,q,icm,N,t_pols>;

@@ -186,12 +186,12 @@ intrinsic CanonicalRepresentativePolarization(I::AlgEtQIdl,x0::AlgEtQElt) -> Alg
     return candidates[1], den, nums;
 end intrinsic;
 
-intrinsic AllPolarizations(ZFV::AlgEtQOrd, PHI::AlgEtQCMType, degree_bounds::SeqEnum[RngIntElt])->Assoc
+intrinsic AllNonprincipalPolarizations(ZFV::AlgEtQOrd, PHI::AlgEtQCMType, degree_bounds::SeqEnum[RngIntElt])->Assoc
 {Given the Z[F,V] order of an isogeny squarefree class, a p-Adic positive CMType PHI it returns an associative array whose keys are the canonical representatives of all isomorphism classes.
 //TODO
 .}
     //TODO this intrisc misses principal polarizations. I guess this is a feature, which we forgot to document in the description of the intrinsic. Added the require belo
-    require not 1 in degree_bounds : "Do not use AllPolarizations to compute principal polarizations";
+    require not 1 in degree_bounds : "Do not use AllNonprincipalPolarizations to compute principal polarizations";
     t_tot:=Cputime();
     isom_cl, icm_lookup := ICM_CanonicalRepresentatives(ZFV);
     can_reps_of_duals:=AssociativeArray();

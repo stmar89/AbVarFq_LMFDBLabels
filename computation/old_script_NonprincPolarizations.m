@@ -47,7 +47,7 @@ try
     h := ChangeRing(DefiningPolynomial(A), Integers());
     _,p:=IsPrimePower(ConstantCoefficient(h));
     if IsCoprime(Coefficients(h)[(Degree(h) div 2)+1], p) then
-        for I->Ipols in AllPolarizations(ZFV, PHI, degree_bounds) do
+        for I->Ipols in AllNonprincipalPolarizations(ZFV, PHI, degree_bounds) do
             S := MultiplicatorRing(I);
             aut_grp := IdentifyGroup(TorsionSubgroup(UnitGroup(S)));
             aut_grp := Sprintf("%o.%o", aut_grp[1], aut_grp[2]);
