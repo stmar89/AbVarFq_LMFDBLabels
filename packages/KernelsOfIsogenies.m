@@ -8,7 +8,7 @@ Mrr is the submodule of M for which F and V act invertibly.
 Mrl is the submodule of M for which F acts invertibly, and V does not.
 Mlr is the submodule of M for which V acts invertibly, and F does not.
 Mll is the submodule of M for which neither F nor V act invertibly.
-The output is a sequence of tpars <Mij,mij> where mij:J->Mij is the quotient map composed with the project onto the Mij component.}
+The output is a sequence of pairs <Mij,mij> where mij:J->Mij is the quotient map composed with the projection onto the Mij component.}
     L:=x*I;
     require L subset J : "The elements is not an isogeny between the two ideals";
     R:=Order(I);
