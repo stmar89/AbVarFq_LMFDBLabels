@@ -4,10 +4,10 @@
 */
     
 declare attributes AlgEtQ : ZFVBasis;
-declare attributes AlgEtQIdl : WELabel; // stores the label g.q.coeff-N.i.w of the weak eq class see FillSchema
+declare attributes AlgEtQIdl : WELabel; // stores the label g.q.coeff-N.i.w of the weak eq class see FillSchemaWEClasses
 declare attributes AlgEtQOrd : WKICM_barDistinguishedRepresentatives, // a sequence, indexed as WKICM_bar, containing the 
                                                                 // distinguished representative of each weak class
-                               WELabel; // stores the label N.i.1 of the order as a weak eq class see FillSchema
+                               WELabel; // stores the label N.i.1 of the order as a weak eq class see FillSchemaWEClasses
 
 
 intrinsic ZFVBasis(A::AlgEtQ) -> SeqEnum[AlgEtQElt]
@@ -240,7 +240,7 @@ intrinsic two_generating_set(I::AlgEtQIdl,basis::SeqEnum[AlgEtQElt]) -> MonStgEl
     return out;
 end intrinsic;
 
-intrinsic FillSchema(R::AlgEtQOrd)->MonStgElt
+intrinsic FillSchemaWEClasses(R::AlgEtQOrd)->MonStgElt
 {Given the ZFV Order of a squarefree isogeny class which is ordinary or over the prime field, it produces a string to fill the Table av_fq_weak_equivalences at https://github.com/roed314/root-unitary/blob/stage_based/postgres_schema.md. At the same time, it populates }
     A:=Algebra(R);
     isog_label:=IsogenyLabel(DefiningPolynomial(A));
@@ -449,7 +449,7 @@ intrinsic LoadSchemaWKClasses(str::MonStgElt)->AlgEtQOrd
     oo_cond:=[ eval("<" cat ll[2..#ll-1] cat ">") : ll in  [ l[14] : l in lines | l[8] eq "t" ] ];
     oo_cond:=[ Ideal(O,[A!t[1]] cat zb_in_A([t[3]],t[2])) : t in oo_cond ];
     oo_min_oo:=[ Split(l[11][2..#l[11]-1], ",") : l in lines | l[8] eq "t" ];
-    // note in an older version of FillSchema I put [] instead of {} in l[11].
+    // note in an older version of FillSchemaWEClasses I put [] instead of {} in l[11].
     // the previous line is not affected by this mistake.
 
 
@@ -501,7 +501,7 @@ end intrinsic;
     f:=x^8+16;
     A:=EtaleAlgebra(f);
     R:=Order(ZFVBasis(A));
-    str:=FillSchema(R);
+    str:=FillSchemaWEClasses(R);
 
     delete R,A;
     R:=LoadSchemaWKClasses(str);

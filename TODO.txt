@@ -2,13 +2,14 @@
 - make a swipe of the Pic code to check that it matches with the paper
     - there might have been a sorting issue...[need to make sure that the magma convention overlaps with ours]
 - several TODOs in Isogenies.m, about documenting and adding tests
+- In Isogenies.m there are some intrinsics that should be moved to old_legacy.m
 
 # TODO computation
+- start making a plan: how many scripts? which temporary files?
 - I have added some entries to the outputs of PPolIteration and AllNonprinc... including the labels of the polarizations. Modify the scripts accordingly.
 - merge scripts for polarizations (so we comptue pics only once)
 - folders in scripts needs to be updated
 - all Attach in scripts needs to be updated
-- start making a plan: how many scripts? which temporary files?
 - update the script about WKclasses
 - add a script about pAdicPosElt
 - the size of the isogeny class needs to be recomputed as well. This should be a separate run.
@@ -16,6 +17,7 @@
 # NOT URGENT
 - the first part of IsProductOfOrdersLMFDB (the one without the sorting) can be included in AlgEt
 - clean-up/remove LMFDB folder in AbVarFq
+- Some of the code for computing polarizations and isogenies could be move to AbVarFq.
 
 # diary
 - I have renamed IsProduct to IsProductOfOrdersLMFDB

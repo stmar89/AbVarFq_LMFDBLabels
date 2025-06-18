@@ -19,87 +19,108 @@
 # In particular, removing <3,25> could cut the computation by (a bit less) than half.
 #
 ###########################
-#
-# Here is a summary.
-# 
 
-# TODO update below
+# TODO
+# make a list of what each file contains, relating it to the colums of the tables
+# which can be found at:
+# https://github.com/roed314/root-unitary/blob/stage_based/postgres_schema.md
 
-fld = ~/266_wk_icm_rec/
-fld_out = ${fld}output/
-fld_out_twist = ${fld}output_twist/
-input_slow = ${fld}weil_poly_sqfree_slow.txt
-input_up_to_twist = ${fld}weil_poly_sqfree_up_to_twist.txt
-input_up_to_twist_sorted = ${fld}weil_poly_sqfree_up_to_twist_sorted.txt
-joblog_wkicm = ${fld}joblog_wkicm.txt
-issue_file = ${fld}issue_wkicm.txt
-issue_file_test_wk_eq = ${fld}issue_test_wk_eq.txt
-issue_file_test_wk_complete = ${fld}issue_test_wk_complete.txt
-status_file = ${fld}status_wkicm.txt
+# TODO
+# - prep script for polarizations: merge PrincPol and NonPrincPol.
+# - don't forget to add data about the size of the isogeny class!
 
-all: echo_status_init parallel echo_status 
 
-copy_packages:
-	@echo "Removing old AlgEt..."
-	rm -r ${fld}AlgEt || true
-	mkdir ${fld}AlgEt
-	mkdir ${fld}AlgEt/AlgEtQ
-	mkdir ${fld}AlgEt/dev
-	@echo "...Done\nCopying AlgEt..."
-	cp ~/packages_github/AlgEt/AlgEtQ/*.m ${fld}AlgEt/AlgEtQ/
-	cp ~/packages_github/AlgEt/dev/rec_wk_icm.m ${fld}AlgEt/dev/
-	cp ~/packages_github/AlgEt/spec ${fld_isog_data}AlgEt/
-	@echo "...Done"
+# here the temp data and outputs are stored
+fld_comp = ~/287_abvarfq_lmfdb_recomputation/
+# where all the scripts are
+fld_scripts = ~/AbVarFq_LMFDBLabels/computation/
+# coeffs of the input poly, sorted (see above)
+input = ${fld_scripts}weil_poly_sqfree_ord_cs.txt
+input_ord = ${fld_scripts}weil_poly_sqfree_ord.txt
+# where to store versions used and status (see below)
+my_log = ${fld_comp}my_log
 
-prep_input:
-	@echo "We take all squarefree Weil polynomials and put the slow one at the end.."
-	magma -b fld:=${fld} weil_sqfree_slow:=${input_slow} weil_sqfree_up_to_twist:=${input_up_to_twist} weil_sqfree_up_to_twist_sorted:=${input_up_to_twist_sorted} ${fld}prep_input.txt
-	@echo "...Done"
+# we collect here the issue from the scripts
+issues_wk = ${fld_comp}issues_wk
+issues_cm = ${fld_comp}issues_cm
+issues_pols = ${fld_comp}issues_pols
 
-clean_failed_parallel:
-	@echo "Cleaning up.."
-	rm -r ${fld_out} || true
-	mkdir ${fld_out}
-	rm -r ${fld_out_twist} || true
-	mkdir ${fld_out_twist}
-	rm ${joblog_wkicm} || true
-	rm ${issue_file} || true
-	rm ${status_file} || true
-	@echo "...Done"
+# output of the cm scripts
+fld_out_wk = ${fld_comp}output_wk/
+fld_out_cm = ${fld_comp}output_cm/
+fld_out_pols = ${fld_comp}output_pols/
 
-parallel:
-	@echo "Parallel is starting.."
-	parallel -j 10 --resume --joblog ${joblog_wkicm} -a ${input_up_to_twist_sorted} magma -b fld:=${fld} fld_out:=${fld_out} fld_out_twist:=${fld_out_twist} issue_file:=${issue_file} s:={} ${fld}parallel_wkicm.txt
-	@echo "...Done"
+rm_log:
+	rm ${my_log} || true
 
-echo_status_init:
-	@date >> ${status_file}
-	@echo "input :" >> ${status_file}
-	@cat ${input_up_to_twist_sorted} | wc -l >> ${status_file}
-	@echo "completed (off by one):" >> ${status_file}
-	@cat ${joblog_wkicm} | wc -l >> ${status_file}
-	@echo "issues found:" >> ${status_file}
-	@cat ${issue_file} | wc -l >> ${status_file} || true
-	@echo "" >> ${status_file}
-	@cat ${status_file}
+log_versions_last_commits:
+	@date >> ${my_log}
+	@echo "magma version:" >> ${my_log}
+	@magma -b -e 'GetVersion();' >> ${my_log}
+	@echo last git commit for CHIMP: >> ${my_log}
+	@git -C ~/CHIMP/ log -n 1 --pretty=format:"%H" >> ${my_log}
+	@echo "\nlast git commit for AlgEt:" >> ${my_log}
+	@git -C ~/AlgEt/ log -n 1 --pretty=format:"%H" >> ${my_log}
+	@echo "\nlast git commit for AbVarFq_LMFDBLabels:" >> ${my_log}
+	@git -C ~/AbVarFq_LMFDBLabels/ log -n 1 --pretty=format:"%H" >> ${my_log}
+	@echo "\n" >> ${my_log}
 
 echo_status:
-	@date >> ${status_file}
-	@echo "input :" >> ${status_file}
-	@cat ${input_up_to_twist_sorted} | wc -l >> ${status_file}
-	@echo "completed (off by one):" >> ${status_file}
-	@cat ${joblog_wkicm} | wc -l >> ${status_file}
-	@echo "issues found:" >> ${status_file}
-	@cat ${issue_file} | wc -l >> ${status_file} || true
-	@echo "" >> ${status_file}
-	@cat ${status_file}
-	magma -b fld:=${fld} out_fld:=${fld_out} inp:=${input_up_to_twist_sorted} joblog_file:=${joblog_wkicm} parse_joblog.txt
+	@echo "status on:"
+	@date
+	@echo "number of inputs :"
+	@cat ${input} | wc -l
+	@echo "number of ordinary inputs :"
+	@cat ${input_ord} | wc -l
+	@echo "script_wk completed :"
+	@ls ${fld_out_wk} | wc -l
+	@echo "script_cm completed:"
+	@ls ${fld_out_cm} | wc -l
+	@echo "script_pols completed :"
+	@ls ${fld_out_pols} | wc -l
 
-test_wk_eq:
-	magma -b fld:=${fld} fld_out:=${fld_out} issue_file:=${issue_file_test_wk_eq} test_output_wk_eq.txt
+log_status:
+	@echo "status on:" >> ${my_log}
+	@date >> ${my_log}
+	@echo "number of inputs :" >> ${my_log}
+	@cat ${input} | wc -l >> ${my_log}
+	@echo "number of ordinary inputs :" >> ${my_log}
+	@cat ${input_ord} | wc -l >> ${my_log}
+	@echo "script_wk completed :" >> ${my_log}
+	@ls ${fld_out_wk} | wc -l >> ${my_log}
+	@echo "script_cm completed:" >> ${my_log}
+	@ls ${fld_out_cm} | wc -l >> ${my_log}
+	@echo "script_pols completed :" >> ${my_log}
+	@ls ${fld_out_pols} | wc -l >> ${my_log}
+	@echo "\n" >> ${my_log}
 
-test_wk_complete:
-	magma -b fld:=${fld} fld_out:=${fld_out} issue_file:=${issue_file_test_wk_complete} test_output_complete.txt
+status:
+	@make -s echo_status
+	@make -s log_status
 
+run_script_wk:
+	@echo "(re)starting run_script_wk on:" >> ${my_log}
+	@make -s log_versions_last_commits
+	parallel -j 20 --resume --joblog ${fld_comp}joblog_wk -a ${input} magma -b fld_out:=${fld_out_wk} issues:=${issues_wk} s:={} ${fld_scripts}script_wk.m
+	@echo "run_script_wk has finished on:" >> ${my_log}
+	@date >> ${my_log}
 
+clean_failed_script_wk:
+	rm ~/287_abvarfq_lmfdb_recomputation/output_wk/*
+	#rm ~/287_abvarfq_lmfdb_recomputation/my_log
+	rm ~/287_abvarfq_lmfdb_recomputation/joblog_wk
+	rm ~/287_abvarfq_lmfdb_recomputation/issues_wk
+
+run_script_cm:
+	@echo "(re)starting run_script_cm on:" >> ${my_log}
+	@make -s log_versions_last_commits
+	parallel -j 20 --resume --joblog ${fld_comp}joblog_cm -a ${input_ord} magma -b fld_out:=${fld_out_cm} issues:=${issues_cm} s:={} ${fld_scripts}script_cm.m
+	@echo "run_script_cm has finished on:" >> ${my_log}
+	@date >> ${my_log}
+
+clean_failed_script_cm:
+	rm ~/287_abvarfq_lmfdb_recomputation/output_cm/*
+	#rm ~/287_abvarfq_lmfdb_recomputation/my_log
+	rm ~/287_abvarfq_lmfdb_recomputation/joblog_cm
+	rm ~/287_abvarfq_lmfdb_recomputation/issues_cm
 

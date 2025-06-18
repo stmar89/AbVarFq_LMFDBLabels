@@ -1,6 +1,6 @@
 ### Notes about planning the computation ###
 
-- First we want to sort the input. 
+- DONE First we want to sort the input. 
     How many classes per <g,q>? 
     Some part of the computation might be done only on a subset of the input.
     I would put the `biggest' <g,q> at the end, so that we can interrupt the computation.
