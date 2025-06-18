@@ -1,6 +1,3 @@
-
-
-
 ##########################
 # INPUT
 # The input of the computation consists of the Weil polynomials h(x) with no repeated complex roots (squarefree) of all isogeny classes of abelian varieties of dimension g over the finite field FF_q for the values listed below, that are ordianry or defined over a prime field (i.e. q is prime).
@@ -13,14 +10,16 @@
 #
 # For the computation of polarizations we restrict ourselves to the isogeny classes from the list above that are ordinary.
 #
-# The input is stored in 
+# The input is sorted according to how many isogeny classes we have for that pair and is stored in 
 # AbVarFq_LMFDBLabels/computation/weil_poly_sqfree_ord_cs.txt
+# (unsorted input is in AbVarFq_LMFDBLabels/computation/weil_poly_sqfree_ord_cs_unsorted.txt)
 #
-# TODO do we do non-princ pols for all of them?
+# The 3 biggest pairs <g,q> are
+# <4, 4>, <3, 16>, <3, 25> with 21248,46552,284484 isogeny classes, resp.
+# In particular, removing <3,25> could cut the computation by (a bit less) than half.
 #
 ###########################
 #
-# We split the computation in TODO different steps with some dependencies between them.
 # Here is a summary.
 # 
 

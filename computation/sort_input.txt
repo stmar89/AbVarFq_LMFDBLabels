@@ -1,0 +1,45 @@
+/* vim: set syntax=magma : */
+
+// we look for an order which is not Bass and has multiple singular primes above the same rational prime.
+
+    AttachSpec("~/CHIMP/CHIMP.spec");
+    AttachSpec("~/AlgEt/spec");
+    AttachSpec("~/AbVarFq_LMFDBLabels/spec");
+
+    P<x>:=PolynomialRing(Integers());
+
+    time all:=[eval(c) : c in Split(Read("~/AbVarFq_LMFDBLabels/computation/weil_poly_sqfree_ord_cs_unsorted.txt"))];
+    
+    file_out:="~/AbVarFq_LMFDBLabels/computation/weil_poly_sqfree_ord_cs.txt";
+    arr:=AssociativeArray();
+    tot:=#all; perc:=0;
+    for ic->c in all do
+        if Truncate(ic/tot*100) gt perc then perc+:=1; printf "%o%% ",perc; end if;
+        g:=(#c-1) div 2;
+        q:=Round(c[1]^(1/g));
+        ind:=<g,q>;
+        if ind notin Keys(arr) then
+            arr[ind]:=[c];
+        else
+            Append(~arr[ind],c);
+        end if;
+    end for;
+
+    keys:=Setseq(Keys(arr));
+    sizes:=[#arr[k]:k in keys];
+    ParallelSort(~sizes,~keys);
+    out:=[<keys[k][1],keys[k][2],sizes[k]>:k in [1..#keys]];
+    out;
+
+    out_str:="";
+    for k in keys do
+        for c in arr[k] do
+            out_str *:=RemoveBlanks(Sprintf("%o\n",c));
+        end for;
+    end for;
+
+    fprintf file_out,"%o",out_str;
+
+
+
+
