@@ -35,8 +35,11 @@ fld_comp = ~/287_abvarfq_lmfdb_recomputation/
 # where all the scripts are
 fld_scripts = ~/AbVarFq_LMFDBLabels/computation/
 # coeffs of the input poly, sorted (see above)
-input = ${fld_scripts}weil_poly_sqfree_ord_cs.txt
-input_ord = ${fld_scripts}weil_poly_sqfree_ord.txt
+# after some thinking I have decided to remove 3.25 from the first round of recomputation
+#input = ${fld_scripts}weil_poly_sqfree_ord_cs.txt
+#input_ord = ${fld_scripts}weil_poly_sqfree_ord.txt
+input = ${fld_scripts}weil_poly_sqfree_ord_cs_no_3_25.txt
+input_ord = ${fld_scripts}weil_poly_sqfree_ord_no_3_25.txt
 # where to store versions used and status (see below)
 my_log = ${fld_comp}my_log
 

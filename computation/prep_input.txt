@@ -45,7 +45,7 @@
     file_in:="~/AbVarFq_LMFDBLabels/computation/weil_poly_sqfree_ord_cs.txt";
     file_out:="~/AbVarFq_LMFDBLabels/computation/weil_poly_sqfree_ord.txt";
     P<x>:=PolynomialRing(Integers());
-    time all:=[eval(c) : c in Split(Read("~/AbVarFq_LMFDBLabels/computation/weil_poly_sqfree_ord_cs.txt"))];
+    time all:=[eval(c) : c in Split(Read(file_in))];
     tot:=#all; perc:=0;
     for ic->c in all do
         if Truncate(ic/tot*100) gt perc then perc+:=1; printf "%o%% ",perc; end if;
@@ -54,5 +54,27 @@
             fprintf file_out,"%o\n",c;
         end if;
     end for;
+
+
+/////////////////////////////
+// remove 3.25 from the files above
+    file_in:="~/AbVarFq_LMFDBLabels/computation/weil_poly_sqfree_ord_cs.txt";
+    file_out:="~/AbVarFq_LMFDBLabels/computation/weil_poly_sqfree_ord_cs_no_3_25.txt";
+    file_out_ord:="~/AbVarFq_LMFDBLabels/computation/weil_poly_sqfree_ord_no_3_25.txt";
+    P<x>:=PolynomialRing(Integers());
+    time all:=[eval(c) : c in Split(Read(file_in))];
+    tot:=#all; perc:=0;
+    for ic->c in all do
+        if Truncate(ic/tot*100) gt perc then perc+:=1; printf "%o%% ",perc; end if;
+        g:=(#c-1) div 2;
+        q:=Round(c[1]^(1/g));
+        if not (g eq 3 and q eq 25) then
+            fprintf file_out,"%o\n",c;
+            if IsCoprime(c[g+1],c[1]) then //ordinary
+                fprintf file_out_ord,"%o\n",c;
+            end if;
+        end if;
+    end for;
+
 
 

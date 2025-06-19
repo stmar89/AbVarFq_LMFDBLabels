@@ -14,16 +14,18 @@
     try 
         P<x>:=PolynomialRing(Integers());
         f:=P!eval(s);
-        A:=EtaleAlgebra(f);
-        g,q:=DimensionSizeFiniteField(A);
-        F:=PrimitiveElement(A);
-        ZFV:=Order([F,q/F]);
         label:=IsogenyLabel(f);
-        str:=FillSchemaWEClasses(ZFV);
-
         file_out:=fld_out cat label cat "_wk.txt";
-        fprintf file_out,"%o",str;
-        printf "%o: done\n",label;
+
+        if not OpenTest(file_out,"r") then
+            A:=EtaleAlgebra(f);
+            g,q:=DimensionSizeFiniteField(A);
+            F:=PrimitiveElement(A);
+            ZFV:=Order([F,q/F]);
+            str:=FillSchemaWEClasses(ZFV);
+            fprintf file_out,"%o",str;
+            printf "%o: done\n",label;
+        end if;
     catch e
         printf "*********************************************\n%o\n%o\n", label,e;
         fprintf issues, "*********************************************\n%o\n%o\n", label,e;
