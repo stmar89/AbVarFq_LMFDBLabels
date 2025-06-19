@@ -9,6 +9,7 @@
     AttachSpec("~/CHIMP/CHIMP.spec");
     AttachSpec("~/AlgEt/spec");
     AttachSpec("~/AbVarFq_LMFDBLabels/spec");
+    SetClassGroupBounds("GRH"); // the cohen-mac type >2 case requirs to compute Pics
 
     try 
         P<x>:=PolynomialRing(Integers());
