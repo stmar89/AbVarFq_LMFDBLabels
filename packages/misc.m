@@ -25,6 +25,16 @@ intrinsic sprint(X::.) -> MonStgElt
     return remove_whitespace(Sprintf("%o",X));
 end intrinsic;
 
+
+//////////////////////
+// Does a file already exists
+//////////////////////
+
+intrinsic FileAlreadyExists(str::MonStgElt)->BoolElt
+{Given a path to a file returns whether the file already exists.}
+    return eval(Pipe( "if [ -e " cat str cat " ]; then echo true; else echo false; fi;",""));
+end intrinsic;
+
 //////////////////////
 // Hermite Normal Form variant
 //////////////////////
