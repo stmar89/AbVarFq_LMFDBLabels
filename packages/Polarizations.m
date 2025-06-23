@@ -197,7 +197,7 @@ intrinsic AllNonprincipalPolarizations(ZFV::AlgEtQOrd, PHI::AlgEtQCMType, degree
 - pol is the distinguished representative of an isomorphism class of a polarizations of I;
 - den and nums are sequence of integers representing the lcm of the denominators of and the numerators of the coefficients of pol wrt the ZFVBasis;
 - dec is the output of DecompositionKernelOfIsogeny;
-- label is the label of the principally polarized abelian variety, in the format g.q.coeffs-N.i.w.j-1.k.}
+- label is the label of the polarized abelian variety, in the format g.q.coeffs-N.i.w.j-d.k.}
     require not 1 in degree_bounds : "Do not use AllNonprincipalPolarizations to compute principal polarizations";
     isog_label:=IsogenyLabel(DefiningPolynomial(Algebra(ZFV)));
     t_tot:=Cputime();
