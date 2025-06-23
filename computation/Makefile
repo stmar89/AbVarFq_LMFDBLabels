@@ -15,8 +15,10 @@
 # (unsorted input is in AbVarFq_LMFDBLabels/computation/weil_poly_sqfree_ord_cs_unsorted.txt)
 #
 # The 3 biggest pairs <g,q> are
-# <4, 4>, <3, 16>, <3, 25> with 21248,46552,284484 isogeny classes, resp.
+# <4, 4>, <3, 16>, <3, 25> with 21.248,46.552,284.484 isogeny classes, resp.
 # In particular, removing <3,25> could cut the computation by (a bit less) than half.
+#
+# After an intial attempy, I have decided to remove <3,25> from the first run.
 #
 ###########################
 

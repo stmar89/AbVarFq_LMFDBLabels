@@ -31,7 +31,7 @@
                 printf "%o: done\n",label;
                 go:=true;
             catch e
-                k+:=100;
+                k+:=30;
                 printf "increasing precision to %o for %o\n",k,label;
             end try;
         end while;
