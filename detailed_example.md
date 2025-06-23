@@ -18,7 +18,7 @@ ZFV:=Order([F,V]);
 Now, we compute the weak equivalence classes, their distinguished representatives, and the labels.
 This is all done under the hood by the following function, whose output we don't actually need here (it is a string needed to populate the corresponding table in the LMFDB database).
 ```
-_:=FillSchema(ZFV);
+_:=FillSchemaWEClasses(ZFV);
 ```
 We loop over all the overorders of `ZFV`, which represent the endomorphisms rings of the abelian varieties, and print the distinguished representatives of all weak equivalence classes with their labels.
 ```
