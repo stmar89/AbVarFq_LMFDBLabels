@@ -112,7 +112,6 @@ run_script_wk:
 
 clean_failed_script_wk:
 	rm ~/287_abvarfq_lmfdb_recomputation/output_wk/*
-	#rm ~/287_abvarfq_lmfdb_recomputation/my_log
 	rm ~/287_abvarfq_lmfdb_recomputation/joblog_wk
 	rm ~/287_abvarfq_lmfdb_recomputation/issues_wk
 
@@ -125,7 +124,6 @@ run_script_cm:
 
 clean_failed_script_cm:
 	rm ~/287_abvarfq_lmfdb_recomputation/output_cm/*
-	#rm ~/287_abvarfq_lmfdb_recomputation/my_log
 	rm ~/287_abvarfq_lmfdb_recomputation/joblog_cm
 	rm ~/287_abvarfq_lmfdb_recomputation/issues_cm
 

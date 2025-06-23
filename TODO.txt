@@ -5,14 +5,7 @@
 - In Isogenies.m there are some intrinsics that should be moved to old_legacy.m
 
 # TODO computation
-- start making a plan: how many scripts? which temporary files?
-- I have added some entries to the outputs of PPolIteration and AllNonprinc... including the labels of the polarizations. Modify the scripts accordingly.
-- merge scripts for polarizations (so we comptue pics only once)
-- folders in scripts needs to be updated
-- all Attach in scripts needs to be updated
-- update the script about WKclasses
-- add a script about pAdicPosElt
-- the size of the isogeny class needs to be recomputed as well. This should be a separate run.
+- The run of script_wk.m did not fill any table. This should be included in the script_pol.m
 
 # NOT URGENT
 - the first part of IsProductOfOrdersLMFDB (the one without the sorting) can be included in AlgEt
