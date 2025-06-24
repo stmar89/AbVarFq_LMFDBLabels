@@ -11,6 +11,14 @@
         degree_bounds = string of square integers, eg [ 4, 9, 25 ] 
 */
 
+/* // assignements for debugging. make sure to not fprint anything!
+    fld_comp:="~/287_abvarfq_lmfdb_recomputation/";
+    fld_out_wk:="~/287_abvarfq_lmfdb_recomputation/output_wk/";
+    fld_out_cm:="~/287_abvarfq_lmfdb_recomputation/output_cm/";
+    fld_out_pols:="~/287_abvarfq_lmfdb_recomputation/output_pols/";
+    degree_bounds:="[4,9,25]";
+    s:="[64,-80,44,-19,11,-5,1]"; //3.4.af_l_at
+*/
 /*
 
 To compute:
@@ -57,7 +65,6 @@ To compute:
 
 */
 
-PP<x>:=PolynomialRing(Integers());
 AttachSpec("~/CHIMP/CHIMP.spec");
 AttachSpec("~/AlgEt/spec");
 AttachSpec("~/AbVarFq_LMFDBLabels/spec");
@@ -65,11 +72,26 @@ SetClassGroupBounds("GRH");
 SetColumns(0);
 //SetDebugOnError(true);
 
-av_fq_pol_output := Sprintf("%oav_fq_pol_output/%o", fld_out_pols, label);
-av_fq_we_output := Sprintf("%oav_fq_we_output/%o", fld_out_pols, label);
-av_fq_isog_output := Sprintf("%oav_fq_isog_output/%o", fld_out_pols, label);
-allproduct_output := Sprintf("%oallproduct_output/%o", fld_out_pols, label);
-cmfile := Sprintf("%ooutput_cm/%o", fld_out_cm, label);
+PP<x>:=PolynomialRing(Integers());
+h:=PP!eval(s);
+label:=IsogenyLabel(h);
+split:=Split(label,".");
+g:=eval(split[1]);
+q:=eval(split[2]);
+_,p:=IsPrimePower(q);
+is_ordinary:=IsCoprime(Coefficients(h)[(Degree(h) div 2)+1], p);
+
+av_fq_pol_output := Sprintf("%oav_fq_pol/%o", fld_out_pols, label);
+av_fq_we_output := Sprintf("%oav_fq_we/%o", fld_out_pols, label);
+av_fq_isog_output := Sprintf("%oav_fq_isog/%o", fld_out_pols, label);
+allproduct_output := Sprintf("%oallproduct/%o", fld_out_pols, label);
+cmfile := Sprintf("%o_cm.txt", fld_out_cm * label);
+degree_bounds := eval(degree_bounds);
+
+// early exit if already done
+if OpenTest(av_fq_isog_output,"r") then
+    quit;
+end if;
 
 av_fq_we_columns := ["label", "pic_invs", "pic_basis", "is_product", "product_partition", "is_conjugate_stable", "generator_over_ZFV", "is_Zconductor_sum", "is_ZFVconductor_sum"];
 av_fq_isog_columns := ["pic_prime_gens","size"];
@@ -87,12 +109,8 @@ end function;
 // we start by loading the data that was already computed,
 // including commutative_geom_endalg data
 try
-    h:=PP!eval(s);
-    g,q,label:=IsogenyLabel(h);
-    _,p:=IsPrimePower(q);
-    is_ordinary:=IsCoprime(Coefficients(h)[(Degree(h) div 2)+1], p);
     commlines := Split(Read(Sprintf("%ocommutative_geom_endalg/%o.%o", fld_comp, g, q)), "\n");
-    ZFV := LoadSchemaWKClasses(Read(Sprintf("%o", fld_out_wk, label)));
+    ZFV := LoadSchemaWKClasses(Read(Sprintf("%o_wk.txt", fld_out_wk * label)));
     A := Algebra(ZFV);
     if is_ordinary then
         assert OpenTest(cmfile, "r");
@@ -148,20 +166,19 @@ try
         isogeny_size +:= #WKICM_bar(S) * #PicardGroup(S);
         Append(~av_fq_we, Sdata);
     end for;
-    av_fq_isog["size"] := Sprint(size);
+    av_fq_isog["size"] := Sprint(isogeny_size);
     if is_ordinary then
         for ppol in PPolIteration(ZFV) do
             poldata := AssociativeArray();
             we, pic_ctr, I, den, nums, lambda, label_pol := Explode(ppol);
             S := MultiplicatorRing(I);
             split_we:=Split(we, "-");
-            assert split_we eq label;
+            assert split_we[1] eq label;
             pieces := Split(split_we[2],"."); //N i w
             poldata["label"] := label_pol; //label of the polarization
             poldata["isog_label"] := label;
             poldata["endomorphism_ring"] := Join(pieces[1..2], "."); //N.i
             poldata["isom_label"] := Sprintf("%o.%o", pieces[3], pic_ctr); //w.j
-            assert I`IsomLabel eq (poldata["isog_label"] * "-" * poldata["isom_label"]);
             poldata["degree"] := "1";
             Iv:=TraceDualIdeal(ComplexConjugate(I));
             kerinfo:=DecompositionKernelOfIsogeny(I,Iv,lambda);
@@ -221,6 +238,7 @@ try
         fprintf av_fq_we_output, "%o\n", Join([we_line[col] : col in av_fq_we_columns], ":");
     end for;
     fprintf av_fq_isog_output, "%o\n", Join([av_fq_isog[col] : col in av_fq_isog_columns], ":");
+    printf "%o : done\n",label; 
 catch e
     printf "*********************************************\n%o\n%o\n", label,e;
     fprintf issues, "*********************************************\n%o\n%o\n", label,e;

@@ -164,10 +164,11 @@ intrinsic PPolIteration(ZFV::AlgEtQOrd) -> List
         ppol_poss := PPolPossIteration(S);
         vprint User1: Sprintf("Done computing picard iteration at %o; iterating", Cputime(t0));
         for WE in wkimS do
-            we := WELabel(WE);
+            we := WELabel(WE); // format of we: g.q.coeffs-N.i.w
             for tup in ppol_poss do
-                I, pic_ctr := Explode(tup);
-                WEI := WE * I;
+                I, pic_ctr := Explode(tup); // I is the distinguised rep of the element of Pic(S) with counter pic_ctr=j
+                WEI := WE * I; //this is a distinguished rep of the corresponding isomorphism class with label g.q.coeffs-N.i.w.j
+                WEI`IsomLabel:=Sprintf("%o.%o",we,pic_ctr);
                 vprint User1: Sprintf("Computing principal polarizations at %o", Cputime(t0));
                 pp := PrincipalPolarizations(WEI, PHI);
                 vprint User1: Sprintf("Done computing principal polarizations at %o; iterating", Cputime(t0));
@@ -175,16 +176,17 @@ intrinsic PPolIteration(ZFV::AlgEtQOrd) -> List
                 ans_pp:=[];
                 for pol in pp do
                     can, den, nums := DistinguishedRepresentativePolarizationConjugateStableOrder(WEI, pol);
+                    assert can*WEI eq TraceDualIdeal(ComplexConjugate(WEI));
                     Append(~sort_keys_pp,[den] cat nums);
                     vprint User1: Sprintf("Done computing distinguished representative at %o", Cputime(t0));
-                    Append(~ans_pp, <we, pic_ctr, I, den, nums, can>);
+                    Append(~ans_pp, <we, pic_ctr, WEI, den, nums, can>);
                 end for;
                 //we sort the polarizations to construct the labels
                 ParallelSort(~sort_keys_pp,~ans_pp);
                 // we construct the labels and append exerything to the output ans
                 for k->pol_data in ans_pp do
-                    label_kth_pol:=Sprintf("%o.%o-1.%o",pol_data[1],pol_data[2],k);
-                    Append(~ans, <we, pic_ctr, I, den, nums, can,label_kth_pol>);
+                    label_kth_pol:=Sprintf("%o-%o.%o",WEI`IsomLabel,1,k); // the degree is hard coded to 1
+                    Append(~ans, <we, pic_ctr, WEI, den, nums, can,label_kth_pol>);
                 end for;
             end for;
         end for;

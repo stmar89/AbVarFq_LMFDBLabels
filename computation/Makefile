@@ -27,11 +27,6 @@
 # which can be found at:
 # https://github.com/roed314/root-unitary/blob/stage_based/postgres_schema.md
 
-# TODO
-# - prep script for polarizations: merge PrincPol and NonPrincPol.
-# - don't forget to add data about the size of the isogeny class!
-
-
 # here the temp data and outputs are stored
 fld_comp = ~/287_abvarfq_lmfdb_recomputation/
 # where all the scripts are
@@ -50,10 +45,12 @@ issues_wk = ${fld_comp}issues_wk
 issues_cm = ${fld_comp}issues_cm
 issues_pols = ${fld_comp}issues_pols
 
-# output of the cm scripts
+# output of the scripts
 fld_out_wk = ${fld_comp}output_wk/
 fld_out_cm = ${fld_comp}output_cm/
 fld_out_pols = ${fld_comp}output_pols/
+
+degree_bounds = [4,9,25]
 
 rm_log:
 	rm ${my_log} || true
@@ -82,7 +79,7 @@ echo_status:
 	@echo "script_cm completed:"
 	@ls ${fld_out_cm} | wc -l
 	@echo "script_pols completed :"
-	@ls ${fld_out_pols} | wc -l
+	@ls ${fld_out_pols}av_fq_isog | wc -l
 
 log_status:
 	@echo "status on:" >> ${my_log}
@@ -96,7 +93,7 @@ log_status:
 	@echo "script_cm completed:" >> ${my_log}
 	@ls ${fld_out_cm} | wc -l >> ${my_log}
 	@echo "script_pols completed :" >> ${my_log}
-	@ls ${fld_out_pols} | wc -l >> ${my_log}
+	@ls ${fld_out_pols}av_fq_isog | wc -l >> ${my_log}
 	@echo "\n" >> ${my_log}
 
 status:
@@ -127,3 +124,17 @@ clean_failed_script_cm:
 	rm ~/287_abvarfq_lmfdb_recomputation/joblog_cm
 	rm ~/287_abvarfq_lmfdb_recomputation/issues_cm
 
+run_script_pols:
+	@echo "(re)starting run_script_pols on:" >> ${my_log}
+	@make -s log_versions_last_commits
+	parallel -j 15 --resume --joblog ${fld_comp}joblog_pols -a ${input_ord} magma -b fld_comp:=${fld_comp} fld_out_wk:=${fld_out_wk} fld_out_cm:=${fld_out_cm} fld_out_pols:=${fld_out_pols} issues:=${issues_pols} degree_bounds:=${degree_bounds} s:={} ${fld_scripts}script_pols.m
+	@echo "run_script_pols has finished on:" >> ${my_log}
+	@date >> ${my_log}
+
+clean_failed_script_pols:
+	rm ~/287_abvarfq_lmfdb_recomputation/output_pols/av_fq_pol/* || true
+	rm ~/287_abvarfq_lmfdb_recomputation/output_pols/av_fq_we/* || true
+	rm ~/287_abvarfq_lmfdb_recomputation/output_pols/av_fq_isog/* || true
+	rm ~/287_abvarfq_lmfdb_recomputation/output_pols/allproduct/* || true
+	rm ~/287_abvarfq_lmfdb_recomputation/joblog_pols || true
+	rm ~/287_abvarfq_lmfdb_recomputation/issues_pols || true
