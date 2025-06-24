@@ -2,50 +2,59 @@
 /*
     this scripts loops over all pairs <g,q> and checks how many have finished
 */
-    AttachSpec("~/CHIMP/CHIMP.spec");
-    AttachSpec("~/AlgEt/spec");
-    AttachSpec("~/AbVarFq_LMFDBLabels/spec");
+    //AttachSpec("~/CHIMP/CHIMP.spec");
+    //AttachSpec("~/AlgEt/spec");
+    //AttachSpec("~/AbVarFq_LMFDBLabels/spec");
+
     SetColumns(0);
-    P<x>:=PolynomialRing(Integers());
 
     fld_out_wk:="~/287_abvarfq_lmfdb_recomputation/output_wk/";
     fld_out_cm:="~/287_abvarfq_lmfdb_recomputation/output_cm/";
     fld_out_pol:="~/287_abvarfq_lmfdb_recomputation/output_pols/av_fq_pol/";
 
-    printf "Loading input and already-done (it takes a couple of minutes)...\n";
-    time all:=[eval(c) : c in Split(Read("~/AbVarFq_LMFDBLabels/computation/weil_poly_sqfree_ord_no_3_25.txt"))];
-    time fld_out_cm_ls:=[[eval(a) : a in Split(c,".")[1..2]] : c in Split(Pipe("ls " * fld_out_cm,"r"))];
-    time fld_out_pol_ls:=[[eval(a) : a in Split(c,".")[1..2]] : c in Split(Pipe("ls " * fld_out_pol,"r"))];
+    printf "Loading input and already-done...\n";
+    time all:=Split(Read("~/AbVarFq_LMFDBLabels/computation/weil_poly_sqfree_ord_no_3_25.txt"));
+    time fld_out_cm_ls:=[Join(Split(c,".")[1..2],".") : c in Split(Pipe("ls " * fld_out_cm,"r"))];
+    time fld_out_pol_ls:=[Join(Split(c,".")[1..2],".") : c in Split(Pipe("ls " * fld_out_pol,"r"))];
     printf "...done!\n";
    
     printf "Extracting <g,q>'s and sorting by number of isogeny classes...\n";
     arr:=AssociativeArray();
     tot:=#all; perc:=0;
-    for ic->c in all do
+    for ic->cc in all do
         if Truncate(ic/tot*100) gt perc then perc+:=1; printf "%o%% ",perc; end if;
+        c:=Split(cc,"[ ,]");
         g:=(#c-1) div 2;
-        q:=Round(c[1]^(1/g));
-        ind:=<g,q>;
+        q:=Round((StringToInteger(c[1]))^(1/g));
+        ind:=Sprintf("%o.%o",g,q);
         if ind notin Keys(arr) then
-            arr[ind]:=[c];
+            arr[ind]:=1;
         else
-            Append(~arr[ind],c);
+            arr[ind]+:=1;
         end if;
     end for;
     printf "...done!\n";
 
     keys:=Setseq(Keys(arr));
-    sizes:=[#arr[k]:k in keys];
+    sizes:=[arr[k]:k in keys];
     ParallelSort(~sizes,~keys);
 
+    done_all_cm:=0;
+    done_all_pol:=0;
     for k in keys do
-        done_k_cm:=#[c : c in fld_out_cm_ls | c[1] eq k[1] and c[2] eq k[2]];
-        done_k_pol:=#[c : c in fld_out_pol_ls | c[1] eq k[1] and c[2] eq k[2]];
-        all_k:=#arr[k];
+        done_k_cm:=#[c : c in fld_out_cm_ls | c eq k];
+        done_k_pol:=#[c : c in fld_out_pol_ls | c eq k];
+        done_all_cm +:=done_k_cm;
+        done_all_pol +:=done_k_pol;
+        all_k:=arr[k];
         perc_k_cm:=Truncate(done_k_cm*100/all_k);
         perc_k_pol:=Truncate(done_k_pol*100/all_k);
         printf "<g,q>=%o\ttot =%6o\tdone: cm =%6o, pol =%6o\t%o%% %o%%\n",k,all_k,done_k_cm,done_k_pol,perc_k_cm,perc_k_pol;
     end for;
+
+    printf "\n\ntotal = %o \t done: cm =%7o, pol =%7o\t%o%% %o%%\n",tot,done_all_cm,done_all_pol,
+                                Truncate(done_all_cm*100/tot),
+                                Truncate(done_all_pol*100/tot);
 
     quit;
 
