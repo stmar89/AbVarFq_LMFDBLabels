@@ -64,32 +64,6 @@ is_polarization:=function(l,PHI)
     return test1 and test2;
 end function;
 
-intrinsic PPolPossIteration(S::AlgEtQOrd) -> SeqEnum
-{Called internally from PPolIteration
-//TODO what does it do?
-}
-    vprint User1: "Looking up distinguished Pic basis";
-    basis := DistinguishedPicBasis(S);
-    if IsGorenstein(S) and IsConjugateStable(S) and #PicardGroup(S) gt 1 then
-        basisbar := BasisBar(S);
-        tdp := TraceDualPic(S);
-        function bar(x)
-            coeffs := Eltseq(x);
-            assert #coeffs eq #basisbar;
-            if #coeffs eq 0 then return PicardGroup(S).0; end if;
-            return &+[coeffs[i] * basisbar[i] : i in [1..#coeffs]];
-        end function;
-        function filter(x)
-            return x + bar(x) eq tdp;
-        end function;
-        vprint User1: "Iterating with trick";
-        return PicIteration(S, basis : filter:=filter);
-    else
-        vprint User1: "Iterating without trick";
-        return PicIteration(S, basis);
-    end if;
-end intrinsic;
-
 intrinsic PrincipalPolarizations(I::AlgEtQIdl,PHI::AlgEtQCMType)->SeqEnum[AlgEtQElt]
 {Given an ideal I and a CM-Type PHI, returns all the principal polarizations of I with respect to PHI.}
 
@@ -125,6 +99,32 @@ intrinsic PrincipalPolarizations(I::AlgEtQIdl,PHI::AlgEtQCMType)->SeqEnum[AlgEtQ
         end if;
     end if;
     return Ipols;
+end intrinsic;
+
+intrinsic PPolPossIteration(S::AlgEtQOrd) -> SeqEnum
+{Called internally from PPolIteration
+//TODO what does it do?
+}
+    vprint User1: "Looking up distinguished Pic basis";
+    basis := DistinguishedPicBasis(S);
+    if IsGorenstein(S) and IsConjugateStable(S) and #PicardGroup(S) gt 1 then
+        basisbar := BasisBar(S);
+        tdp := TraceDualPic(S);
+        function bar(x)
+            coeffs := Eltseq(x);
+            assert #coeffs eq #basisbar;
+            if #coeffs eq 0 then return PicardGroup(S).0; end if;
+            return &+[coeffs[i] * basisbar[i] : i in [1..#coeffs]];
+        end function;
+        function filter(x)
+            return x + bar(x) eq tdp;
+        end function;
+        vprint User1: "Iterating with trick";
+        return PicIteration(S, basis : filter:=filter);
+    else
+        vprint User1: "Iterating without trick";
+        return PicIteration(S, basis);
+    end if;
 end intrinsic;
 
 intrinsic PPolIteration(ZFV::AlgEtQOrd) -> List
@@ -195,7 +195,7 @@ intrinsic PPolIteration(ZFV::AlgEtQOrd) -> List
 end intrinsic;
 
 intrinsic AllNonprincipalPolarizations(ZFV::AlgEtQOrd, PHI::AlgEtQCMType, degree_bounds::SeqEnum[RngIntElt])->Assoc
-{Given the Z[F,V] order of an isogeny squarefree class, a p-Adic positive CMType PHI it returns an associative array whose keys are the distinguished representatives of all isomorphism classes. The value of the array for the isomorphism class I is the tuple <pol,den,nums,dec,label> where:
+{Given the Z[F,V] order of an ordinary isogeny squarefree class, a p-Adic positive CMType PHI it returns an associative array whose keys are the distinguished representatives of all isomorphism classes. The value of the array for the isomorphism class I is the tuple <pol,den,nums,dec,label> where:
 - pol is the distinguished representative of an isomorphism class of a polarizations of I;
 - den and nums are sequence of integers representing the lcm of the denominators of and the numerators of the coefficients of pol wrt the ZFVBasis;
 - dec is the output of DecompositionKernelOfIsogeny;
