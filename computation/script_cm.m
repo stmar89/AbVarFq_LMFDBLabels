@@ -15,7 +15,8 @@
         f:=P!eval(s);
         label:=IsogenyLabel(f);
         file_out:=fld_out cat label cat "_cm.txt";
-        if FileAlreadyExists(file_out) then
+        if OpenTest(file_out,"r") then
+            printf "%o already done\n",label;
             quit;
         end if;
 
