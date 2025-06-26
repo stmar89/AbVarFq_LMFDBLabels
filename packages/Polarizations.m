@@ -305,7 +305,7 @@ The output consists of pol,den,nums where
     rnk_sub:=#gens_sub_inS;
     assert rnk_sub eq g-#Components(A);
     img_gens_sub:=Matrix([[ Log(Abs(h(g))) : h in homs ] : g in gens_sub_inS ]); // apply Log map
-    L:=Lattice(img_gens_sub);
+    L:=LatticeWithBasis(img_gens_sub); // before it was Lattice. But we want img_gens_sub to be the basis!
     img_x0:=Vector([ Log(Abs(h(x0))) : h in homs ]);
     closest_vects:=ClosestVectors(L,-img_x0); //note the minus sign!
     all_coords:=[ Coordinates(cv) : cv in closest_vects];
@@ -367,7 +367,7 @@ The output consists of pol,den,nums where
     rnk_sub:=#gens_sub;
     assert rnk_sub eq g-#Components(A);
     img_gens_sub:=Matrix([[ Log(Abs(h(g))) : h in homs ] : g in gens_sub ]); // apply Log map
-    L:=Lattice(img_gens_sub);
+    L:=LatticeWithBasis(img_gens_sub);
     img_x0:=Vector([ Log(Abs(h(x0))) : h in homs ]);
     closest_vects:=ClosestVectors(L,-img_x0); //note the minus sign!
     all_coords:=[ Coordinates(cv) : cv in closest_vects];

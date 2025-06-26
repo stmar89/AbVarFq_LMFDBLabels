@@ -18,6 +18,7 @@
     fld_out_pols:="~/287_abvarfq_lmfdb_recomputation/output_pols/";
     degree_bounds:="[4,9,25]";
     s:="[64,-80,44,-19,11,-5,1]"; //3.4.af_l_at
+    s:="[961,-62,-29,-2,1]"; //2.31.ac_abd
 */
 /*
 
@@ -94,6 +95,7 @@ if OpenTest(av_fq_isog_output,"r") then
 end if;
 
 av_fq_we_columns := ["label", "pic_invs", "pic_basis", "is_product", "product_partition", "is_conjugate_stable", "generator_over_ZFV", "is_Zconductor_sum", "is_ZFVconductor_sum"];
+
 av_fq_isog_columns := ["pic_prime_gens","size"];
 
 av_fq_pol_columns := ["label", "isog_label", "endomorphism_ring", "isom_label", "degree", "kernel", "degree_rr", "kernel_rr", "degree_rl", "kernel_rl", "degree_lr", "kernel_lr", "degree_ll", "kernel_ll", "aut_group", "geom_aut_group", "is_jacobian", "representative"];
