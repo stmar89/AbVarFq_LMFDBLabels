@@ -40,6 +40,16 @@ input_ord = ${fld_scripts}weil_poly_sqfree_ord_no_3_25.txt
 # where to store versions used and status (see below)
 my_log = ${fld_comp}my_log
 
+input_fast_1 = ${fld_scripts}input_fast_1
+input_fast_2 = ${fld_scripts}input_fast_2
+input_fast_3 = ${fld_scripts}input_fast_3
+input_fast_4 = ${fld_scripts}input_fast_4
+
+input_slow_1 = ${fld_scripts}input_slow_1
+input_slow_2 = ${fld_scripts}input_slow_2
+input_slow_3 = ${fld_scripts}input_slow_3
+input_slow_4 = ${fld_scripts}input_slow_4
+
 # we collect here the issue from the scripts
 issues_wk = ${fld_comp}issues_wk
 issues_cm = ${fld_comp}issues_cm
@@ -124,10 +134,13 @@ clean_failed_script_cm:
 	rm ~/287_abvarfq_lmfdb_recomputation/joblog_cm
 	rm ~/287_abvarfq_lmfdb_recomputation/issues_cm
 
+# change in the parallel command input_fast_1 to all the other inputs
+# input_fast_i for i =1,2,3,4
+# input_slow_i for i =1,2,3,4
 run_script_pols:
 	@echo "(re)starting run_script_pols on:" >> ${my_log}
 	@make -s log_versions_last_commits
-	parallel -j 18 --memsuspend 100G --resume --joblog ${fld_comp}joblog_pols -a ${input_ord} magma -b fld_comp:=${fld_comp} fld_out_wk:=${fld_out_wk} fld_out_cm:=${fld_out_cm} fld_out_pols:=${fld_out_pols} issues:=${issues_pols} degree_bounds:=${degree_bounds} s:={} ${fld_scripts}script_pols.m
+	parallel -j 18 --memsuspend 100G --resume --joblog ${fld_comp}joblog_pols -a ${input_fast_1} magma -b fld_comp:=${fld_comp} fld_out_wk:=${fld_out_wk} fld_out_cm:=${fld_out_cm} fld_out_pols:=${fld_out_pols} issues:=${issues_pols} degree_bounds:=${degree_bounds} s:={} ${fld_scripts}script_pols.m
 	@echo "run_script_pols has finished on:" >> ${my_log}
 	@date >> ${my_log}
 

@@ -1,0 +1,53 @@
+/* vim: set syntax=magma : */
+
+// we look for an order which is not Bass and has multiple singular primes above the same rational prime.
+
+    AttachSpec("~/CHIMP/CHIMP.spec");
+    AttachSpec("~/AlgEt/spec");
+    AttachSpec("~/AbVarFq_LMFDBLabels/spec");
+
+    P<x>:=PolynomialRing(Integers());
+
+    time all:=[eval(c) : c in Split(Read("~/AbVarFq_LMFDBLabels/computation/weil_poly_sqfree_ord_cs_no_3_25.txt"))];
+    // we split the inputs over Fp from the ones not over the prime field
+    p:=[];
+    np:=[];
+    tot:=#all; perc:=0;
+    for ic->c in all do
+        if Truncate(ic/tot*100) gt perc then perc+:=1; printf "%o%% ",perc; end if;
+        g:=(#c-1) div 2;
+        q:=Round(c[1]^(1/g));
+        if IsPrime(q) then
+            Append(~p,c);
+        else
+            Append(~np,c);
+        end if;
+    end for;
+    #p;
+    #np;
+    p:=Shuffle(p);
+    np:=Shuffle(np);
+
+    fld_comp:="~/AbVarFq_LMFDBLabels/computation/";
+    p4:=#p div 4;
+    ps:=[ p[1..p4], p[p4+1..2*p4], p[2*p4+1..3*p4], p[3*p4+1..#p] ];
+    assert p eq &cat(ps);
+    for i in [1..4] do
+        coeffs:=ps[i];
+        file_out:=fld_comp * "input_fast_" * Sprint(i);
+        for c in coeffs do
+            fprintf file_out,"%o\n",RemoveBlanks(Sprint(c));
+        end for;
+    end for;
+
+    np4:=#np div 4;
+    nps:=[ np[1..np4], np[np4+1..2*np4], np[2*np4+1..3*np4], np[3*np4+1..#np] ];
+    assert np eq &cat(nps);
+    for i in [1..4] do
+        coeffs:=nps[i];
+        file_out:=fld_comp * "input_slow_" * Sprint(i);
+        for c in coeffs do
+            fprintf file_out,"%o\n",RemoveBlanks(Sprint(c));
+        end for;
+    end for;
+
