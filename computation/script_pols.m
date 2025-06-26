@@ -119,6 +119,8 @@ try
         cmdata := Read(cmfile);
         PHI := LoadpAdicPosCMType(A, cmdata);
         assert assigned A`pAdicPosCMType;
+    else
+        PHI:=""; //to avoid an error
     end if;
 catch e
     printf "*********************************************\nmissing some precomputed data for %o\n%o\n", label,e;
