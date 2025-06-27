@@ -1,0 +1,47 @@
+/* vim: set syntax=magma :*/
+
+/*
+    simple test: rung script_pol on the same input more than once. Check that the output are the same
+*/
+
+    SetColumns(0);
+
+    path1:="~/287_abvarfq_lmfdb_recomputation/output_pols_test1/";
+    path2:="~/287_abvarfq_lmfdb_recomputation/output_pols_test2/";
+    flds:=["allproduct/","av_fq_isog/","av_fq_pol/"];
+    for fld in flds do
+        
+        printf "dealing with folder %o ...",fld;
+
+        fld1:=path1 * fld;
+        fld2:=path2 * fld;
+        files1:=Split(Pipe("ls " * fld1,"r"));
+        files2:=Split(Pipe("ls " * fld2,"r"));
+
+        files:=Seqset(files1) meet Seqset(files2);
+
+        for f in files do
+            str1:=Read(fld1 * f);
+            str2:=Read(fld2 * f);
+            if not str1 eq str2 then
+                split1:=Split(str1);
+                split2:=Split(str2);
+                assert #split1 eq #split2; //same number of lines
+                printf "\n\nnumber of non-matching lines = %o\n",#[i:i in [1..#split1]|split1[i] ne split2[i]];
+                for i in [1..#split1] do
+                    if not split1[i] eq split2[i] then
+                        ss1:=Split(split1[i],":");
+                        ss2:=Split(split2[i],":");
+                        split1[i];split2[i];
+                    end if;
+                end for;
+            end if;
+        end for;
+        printf "... all good!\n",fld;
+    end for;
+
+    printf "All tests passed: congrats!\n";
+    quit;
+
+
+

@@ -186,6 +186,7 @@ intrinsic PPolIteration(ZFV::AlgEtQOrd) -> List
                 // we construct the labels and append exerything to the output ans
                 for k->pol_data in ans_pp do
                     label_kth_pol:=Sprintf("%o-%o.%o",WEI`IsomLabel,1,k); // the degree is hard coded to 1
+                    we, pic_ctr, WEI, den, nums, can := Explode(pol_data);
                     Append(~ans, <we, pic_ctr, WEI, den, nums, can,label_kth_pol>);
                 end for;
             end for;
