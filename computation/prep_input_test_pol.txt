@@ -1,0 +1,9 @@
+/* vim: set syntax=magma : */
+
+    all:=[c : c in Split(Read("~/AbVarFq_LMFDBLabels/computation/input_fast_1"))];
+    file_out:="~/AbVarFq_LMFDBLabels/computation/input_test_pol";
+
+    for i in [1..20] do
+        fprintf file_out,"%o\n",Sprint(all[i]);
+    end for;
+

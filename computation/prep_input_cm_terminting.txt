@@ -1,0 +1,21 @@
+/* vim: set syntax=magma : */
+
+
+    AttachSpec("~/CHIMP/CHIMP.spec");
+    AttachSpec("~/AlgEt/spec");
+    AttachSpec("~/AbVarFq_LMFDBLabels/spec");
+
+    P<x>:=PolynomialRing(Integers());
+
+    time ins:=Split(Read("~/AbVarFq_LMFDBLabels/computation/weil_poly_sqfree_ord_no_3_25.txt"));
+    time labels:=[IsogenyLabel(P!eval(c)) * "_cm.txt" : c in ins];
+    time done:=Split(Pipe("ls ~/287_abvarfq_lmfdb_recomputation/output_cm/","r"));
+
+    missing_labels:=Setseq(Seqset(labels) diff Seqset(done));
+    missing_c:=[ ins[i] : i in [Index(labels,m) : m in missing_labels] ];
+
+    file_out:="~/AbVarFq_LMFDBLabels/computation/input_cm_missing";
+    for c in missing_c do
+        fprintf file_out,"%o\n",RemoveBlanks(c);
+    end for;
+    

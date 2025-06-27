@@ -40,6 +40,10 @@ input_ord = ${fld_scripts}weil_poly_sqfree_ord_no_3_25.txt
 # where to store versions used and status (see below)
 my_log = ${fld_comp}my_log
 
+input_test_pol = ${fld_scripts}input_test_pol
+
+input_cm_missing = ${fld_scripts}input_cm_missing
+
 input_fast_1 = ${fld_scripts}input_fast_1
 input_fast_2 = ${fld_scripts}input_fast_2
 input_fast_3 = ${fld_scripts}input_fast_3
@@ -125,7 +129,7 @@ clean_failed_script_wk:
 run_script_cm:
 	@echo "(re)starting run_script_cm on:" >> ${my_log}
 	@make -s log_versions_last_commits
-	parallel -j 18 --resume --joblog ${fld_comp}joblog_cm -a ${input_ord} magma -b fld_out:=${fld_out_cm} issues:=${issues_cm} s:={} ${fld_scripts}script_cm.m
+	parallel -j 18 --memsuspend 100G --resume --joblog ${fld_comp}joblog_cm -a ${input_ord} magma -b fld_out:=${fld_out_cm} issues:=${issues_cm} s:={} ${fld_scripts}script_cm.m
 	@echo "run_script_cm has finished on:" >> ${my_log}
 	@date >> ${my_log}
 
@@ -137,10 +141,11 @@ clean_failed_script_cm:
 # change in the parallel command input_fast_1 to all the other inputs
 # input_fast_i for i =1,2,3,4
 # input_slow_i for i =1,2,3,4
+# input_test_pol 20 random isogeny classes
 run_script_pols:
 	@echo "(re)starting run_script_pols on:" >> ${my_log}
 	@make -s log_versions_last_commits
-	parallel -j 18 --memsuspend 100G --resume --joblog ${fld_comp}joblog_pols -a ${input_fast_1} magma -b fld_comp:=${fld_comp} fld_out_wk:=${fld_out_wk} fld_out_cm:=${fld_out_cm} fld_out_pols:=${fld_out_pols} issues:=${issues_pols} degree_bounds:=${degree_bounds} s:={} ${fld_scripts}script_pols.m
+	parallel -j 20 --resume --joblog ${fld_comp}joblog_pols -a ${input_test_pol} magma -b fld_comp:=${fld_comp} fld_out_wk:=${fld_out_wk} fld_out_cm:=${fld_out_cm} fld_out_pols:=${fld_out_pols} issues:=${issues_pols} degree_bounds:=${degree_bounds} s:={} ${fld_scripts}script_pols.m
 	@echo "run_script_pols has finished on:" >> ${my_log}
 	@date >> ${my_log}
 
@@ -151,3 +156,38 @@ clean_failed_script_pols:
 	rm ~/287_abvarfq_lmfdb_recomputation/output_pols/allproduct/* || true
 	rm ~/287_abvarfq_lmfdb_recomputation/joblog_pols || true
 	rm ~/287_abvarfq_lmfdb_recomputation/issues_pols || true
+
+fld_out_pols_test1 = ${fld_comp}output_pols_test1/
+fld_out_pols_test2 = ${fld_comp}output_pols_test2/
+issues_pols_test1 = ${fld_comp}issues_pols_test1
+issues_pols_test2 = ${fld_comp}issues_pols_test2
+
+run_script_pols_test:
+	@echo "\n########## 1st parallel ##########\n"
+	parallel -j 20 --resume --joblog ${fld_comp}joblog_pols_test1 -a ${input_test_pol} magma -b fld_comp:=${fld_comp} fld_out_wk:=${fld_out_wk} fld_out_cm:=${fld_out_cm} fld_out_pols:=${fld_out_pols_test1} issues:=${issues_pols_test1} degree_bounds:=${degree_bounds} s:={} ${fld_scripts}script_pols.m
+	@echo "\n########## 2nd parallel ##########\n"
+	parallel -j 20 --resume --joblog ${fld_comp}joblog_pols_test2 -a ${input_test_pol} magma -b fld_comp:=${fld_comp} fld_out_wk:=${fld_out_wk} fld_out_cm:=${fld_out_cm} fld_out_pols:=${fld_out_pols_test2} issues:=${issues_pols_test2} degree_bounds:=${degree_bounds} s:={} ${fld_scripts}script_pols.m
+	@echo "\n########## magma test script ##########\n"
+	magma ${fld_scripts}/tests/20250627_test_script_pols.txt
+
+clean_failed_script_pols_test:
+	rm ~/287_abvarfq_lmfdb_recomputation/output_pols_test1/av_fq_pol/* || true
+	rm ~/287_abvarfq_lmfdb_recomputation/output_pols_test1/av_fq_we/* || true
+	rm ~/287_abvarfq_lmfdb_recomputation/output_pols_test1/av_fq_isog/* || true
+	rm ~/287_abvarfq_lmfdb_recomputation/output_pols_test1/allproduct/* || true
+	rm ~/287_abvarfq_lmfdb_recomputation/joblog_pols_test1 || true
+	rm ~/287_abvarfq_lmfdb_recomputation/issues_pols_test1 || true
+	rm ~/287_abvarfq_lmfdb_recomputation/output_pols_test2/av_fq_pol/* || true
+	rm ~/287_abvarfq_lmfdb_recomputation/output_pols_test2/av_fq_we/* || true
+	rm ~/287_abvarfq_lmfdb_recomputation/output_pols_test2/av_fq_isog/* || true
+	rm ~/287_abvarfq_lmfdb_recomputation/output_pols_test2/allproduct/* || true
+	rm ~/287_abvarfq_lmfdb_recomputation/joblog_pols_test2 || true
+	rm ~/287_abvarfq_lmfdb_recomputation/issues_pols_test2 || true
+
+# change line 191 below, to modify the number of jobs, and the parameter of --memsuspend
+run_script_cm_missing:
+	@echo "(re)starting run_script_cm_missing on:" >> ${my_log}
+	@make -s log_versions_last_commits
+	parallel -j 18 --memsuspend 100G --resume --joblog ${fld_comp}joblog_cm -a ${input_cm_missing} magma -b fld_out:=${fld_out_cm} issues:=${issues_cm} s:={} ${fld_scripts}script_cm.m
+	@echo "run_script_cm_missing has finished on:" >> ${my_log}
+	@date >> ${my_log}
