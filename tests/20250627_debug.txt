@@ -142,6 +142,9 @@ I:=WEI;
 x0:=p2;
 x0;
 S:=MultiplicatorRing(I);
+
+
+
 A:=Algebra(x0);
 g:=Dimension(A) div 2;
 F:=PrimitiveElement(A);
@@ -152,6 +155,8 @@ prec:=Precision(Codomain(homs[1]));
 assert forall{ k : k in [1..g] | Abs(homs[2*k-1](F) - ComplexConjugate(homs[2*k](F))) lt 10^-(prec div 2)};
 
 homs:=[homs[2*k-1] : k in [1..g]]; //one per conjugate pair to define the Log map
+
+ff:=Conductor(S);
 US,uS:=UnitGroup(S);
 US;
 gens_US:=[ uS(g) : g in Generators(US) ]; // the torsion unit probably does do nothing
@@ -162,17 +167,23 @@ rnk_sub:=#gens_sub_inS; // 1 in this example
 assert rnk_sub eq g-#Components(A);
 img_gens_sub:=Matrix([[ Log(Abs(h(g))) : h in homs ] : g in gens_sub_inS ]); // apply Log map
 //"img_gens_sub",img_gens_sub; // this changes sign!
-L:=LatticeWithBasis(img_gens_sub);
+L:=LatticeWithBasis(img_gens_sub:CheckIndependent:=true);
 L;
 img_x0:=Vector([ Log(Abs(h(x0))) : h in homs ]);
-"img_x0",img_x0; // this is always the same
+//"img_x0",img_x0; // this is always the same
 closest_vects:=ClosestVectors(L,-img_x0); //note the minus sign!
-"closest_vects",closest_vects; // this is always the saem
+//"closest_vects",closest_vects; // this is always the saem
 all_coords:=[ Coordinates(cv) : cv in closest_vects];
-"all_coords",all_coords; //always the same = [[1]]
+//"all_coords",all_coords; //always the same = [[1]]
 
-// THE ISSUE IS HERE. gens_sub_inS[1] might be the inverse
 candidates:=[ x0*&*[ gens_sub_inS[i]^coord[i] : i in [1..rnk_sub] ] : coord in all_coords ];
 seq:=PrintSeqAlgEtQElt(candidates);
-assert #candidates eq 1;
-seq[1];
+assert forall{c: c in candidates|(c/x0)@@uS in sub};
+//seq[1];
+ccc:=AbsoluteCoordinates(candidates,ZFVBasis(A));
+for cc in ccc do
+    den0:=LCM([ Denominator(c) : c in cc]);
+    nums0:=[c*den0:c in cc];
+    dist:=&+[dd^2:dd in Eltseq(Vector(closest_vects[1])+img_x0)]; //distance squared
+    dist,den0,nums0;
+end for;
