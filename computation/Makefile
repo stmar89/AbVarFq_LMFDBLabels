@@ -185,9 +185,10 @@ clean_failed_script_pols_test:
 	rm ~/287_abvarfq_lmfdb_recomputation/issues_pols_test2 || true
 
 # change line 191 below, to modify the number of jobs, and the parameter of --memsuspend
+jobs_cm = 1
 run_script_cm_missing:
 	@echo "(re)starting run_script_cm_missing on:" >> ${my_log}
 	@make -s log_versions_last_commits
-	parallel -j 18 --memsuspend 100G --resume --joblog ${fld_comp}joblog_cm_missing -a ${input_cm_missing} magma -b fld_out:=${fld_out_cm} issues:=${issues_cm} s:={} ${fld_scripts}script_cm.m
+	parallel -j ${jobs_cm} --memsuspend 100G --resume --joblog ${fld_comp}joblog_cm_missing -a ${input_cm_missing} magma -b fld_out:=${fld_out_cm} issues:=${issues_cm} s:={} ${fld_scripts}script_cm.m
 	@echo "run_script_cm_missing has finished on:" >> ${my_log}
 	@date >> ${my_log}
