@@ -1,9 +1,22 @@
 /* vim: set syntax=magma : */
 
-    all:=[c : c in Split(Read("~/AbVarFq_LMFDBLabels/computation/input_fast_1"))];
+    all:=[c : c in Split(Read("~/AbVarFq_LMFDBLabels/computation/weil_poly_sqfree_ord_no_3_25.txt"))];
     file_out:="~/AbVarFq_LMFDBLabels/computation/input_test_pol";
+    arr:=AssociativeArray();
+    for g in [1..5] do
+        arr[g]:=[];
+    end for;
 
-    for i in [1..20] do
-        fprintf file_out,"%o\n",Sprint(all[i]);
+    tot:=#all; perc:=0;
+    for ic->c in all do
+        if Truncate(ic*100/tot) gt perc then perc +:=1; printf "%o%% ",perc; end if;
+        g:=(#Split(c,",")-1) div 2;
+        Append(~arr[g],c);
+    end for;
+    for g in [2..5] do
+        cg:=RandomOrder(arr[g]);
+        for i in [1..5] do
+            fprintf file_out,"%o\n",Sprint(cg[i]);
+        end for;
     end for;
 

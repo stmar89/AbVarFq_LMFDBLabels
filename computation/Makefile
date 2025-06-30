@@ -164,7 +164,7 @@ issues_pols_test2 = ${fld_comp}issues_pols_test2
 
 run_script_pols_test:
 	@echo "\n########## 1st parallel ##########\n"
-	parallel -j 20 --timeout 120 --resume --joblog ${fld_comp}joblog_pols_test1 -a ${input_test_pol} magma -b fld_comp:=${fld_comp} fld_out_wk:=${fld_out_wk} fld_out_cm:=${fld_out_cm} fld_out_pols:=${fld_out_pols_test1} issues:=${issues_pols_test1} degree_bounds:=${degree_bounds} s:={} ${fld_scripts}script_pols.m
+	parallel -j 20 --timeout 120 --resume --joblog ${fld_comp}joblog_pols_test1 -a ${input_test_pol} magma -b fld_comp:=${fld_comp} fld_out_wk:=${fld_out_wk} fld_out_cm:=${fld_out_cm} fld_out_pols:=${fld_out_pols_test1} issues:=${issues_pols_test1} degree_bounds:=${degree_bounds} s:={} ${fld_scripts}script_pols.m || true
 	@echo "\n########## 2nd parallel ##########\n"
 	parallel -j 20 --timeout 120 --resume --joblog ${fld_comp}joblog_pols_test2 -a ${input_test_pol} magma -b fld_comp:=${fld_comp} fld_out_wk:=${fld_out_wk} fld_out_cm:=${fld_out_cm} fld_out_pols:=${fld_out_pols_test2} issues:=${issues_pols_test2} degree_bounds:=${degree_bounds} s:={} ${fld_scripts}script_pols.m || true
 	@echo "\n########## magma test script ##########\n"
