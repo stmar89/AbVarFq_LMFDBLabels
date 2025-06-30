@@ -1,6 +1,8 @@
 /* vim: set syntax=magma :*/
 
 freeze;
+ 
+declare verbose padictocc,1;
 
 // 2019 JV:
 // Must change lines 2010, 2132, and 2247 of 
@@ -21,6 +23,7 @@ intrinsic pAdicToComplexRootsGMod(f::RngUPolElt[FldRat], p::RngIntElt : precpAdi
    padic and complex precision.}
 
   n := Degree(f);
+  vprintf padictocc : "Computing Galois group p-adically ...";
   if precpAdic ne 0 then
     // refine padic roots
     // rtsp := [GaloisRoot(f,i,datp : Prec := precpAdic) : i in [1..n]];
@@ -28,7 +31,10 @@ intrinsic pAdicToComplexRootsGMod(f::RngUPolElt[FldRat], p::RngIntElt : precpAdi
   else
     Gp, rtsp, datp := GaloisGroup(f : Prime := p);
   end if;
+  vprintf padictocc : "done\n";
+  vprintf padictocc : "Computing Galois group over CC ...";
   GCC, rtsCC, datCC := GaloisGroup(f : Type := "Complex", Prec := precCC);
+  vprintf padictocc : "done\n";
   
   Sn := Sym(n);
   _, tau := IsConjugate(Sn,Gp,GCC);
@@ -41,10 +47,12 @@ intrinsic pAdicToComplexRootsGMod(f::RngUPolElt[FldRat], p::RngIntElt : precpAdi
       // But we need to take tau^-1 to get integral relative invariants below,
       // so I must be misunderstanding something.
 
+  vprintf padictocc : "Computing Normalizer ...";
   G := GCC;
   NG := Normalizer(Sn,G);
   NGmodG, mN := quo<Normalizer(Sn,G) | G>;
   rhos := [c@@mN : c in NGmodG];
+  vprintf padictocc : "done\n";
   
   if #rhos eq 1 then 
     return rtsptau, rtsCC, G;
@@ -56,8 +64,10 @@ intrinsic pAdicToComplexRootsGMod(f::RngUPolElt[FldRat], p::RngIntElt : precpAdi
     // if not, need to increase p-adic precision or 
     // possibly make a change of variables in f to land in a nonempty Zariski open subset
   d := Degree(Universe(pvals));
+  vprintf padictocc : "Computing Roots PowerRelation ...";
   pval := Roots(PowerRelation(Trace(pvals[1])/d,1),Integers())[1][1];  
     // assumes invariant is integral
+  vprintf padictocc : "done\n";
   
   CCvals := [Abs(Evaluate(Finv,[rtsCC[i^rho] : i in [1..n]])-pval) : rho in rhos];
   minval, minind := Min(CCvals);

@@ -189,6 +189,6 @@ jobs_cm = 1
 run_script_cm_missing:
 	@echo "(re)starting run_script_cm_missing on:" >> ${my_log}
 	@make -s log_versions_last_commits
-	parallel -j ${jobs_cm} --memsuspend 100G --resume --joblog ${fld_comp}joblog_cm_missing -a ${input_cm_missing} magma -b fld_out:=${fld_out_cm} issues:=${issues_cm} s:={} ${fld_scripts}script_cm.m
+	parallel -j ${jobs_cm} --resume --joblog ${fld_comp}joblog_cm_missing -a ${input_cm_missing} magma -b fld_out:=${fld_out_cm} issues:=${issues_cm} s:={} ${fld_scripts}script_cm.m
 	@echo "run_script_cm_missing has finished on:" >> ${my_log}
 	@date >> ${my_log}

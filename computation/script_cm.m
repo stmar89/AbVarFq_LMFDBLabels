@@ -9,7 +9,8 @@
     AttachSpec("~/CHIMP/CHIMP.spec");
     AttachSpec("~/AlgEt/spec");
     AttachSpec("~/AbVarFq_LMFDBLabels/spec");
-
+    
+    SetVerbose("padictocc",1);
     try 
         P<x>:=PolynomialRing(Integers());
         f:=P!eval(s);
