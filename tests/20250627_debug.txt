@@ -142,9 +142,6 @@ I:=WEI;
 x0:=p2;
 x0;
 S:=MultiplicatorRing(I);
-
-
-
 A:=Algebra(x0);
 g:=Dimension(A) div 2;
 F:=PrimitiveElement(A);
@@ -160,15 +157,37 @@ ff:=Conductor(S);
 US,uS:=UnitGroup(S);
 US;
 gens_US:=[ uS(g) : g in Generators(US) ]; // the torsion unit probably does do nothing
+// is the unit group the same???
+gens_US_stored:=[A!u:u in[
+<[1,0],[6,-3/2,-3/2,-9/8,-1/2,-1/4,7/8,-1/8]>,
+<[-1,0],[1,0,0,0,0,0,0,0]>,
+<[1,0],[-1,1/2,1/4,1/8,0,0,-1/8,1/8]>,
+<[1,0],[-6,11/2,0,5/8,-1/2,-1/4,-7/8,5/8]>,
+<[1,0],[10,-15/2,-3/4,-3/4,0,1/4,3/2,-3/4]>
+]];
+US_test:=sub<US|[u@@uS:u in gens_US_stored]>;
+assert US_test eq US;
 
+// is sub the same ???
 sub:=sub< US | [(g*ComplexConjugate(g))@@uS : g in gens_US ] >;     // sub = < u * \bar u : u in S^* >
 gens_sub_inS:=[ uS(g) : g in Generators(sub) ];
 rnk_sub:=#gens_sub_inS; // 1 in this example
 assert rnk_sub eq g-#Components(A);
+gens_sub_inS_test:=[A!u:u in [
+<[1,0],[24,-27/2,-9/2,-11/8,3/2,1/4,21/8,-11/8]>,
+<[1,0],[40000,287220,-527610,345219/8,264920,-28821/4,-1017817/8,345219/8]>,
+<[1,0],[22661592,146581152,-1087251267/4,22079112,272829459/2,-14742071/4,-260882775/4,22079112]>
+]];
+sub_test:=sub<US|[u@@uS:u in gens_sub_inS_test]>;
+assert sub eq sub_test;
+
+img_gens_sub:=[ h(g) : h in homs , g in gens_sub_inS ];
+assert forall{ x : x in img_gens_sub | Im(x) lt 10^-10 and Re(x) gt 0 };
+
 img_gens_sub:=Matrix([[ Log(Abs(h(g))) : h in homs ] : g in gens_sub_inS ]); // apply Log map
 //"img_gens_sub",img_gens_sub; // this changes sign!
 L:=LatticeWithBasis(img_gens_sub:CheckIndependent:=true);
-L;
+LLLBasisMatrix(L);
 img_x0:=Vector([ Log(Abs(h(x0))) : h in homs ]);
 //"img_x0",img_x0; // this is always the same
 closest_vects:=ClosestVectors(L,-img_x0); //note the minus sign!
