@@ -155,7 +155,8 @@ homs:=[homs[2*k-1] : k in [1..g]]; //one per conjugate pair to define the Log ma
 
 ff:=Conductor(S);
 US,uS:=UnitGroup(S);
-US;
+"\nunits",US;
+"\ntorsion units",TorsionSubgroup(US);
 gens_US:=[ uS(g) : g in Generators(US) ]; // the torsion unit probably does do nothing
 // is the unit group the same???
 gens_US_stored:=[A!u:u in[
@@ -170,6 +171,7 @@ assert US_test eq US;
 
 // is sub the same ???
 sub:=sub< US | [(g*ComplexConjugate(g))@@uS : g in gens_US ] >;     // sub = < u * \bar u : u in S^* >
+"\nsub<u*bar{u}>",sub;
 gens_sub_inS:=[ uS(g) : g in Generators(sub) ];
 rnk_sub:=#gens_sub_inS; // 1 in this example
 assert rnk_sub eq g-#Components(A);
@@ -198,7 +200,7 @@ all_coords:=[ Coordinates(cv) : cv in closest_vects];
 candidates:=[ x0*&*[ gens_sub_inS[i]^coord[i] : i in [1..rnk_sub] ] : coord in all_coords ];
 seq:=PrintSeqAlgEtQElt(candidates);
 assert forall{c: c in candidates|(c/x0)@@uS in sub};
-//seq[1];
+seq[1];
 ccc:=AbsoluteCoordinates(candidates,ZFVBasis(A));
 for cc in ccc do
     den0:=LCM([ Denominator(c) : c in cc]);
@@ -206,3 +208,28 @@ for cc in ccc do
     dist:=&+[dd^2:dd in Eltseq(Vector(closest_vects[1])+img_x0)]; //distance squared
     dist,den0,nums0;
 end for;
+
+lambda0:=A!<[ -1/7, 2/7 ], [ 29/205, -152/205, 29/820, 111/820, 51/410, 71/820, 11/205, -73/820 ]>;
+lambda01:=A!<[ -1/7, 2/7 ], [ -504/205, 422/205, 111/820, 29/820, -31/410, -11/820, -71/205, 173/820 ]>;
+vvbar:=lambda0/lambda01;
+
+assert (vvbar)@@uS in sub;
+(vvbar)@@uS;
+vvbar;
+vvbar:=Vector([ Log(Abs(h(vvbar))) : h in homs ]);
+
+a0:=[ Log(Abs(h(lambda0))) : h in homs ];
+b0:=[ Log(Abs(h(lambda01))) : h in homs ];
+
+a:=[Log(Abs(h(candidates[1]))):h in homs];
+"\na,a0,b0";
+a,a0,b0;
+abs_a:=&+[ai^2:ai in a]+0.5; abs_a;
+//assert forall{c:c in candidates|abs_a eq Sqrt(&+[Log(Abs(h(c)))^2:h in homs])};
+ss:=[Vector(s[1]):s in ShortVectors(L,2*abs_a)];
+#ss;
+test:=[Vector(a)] cat &cat[[Vector(a)+s,Vector(a)-s]:s in ss];
+
+Min([ Norm(Vector(a0)-t):t in test]);
+Min([ Norm(Vector(b0)-t):t in test]);
+

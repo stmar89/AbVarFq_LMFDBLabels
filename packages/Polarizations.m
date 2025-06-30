@@ -175,7 +175,7 @@ intrinsic PPolIteration(ZFV::AlgEtQOrd) -> List
                 sort_keys_pp:=[];
                 ans_pp:=[];
                 for pol in pp do
-                    can, den, nums := DistinguishedRepresentativePolarizationConjugateStableOrder(WEI, pol);
+                    can, den, nums := DistinguishedRepresentativePolarizationWEI, pol);
                     assert can*WEI eq TraceDualIdeal(ComplexConjugate(WEI));
                     Append(~sort_keys_pp,[den] cat nums);
                     vprint User1: Sprintf("Done computing distinguished representative at %o", Cputime(t0));
@@ -245,7 +245,7 @@ intrinsic AllNonprincipalPolarizations(ZFV::AlgEtQOrd, PHI::AlgEtQCMType, degree
             t_can_Jd:=Cputime();
             pols_deg_d_up_to_iso:={};
             for x0 in pols_deg_d do
-                pol,den,nums:=DistinguishedRepresentativePolarizationGeneral(J,x0);
+                pol,den,nums:=DistinguishedRepresentativePolarization(J,x0);
                 Include(~pols_deg_d_up_to_iso, <pol,den,nums>); //isomorphic pols will have the same distinguished rep
             end for;
             t_can +:=Cputime(t_can_Jd);
@@ -272,69 +272,14 @@ intrinsic AllNonprincipalPolarizations(ZFV::AlgEtQOrd, PHI::AlgEtQCMType, degree
     return all_pols;
 end intrinsic;
 
-intrinsic DistinguishedRepresentativePolarizationConjugateStableOrder(I::AlgEtQIdl,x0::AlgEtQElt) -> AlgEtQElt,RngIntElt,SeqEnum[RngIntElt]
-{Given an ideal I such that (I:I) is conjugate stable, and an element x0 representing a polarization for I, we want to look at the set x0*u*\bar(u) where u runs over the units of (I:I)=S. We compute the image of this set via the Log map. We use ShortestVectors on this lattice, pullback the output in the algebra, computhe the action of the torsion units of S on these elements, represent them with respect to [V^(g-1),...,V,1,F,...,F^g], sort them with respec to the lexigographic order of their coefficients and take the smallest.
-The output consists of pol,den,nums where
-- pol is the distinguished representative of an isomorphism class of a polarization x0 of I;
-- den and nums are sequence of integers representing the lcm of the denominators of and the numerators of the coefficients of pol wrt the ZFVBasis.}
-
-    S:=MultiplicatorRing(I);
-    require IsConjugateStable(S) : "implemented only for conjugate stable orders, at the moment";
-    A:=Algebra(x0);
-    g:=Dimension(A) div 2;
-    F:=PrimitiveElement(A);
-    basis:=ZFVBasis(A);
-
-    if g eq #Components(A) then // then sub below would be the trivial group and the code would not modify x0. Early exit
-        y0 := AbsoluteCoordinates([x0],basis);
-        den := LCM([Denominator(c) : c in y0[1]]);
-        nums := [den * c : c in y0[1]];
-        return x0, den, nums;
-    end if;
-
-    homs:=HomsToC(A);
-    prec:=Precision(Codomain(homs[1]));
-    // are the homs sorted in conjugate pairs?
-    assert forall{ k : k in [1..g] | Abs(homs[2*k-1](F) - ComplexConjugate(homs[2*k](F))) lt 10^-(prec div 2)};
-
-    homs:=[homs[2*k-1] : k in [1..g]]; //one per conjugate pair to define the Log map
-    US,uS:=UnitGroup(S);
-    gens_US:=[ uS(g) : g in Generators(US) ]; // the torsion unit probably does do nothing
-
-    sub:=sub< US | [(g*ComplexConjugate(g))@@uS : g in gens_US ] >;     // sub = < u * \bar u : u in S^* >
-    gens_sub_inS:=[ uS(g) : g in Generators(sub) ];
-    rnk_sub:=#gens_sub_inS;
-    assert rnk_sub eq g-#Components(A);
-    img_gens_sub:=Matrix([[ Log(Abs(h(g))) : h in homs ] : g in gens_sub_inS ]); // apply Log map
-    L:=LatticeWithBasis(img_gens_sub); // before it was Lattice. But we want img_gens_sub to be the basis!
-    img_x0:=Vector([ Log(Abs(h(x0))) : h in homs ]);
-    closest_vects:=ClosestVectors(L,-img_x0); //note the minus sign!
-    all_coords:=[ Coordinates(cv) : cv in closest_vects];
-    candidates:=[ x0*&*[ gens_sub_inS[i]^coord[i] : i in [1..rnk_sub] ] : coord in all_coords ];
-    // A priori, I believe that I should act on candidates with the torsion units of the totally real totally positive units in S
-    // But there is only 1 (which also the torsion subgroup of sub = < u*\bar u>
-
-    // Now, I sort the candidats with respect to lexicographic order of the coefficients wrt to [V^(g-1),...,V,1,F,...,F^g],
-    // and take the smallest.
-    sort_keys_candidates:=[ AbsoluteCoordinates([c],basis)[1] : c in candidates ];
-    ParallelSort(~sort_keys_candidates,~candidates);
-    den := LCM([Denominator(c) : c in sort_keys_candidates[1]]);
-    nums := [den*c : c in sort_keys_candidates[1]];
-
-    return candidates[1], den, nums;
-end intrinsic;
-
-intrinsic DistinguishedRepresentativePolarizationGeneral(I::AlgEtQIdl,x0::AlgEtQElt) -> AlgEtQElt,RngIntElt,SeqEnum[RngIntElt]
+intrinsic DistinguishedRepresentativePolarization(I::AlgEtQIdl,x0::AlgEtQElt) -> AlgEtQElt,RngIntElt,SeqEnum[RngIntElt]
 {Given an ideal I and an element x0 representing a polarization for I, we want to look at the set x0*u*\bar(u) where u runs over the units of (I:I)=S. We compute the image of this set via the Log map. We use ShortestVectors on this lattice, pullback the output in the algebra, computhe the action of the torsion units of S on these elements, represent them with respect to [V^(g-1),...,V,1,F,...,F^g], sort them with respect to the lexigographic order of their coefficients and take the smallest.
 The output consists of pol,den,nums where
 - pol is the distinguished representative of an isomorphism class of a polarization x0 of I;
 - den and nums are sequence of integers representing the lcm of the denominators of and the numerators of the coefficients of pol wrt the ZFVBasis.}
-// This is very similar to the code of DistinguishedRepresentativePolarizationConjugateStableOrder: it does not require the multiplicator ring of I to be conjugate stable. It is a little bit slower.
+
     S:=MultiplicatorRing(I);
-    test,Sb:=IsConjugateStable(S);
-    if test then 
-        return DistinguishedRepresentativePolarizationConjugateStableOrder(I,x0);
-    end if;
+    is_conjugate_stable,Sb:=IsConjugateStable(S);
 
     A:=Algebra(x0);
     g:=Dimension(A) div 2;
@@ -352,31 +297,67 @@ The output consists of pol,den,nums where
     prec:=Precision(Codomain(homs[1]));
     // are the homs sorted in conjugate pairs?
     assert forall{ k : k in [1..g] | Abs(homs[2*k-1](F) - ComplexConjugate(homs[2*k](F))) lt 10^-(prec div 2)};
-
     homs:=[homs[2*k-1] : k in [1..g]]; //one per conjugate pair to define the Log map
 
-    // this bit is different from DistinguishedRepresentativePolarizationConjugateStableOrder
-    SSb:=S*Sb; // the smallest order containing both S and Sb
-    U,u:=UnitGroup(SSb);
-    US,uS:=UnitGroup(S);
-    gens_US:=[ uS(g) : g in Generators(US) ];
-    sub:=sub< U | [(g*ComplexConjugate(g))@@u : g in gens_US ] >;     // sub = < u * \bar u : u in S^* >
-    gens_sub:=[ u(g) : g in Generators(sub) ];
-    // end of differences, except gens_sub_inS has been renamed to gens_sub (since they are in SSb, not necessarily in S).
+    Log_map:=function(g)
+        return [ Log(Abs(h(g))) : h in homs ];
+    end function;
+        
+    
+    if is_conjugate_stable then
+        // this version is slightly faster
+        US,uS:=UnitGroup(S);
+        gens_US:=[ uS(g) : g in Generators(US) ]; // the torsion unit probably does do nothing
 
+        sub:=sub< US | [(g*ComplexConjugate(g))@@uS : g in gens_US ] >;     // sub = < u * \bar u : u in S^* >
+        gens_sub:=[ uS(g) : g in Generators(sub) ];
+    else
+        SSb:=S*Sb; // the smallest order containing both S and Sb
+        U,u:=UnitGroup(SSb);
+        US,uS:=UnitGroup(S);
+        gens_US:=[ uS(g) : g in Generators(US) ];
+        sub:=sub< U | [(g*ComplexConjugate(g))@@u : g in gens_US ] >;     // sub = < u * \bar u : u in S^* >
+        gens_sub:=[ u(g) : g in Generators(sub) ];
+    end if;
 
+    // we construct the lattice
     rnk_sub:=#gens_sub;
     assert rnk_sub eq g-#Components(A);
-    img_gens_sub:=Matrix([[ Log(Abs(h(g))) : h in homs ] : g in gens_sub ]); // apply Log map
+    img_gens_sub:=Matrix([Log_map(g) : g in gens_sub ]); // apply Log map
     L:=LatticeWithBasis(img_gens_sub);
-    img_x0:=Vector([ Log(Abs(h(x0))) : h in homs ]);
-    closest_vects:=ClosestVectors(L,-img_x0); //note the minus sign!
-    all_coords:=[ Coordinates(cv) : cv in closest_vects];
-    candidates:=[ x0*&*[ gens_sub[i]^coord[i] : i in [1..rnk_sub] ] : coord in all_coords ]; 
-    // A priori, I believe that I should act on candidates with the torsion units of the totally real totally positive units in S
-    // But there is only 1 (which also the torsion subgroup of sub = < u*\bar u>
+    // we find all vectors in L closest to -img_x0
+    img_x0:=Vector(Log_map(x0));
+    candidates:=ClosestVectors(L,-img_x0); //note the minus sign!
 
-    // Now, I sort the candidates with respect to lexicographic order of the coefficients wrt to [V^(g-1),...,V,1,F,...,F^g],
+    norm_y0:=Norm(candidates[1]);
+    prec:=30; // this precision parameter is set so because L is contructed using the default precision 30
+    assert forall{c:c in candidates|Abs(Norm(c) - norm_y0) lt 10^-prec};
+    // The procedure above is not independent of the initial x0.
+    // Indeed, if we started with an isomorphic principal polarization x1, then we could get a different
+    // set of candidates y1, also with `minimal' norm norm_y0
+    // Each y1 will be of the form y1=l+y0 for some l in L.
+    // By the triangular inequality we have that Norm(l) <= 2*norm_y0.
+    // We enumerate elements of L satisfying this ineq and expand the list of candidates accordingly.
+    ss:=[Vector(s[1]):s in ShortVectors(L,2*norm_y0)];
+    ss cat:=[-s:s in ss]; //ShortVectors is only up to sign
+    extra_candidates:=[];
+    norm_y0_eps:=norm_y0+10^-prec;
+    for s in ss,c in candidates do
+        cs:=c+s;
+        ncs:=Norm(cs);
+        if ncs lt norm_y0_eps then
+            assert Abs(ncs - norm_y0) lt 10^-prec; 
+            Append(~extra_candidates,cs);
+        end if;
+    end for;
+    vprintf AllPolarizations : "number extra candidates: %o\n",#extra_candidates;
+    candidates cat:=extra_candidates;
+
+    // now we move back to K
+    all_coords:=[ Coordinates(cv) : cv in candidates];
+    candidates:=[ x0*&*[ gens_sub[i]^coord[i] : i in [1..rnk_sub] ] : coord in all_coords ]; 
+    // Now, I sort the candidates with respect to lexicographic order of the coefficients 
+    // wrt to [V^(g-1),...,V,1,F,...,F^g],
     // and take the smallest.
     sort_keys_candidates:=[ AbsoluteCoordinates([c],basis)[1] : c in candidates ];
     ParallelSort(~sort_keys_candidates,~candidates);
@@ -386,29 +367,3 @@ The output consists of pol,den,nums where
     return candidates[1], den, nums;
 end intrinsic;
 
-/*
-    fld_m_files:="~/packages_github/AbVarFq/LMFDB/";
-    fld:="~/266_wk_icm_rec/";
-    fld_schema_wk:=fld cat "labelling/parallel/output/";
-    AttachSpec(fld cat "AlgEt/spec");
-    load "~/999_LMFDB_isogeny_label_functions.txt";
-    P<x>:=PolynomialRing(Integers());
-    Attach(fld_m_files cat "padictocc.m");
-    Attach(fld_m_files cat "polarizations.m");
-
-    t0:=Cputime();
-        //file:=fld_schema_wk cat "2.128.a_bf_schema.txt";
-        //file:=fld_schema_wk cat "3.9.d_j_o_schema.txt";
-        time R:=LoadSchemaWKClasses(Read(file));
-        time str:=PrintPrincipalPolarizationsIsogenyClass(R);
-        time S:=LoadPrincipalPolarizationsIsogenyClass(str);
-        time ppavs:=PrincipalPolarizations(S);
-        "We have", &+[ #p[2] : p in ppavs ], "ppavs";
-        PHI:=CMType(ppavs[1,2]);
-        for p in ppavs do
-            pp:=p[2];
-            PeriodMatrix(p[1],pp,PHI);
-        end for;
-    t1:=Cputime(t0);
-    "Tot time",t1;
-*/
