@@ -88,6 +88,7 @@ intrinsic pAdicPosCMType(A::AlgEtQ : precpAdic := 30, precCC := 30 ) -> AlgEtQCM
     if assigned A`pAdicPosCMType then
         return A`pAdicPosCMType;
     end if;
+    vprintf padictocc,1 : "Starting pAdicToComplexRoots\n";
     h:=ChangeRing(DefiningPolynomial(A),Integers());
     _,p:=IsPrimePower(ConstantCoefficient(h));
     require IsCoprime(Coefficients(h)[(Degree(h) div 2)+1],p) : "The isogeny class is not ordinary";

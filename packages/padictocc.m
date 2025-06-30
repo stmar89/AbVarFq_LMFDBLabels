@@ -1,6 +1,6 @@
 /* vim: set syntax=magma :*/
 
-freeze;
+//freeze;
  
 declare verbose padictocc,1;
 
@@ -92,11 +92,15 @@ intrinsic pAdicToComplexRoots(f::RngUPolElt[FldRat], p::RngIntElt : precpAdic :=
   assert q eq p^(Valuation(q,p));
   Rf := quo<R | f>;
   fred := Sqrt(CharacteristicPolynomial(Rf.1 + q/Rf.1));
+  vprintf padictocc : "Computing Splitting Field ...";
   F := SplittingField(fred);
+  vprintf padictocc : "done\n";
   if Degree(F) eq 1 then
     F := RationalsAsNumberField();
   end if;
+  vprintf padictocc : "Computing Roots of fred in F ...";
   rtsF := Roots(fred,F);
+  vprintf padictocc : "done\n";
   assert {r[2] : r in rtsF} eq {1}; // squarefree condition
   rtsF := [r[1] : r in rtsF];
 
@@ -115,9 +119,12 @@ intrinsic pAdicToComplexRoots(f::RngUPolElt[FldRat], p::RngIntElt : precpAdic :=
       prec +:= 20;
       ZZp := pAdicRing(p,prec);
       try
+        vprintf padictocc : "Computing SplittingField of f over ZZp at precision %o ...",prec;
         Kp := FieldOfFractions(SplittingField(f,ZZp));  // returns a ring, go figure!
+        vprintf padictocc : "done\n";
         success := true;
       catch e;
+        vprintf padictocc : "precision prec=%o is not enough\n",prec;
       end try;
     until success;
   end try;    
@@ -135,10 +142,14 @@ intrinsic pAdicToComplexRoots(f::RngUPolElt[FldRat], p::RngIntElt : precpAdic :=
   Ks := [K1];
   v1 := InfinitePlaces(K1)[1];
   vs := [* v1 *];
+  vprintf padictocc : "Computing Roots 1 ...";
   mu1p := [r[1] : r in Roots(MinimalPolynomial(F.1),Kp)][1];  // take first one, it's a choice
+  vprintf padictocc : "done\n";
   mF1p := map<F -> Kp | u :-> &+[(F!u)[i+1]*mu1p^i : i in [0..Degree(F)-1]]>;
   assert IsWeaklyZero(Evaluate(MinimalPolynomial(F.1),mF1p(F.1))); // sanity check
+  vprintf padictocc : "Computing Roots 2 ...";
   beta1p := [r[1] : r in Roots(Polynomial([q,-mF1p(alpha1),1])) | Valuation(r[1]) eq 0][1];
+  vprintf padictocc : "done\n";
   mK1qq := map<K1 -> Kp | u :-> mF1p((K1!u)[1]) + mF1p((K1!u)[2])*beta1p>;
   qqs := [* mK1qq *];
   Append(~rtsp, beta1p);
@@ -150,14 +161,18 @@ intrinsic pAdicToComplexRoots(f::RngUPolElt[FldRat], p::RngIntElt : precpAdic :=
   Append(~rtsCC, beta1CC);
   embedded_discs := [<alpha1^2-4*q, beta1CC-q/beta1CC, beta1p-q/beta1p>];
     // first one is arbitrary, guaranteed to be irreducible because has complex place
+  vprintf padictocc : "#embedded_discs=%o\n",#embedded_discs;
   
   for j := 2 to n do
+    vprintf padictocc : "in for loop j=%o:",j;
     alphaj := rtsF[j];
     dj := alphaj^2-4*q;
     embfound := false;
     for dexps in CartesianPower([0,1],#embedded_discs) do
+      vprintf padictocc : ".";
       ed := &*[embedded_discs[i][1]^dexps[i] : i in [1..#dexps]];
       bl, csq := IsSquare(dj/ed);
+      vprintf padictocc : "bl=%o\n",bl;
       if bl then
         // can use existing embedding: betaj = (alphaj + sqrt(d_j))/2
         // so sqrt(d_j) = csq*sqrt(ed), so to speak
@@ -176,12 +191,15 @@ intrinsic pAdicToComplexRoots(f::RngUPolElt[FldRat], p::RngIntElt : precpAdic :=
         break;
       end if;
     end for;
+    vprintf padictocc : "\nembfound=\n",embfound;
     if not embfound then
       Kj := ext<F | Polynomial([q,-alphaj,1])>;
       Append(~Ks, Kj);
       vj := InfinitePlaces(Kj)[1];
       Append(~vs, vj);
+      vprintf padictocc : "Computing Roots 3 ...";
       betajp := [r[1] : r in Roots(Polynomial([q,-mF1p(alphaj),1])) | Valuation(r[1]) eq 0][1];
+      vprintf padictocc : "done\n";
       mKjqq := map<Kj -> Kp | u :-> mF1p((Kj!u)[1]) + mF1p((Kj!u)[2])*betajp>;
       Append(~qqs, mKjqq);
       Append(~rtsp, betajp);
@@ -192,7 +210,9 @@ intrinsic pAdicToComplexRoots(f::RngUPolElt[FldRat], p::RngIntElt : precpAdic :=
       end if;
       Append(~rtsCC, betajCC);
       Append(~embedded_discs, <alphaj^2-4*q, betajCC-q/betajCC, betajp-q/betajp>);
+      vprintf padictocc : "done\n";
     end if;
+    vprintf padictocc : "done\n";
   end for;  
   
   return rtsp cat [q/r : r in rtsp], rtsCC cat [q/r : r in rtsCC];
