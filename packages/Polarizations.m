@@ -175,7 +175,7 @@ intrinsic PPolIteration(ZFV::AlgEtQOrd) -> List
                 sort_keys_pp:=[];
                 ans_pp:=[];
                 for pol in pp do
-                    can, den, nums := DistinguishedRepresentativePolarizationWEI, pol);
+                    can, den, nums := DistinguishedRepresentativePolarization(WEI, pol);
                     assert can*WEI eq TraceDualIdeal(ComplexConjugate(WEI));
                     Append(~sort_keys_pp,[den] cat nums);
                     vprint User1: Sprintf("Done computing distinguished representative at %o", Cputime(t0));
@@ -329,25 +329,26 @@ The output consists of pol,den,nums where
     img_x0:=Vector(Log_map(x0));
     candidates:=ClosestVectors(L,-img_x0); //note the minus sign!
 
-    norm_y0:=Norm(candidates[1]);
+    norm_y0:=Norm(Vector(candidates[1])+img_x0);
     prec:=30; // this precision parameter is set so because L is contructed using the default precision 30
-    assert forall{c:c in candidates|Abs(Norm(c) - norm_y0) lt 10^-prec};
+    eps:=10^-5;
+    assert forall{c:c in candidates|Abs(Norm(Vector(c)+img_x0) - norm_y0) lt 10^-prec};
     // The procedure above is not independent of the initial x0.
     // Indeed, if we started with an isomorphic principal polarization x1, then we could get a different
     // set of candidates y1, also with `minimal' norm norm_y0
     // Each y1 will be of the form y1=l+y0 for some l in L.
     // By the triangular inequality we have that Norm(l) <= 2*norm_y0.
     // We enumerate elements of L satisfying this ineq and expand the list of candidates accordingly.
-    ss:=[Vector(s[1]):s in ShortVectors(L,2*norm_y0)];
+    ss:=[Vector(s[1]):s in ShortVectors(L,2*norm_y0+eps)];
     ss cat:=[-s:s in ss]; //ShortVectors is only up to sign
     extra_candidates:=[];
-    norm_y0_eps:=norm_y0+10^-prec;
+    norm_y0_eps:=norm_y0+eps;
     for s in ss,c in candidates do
-        cs:=c+s;
-        ncs:=Norm(cs);
+        cs:=Vector(c)+s;
+        ncs:=Norm(cs+img_x0);
         if ncs lt norm_y0_eps then
-            assert Abs(ncs - norm_y0) lt 10^-prec; 
-            Append(~extra_candidates,cs);
+            assert Abs(ncs - norm_y0) lt eps; 
+            Append(~extra_candidates,L!cs);
         end if;
     end for;
     vprintf AllPolarizations : "number extra candidates: %o\n",#extra_candidates;
