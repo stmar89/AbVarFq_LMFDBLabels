@@ -164,15 +164,18 @@ intrinsic pAdicToComplexRoots(f::RngUPolElt[FldRat], p::RngIntElt : precpAdic :=
   vprintf padictocc : "#embedded_discs=%o\n",#embedded_discs;
   
   for j := 2 to n do
-    vprintf padictocc : "in for loop j=%o:",j;
+    vprintf padictocc : "in for loop j=%o:\n",j;
     alphaj := rtsF[j];
     dj := alphaj^2-4*q;
+    vprintf padictocc : "\tdj=%o\n",dj;
     embfound := false;
     for dexps in CartesianPower([0,1],#embedded_discs) do
-      vprintf padictocc : ".";
+      vprintf padictocc : "\tnew dexp:\n";
       ed := &*[embedded_discs[i][1]^dexps[i] : i in [1..#dexps]];
+      vprintf padictocc : "\t\tcomputed ed\n";
+      // the next line seems to be the bottleneck
       bl, csq := IsSquare(dj/ed);
-      vprintf padictocc : "bl=%o\n",bl;
+      vprintf padictocc : "\t\tbl=%o\n",bl;
       if bl then
         // can use existing embedding: betaj = (alphaj + sqrt(d_j))/2
         // so sqrt(d_j) = csq*sqrt(ed), so to speak
@@ -191,13 +194,13 @@ intrinsic pAdicToComplexRoots(f::RngUPolElt[FldRat], p::RngIntElt : precpAdic :=
         break;
       end if;
     end for;
-    vprintf padictocc : "\nembfound=\n",embfound;
+    vprintf padictocc : "\t\nembfound=\n",embfound;
     if not embfound then
       Kj := ext<F | Polynomial([q,-alphaj,1])>;
       Append(~Ks, Kj);
       vj := InfinitePlaces(Kj)[1];
       Append(~vs, vj);
-      vprintf padictocc : "Computing Roots 3 ...";
+      vprintf padictocc : "\tComputing Roots 3 ...";
       betajp := [r[1] : r in Roots(Polynomial([q,-mF1p(alphaj),1])) | Valuation(r[1]) eq 0][1];
       vprintf padictocc : "done\n";
       mKjqq := map<Kj -> Kp | u :-> mF1p((Kj!u)[1]) + mF1p((Kj!u)[2])*betajp>;
@@ -210,7 +213,6 @@ intrinsic pAdicToComplexRoots(f::RngUPolElt[FldRat], p::RngIntElt : precpAdic :=
       end if;
       Append(~rtsCC, betajCC);
       Append(~embedded_discs, <alphaj^2-4*q, betajCC-q/betajCC, betajp-q/betajp>);
-      vprintf padictocc : "done\n";
     end if;
     vprintf padictocc : "done\n";
   end for;  
