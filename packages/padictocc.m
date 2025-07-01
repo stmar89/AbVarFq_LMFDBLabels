@@ -172,7 +172,8 @@ intrinsic pAdicToComplexRoots(f::RngUPolElt[FldRat], p::RngIntElt : precpAdic :=
     for dexps in CartesianPower([0,1],#embedded_discs) do
       vprintf padictocc : "\tnew dexp:\n";
       ed := &*[embedded_discs[i][1]^dexps[i] : i in [1..#dexps]];
-      vprintf padictocc : "\t\ted=%o\n",ed;
+      vprintf padictocc : "\t\tcomputed ed\n";
+      // the next line seems to be the bottleneck
       bl, csq := IsSquare(dj/ed);
       vprintf padictocc : "\t\tbl=%o\n",bl;
       if bl then
