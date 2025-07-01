@@ -232,7 +232,7 @@ try
     end if;
 
     // we print all outputs
-    if allproduct then
+    if is_ordinary and allproduct then
         fprintf allproduct_output, "%o\n", number_of_princ_pols;
     end if;
     for pol_line in av_fq_pol do
