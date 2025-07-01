@@ -67,6 +67,7 @@ end try;
 
 try
     t0:=Cputime();
+    //printf "%o : starting\n",label_isog; 
     assert assigned ZFV`WKICM;
     ss:=SortSingularPrimes(ZFV);
     singular_primes:=[];

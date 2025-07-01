@@ -2,7 +2,7 @@
 /*
 
 */
-    
+declare verbose PrimesLMFDB,1;
 declare attributes AlgEtQIdl : SortKey; //See SortKeyPrime for a description.
 
 declare attributes AlgEtQOrd : SingularPrimesSorted;  // singular primes of the order, according to the their SortKey.
@@ -87,6 +87,7 @@ intrinsic SmallMinimalGensPrimeZFV(P::AlgEtQIdl)->SeqEnum[AlgEtQElt],SeqEnum[Mon
     g,_:=DimensionSizeFiniteField(A);
 
     qq:=Integers()!Index(R,P);
+    vprintf PrimesLMFDB : "qq=%o\n",qq;
     basis:=ZFVBasis(A);
     _<F,V>:=PolynomialRing(Integers(),2);
     print_as_poly_in_ZFV:=function(x)
@@ -104,14 +105,24 @@ intrinsic SmallMinimalGensPrimeZFV(P::AlgEtQIdl)->SeqEnum[AlgEtQElt],SeqEnum[Mon
         return RemoveBlanks(Sprint(x_V+x_F)),C;
     end function;
     test,p:=IsPrimePower(qq);
+    vprintf PrimesLMFDB : "p=%o\n",p;
     assert test;
     Ap:=A!p;
     P2:=P^2;
+    vprintf PrimesLMFDB : "min integer=%o\n",MinimalInteger(P2);
     test,n:=IsPowerOf(Integers()!Index(P,P2),qq);
     assert test;
+    vprintf PrimesLMFDB : "n=%o\n",n;
+    vprintf PrimesLMFDB : "looking for initial gens\n",n;
+    if Ap in P2 then
+        // in this case Ap cannot belong to a minimal set of generators
+        n+:=1;
+    end if;
     repeat
         gens:=[Ap] cat [Random(P):i in [2..n]];
-    until P eq Ideal(R,gens);
+        test:=Ideal(R,gens);
+    until P eq test;
+    vprintf PrimesLMFDB : "done\n",n;
     // we have a set of generators
     // now we modify them, by adding to each gens[2..n] a random element of P2, to minimize the
     repeat // this repeat .. until is not probably not very smart...

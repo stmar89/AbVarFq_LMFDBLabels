@@ -1,0 +1,43 @@
+/* vim: set syntax=magma :*/
+/*
+    Edgar, by mistake, recomputed the same things 4 times.
+    This is a good opportunity to test if the output is consistent
+*/
+
+    AttachSpec("~/CHIMP/CHIMP.spec");
+    AttachSpec("~/AlgEt/spec");
+    AttachSpec("~/AbVarFq_LMFDBLabels/spec");
+    SetDebugOnError(true);
+
+    fld_base:="~/edgar_output/output_pols_";
+    flds:=[
+        //"/allproduct/",
+        //"/av_fq_isog/",
+        "/av_fq_pol/","/av_fq_we/"];
+
+    for fld in flds do
+        printf "\n\ndealing with folder %o\n",fld;
+
+        files_sep:=[ Split(Pipe("ls " * fld_base * Sprint(i) * fld,"r")) : i in [1..4] ];
+        files:=Setseq(Seqset(&cat(files_sep)));
+
+        tot:=#files; perc:=0;
+        for ii->f in files do
+            if Truncate(ii*100/tot) gt perc then perc+:=1; printf "%o%% ",perc; end if;
+            strs:=[ Read(fld_base * Sprint(i) * fld * f) : i in [1..4] | f in files_sep[i] ];
+            ss:=Seqset(strs);
+            if #ss ne 1 then
+                splits:=[ Split(s) : s in ss ];
+                printf "\nterrible %o %o %o %o %o\n",#strs,#ss,#Seqset(splits),#splits[1],f;
+
+            end if;
+        end for;
+    end for;
+
+    f:="2.49.a_adt";
+    fld:="/av_fq_pol/";
+    strs:=[ Read(fld_base * Sprint(i) * fld * f) : i in [1..4] | f in files_sep[i] ];
+    ss:=Seqset(strs);
+    splits:=[ Split(s) : s in ss ];
+    for i in [1..8] do splits[1,i];splits[2,i]; end for;
+

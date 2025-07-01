@@ -96,6 +96,8 @@ echo_status:
 	@ls ${fld_out_cm} | wc -l
 	@echo "script_pols completed :"
 	@ls ${fld_out_pols}av_fq_isog | wc -l
+	@echo "script_sing_primes completed :"
+	@ls ${fld_out_sing_primes}av_fq_isog | wc -l
 
 log_status:
 	@echo "status on:" >> ${my_log}
@@ -110,6 +112,8 @@ log_status:
 	@ls ${fld_out_cm} | wc -l >> ${my_log}
 	@echo "script_pols completed :" >> ${my_log}
 	@ls ${fld_out_pols}av_fq_isog | wc -l >> ${my_log}
+	@echo "script_sing_primes completed :" >> ${my_log}
+	@ls ${fld_out_sing_primes}av_fq_isog | wc -l >> ${my_log}
 	@echo "\n" >> ${my_log}
 
 status:
@@ -254,7 +258,7 @@ run_script_cm_missing:
 run_script_sing_primes:
 	@echo "(re)starting run_script_sing_primes on:" >> ${my_log}
 	@make -s log_versions_last_commits
-	parallel -j 20 --resume --joblog ${fld_comp}joblog_sing_primes -a ${input} magma -b fld_out_wk:=${fld_out_wk} fld_out_sing_primes:=${fld_out_sing_primes} issues:=${issues_sing_primes} s:={} ${fld_scripts}script_sing_primes.m
+	parallel -j 20 --u --resume --joblog ${fld_comp}joblog_sing_primes -a ${input} magma -b fld_out_wk:=${fld_out_wk} fld_out_sing_primes:=${fld_out_sing_primes} issues:=${issues_sing_primes} s:={} ${fld_scripts}script_sing_primes.m
 	@echo "run_script_cm_missing has finished on:" >> ${my_log}
 	@date >> ${my_log}
 

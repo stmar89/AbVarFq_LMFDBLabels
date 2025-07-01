@@ -1,0 +1,28 @@
+/* vim: set syntax=magma :*/
+
+    AttachSpec("~/CHIMP/CHIMP.spec");
+    AttachSpec("~/AlgEt/spec");
+    AttachSpec("~/AbVarFq_LMFDBLabels/spec");
+    SetClassGroupBounds("GRH");
+    SetColumns(0);
+    SetDebugOnError(true);
+    SetVerbose("PrimesLMFDB",1);
+
+    s:="3.2.ab_a_c";
+
+    PP<x>:=PolynomialRing(Integers());
+    _,_,h:=LabelToPoly(s);
+    A:=EtaleAlgebra(h);
+    g,q:=DimensionSizeFiniteField(A);
+    F:=PrimitiveElement(A);
+    V:=q/F;
+    ZFV:=Order([F,V]);
+    ss:=SingularPrimes(ZFV);
+    #ss;
+    for iP->P in ss do
+        iP;
+        _,str:=SmallMinimalGensPrimeZFV(P);
+        assert P eq Ideal(ZFV,[A!eval(s):s in str]);
+    end for;
+
+

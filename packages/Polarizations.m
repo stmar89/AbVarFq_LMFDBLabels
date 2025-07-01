@@ -330,26 +330,37 @@ The output consists of pol,den,nums where
     candidates:=ClosestVectors(L,-img_x0); //note the minus sign!
 
     norm_y0:=Norm(Vector(candidates[1])+img_x0);
-    eps:=10^-5;
-    assert forall{c:c in candidates|Abs(Norm(Vector(c)+img_x0) - norm_y0) lt eps};
+    assert forall{c:c in candidates|Abs(Norm(Vector(c)+img_x0) - norm_y0) lt 10^-5};
     // The procedure above is not independent of the initial x0.
     // Indeed, if we started with an isomorphic principal polarization x1, then we could get a different
     // set of candidates y1, also with `minimal' norm norm_y0
     // Each y1 will be of the form y1=l+y0 for some l in L.
     // By the triangular inequality we have that Norm(l) <= 2*norm_y0.
     // We enumerate elements of L satisfying this ineq and expand the list of candidates accordingly.
-    ss:=[Vector(s[1]):s in ShortVectors(L,2*norm_y0+eps)];
+    ss:=[Vector(s[1]):s in ShortVectors(L,4.4*norm_y0)];
     ss cat:=[-s:s in ss]; //ShortVectors is only up to sign
     extra_candidates:=[];
-    norm_y0_eps:=norm_y0+eps;
+    abs_diff := [Abs(Norm(Vector(c) +  s + img_x0) - norm_y0) : c in candidates, s in ss];
+    cs_ss:=[<c,s> : c in candidates, s in ss ];
+    ParallelSort(~abs_diff,~cs_ss);
+    
+    quotients := [ i : i->elt in abs_diff | i lt #abs_diff and abs_diff[i+1]/abs_diff[i] gt 10]; //FIXME Edgar
+    foobar := #quotients eq 0 select #abs_diff else quotients[1];
+    extra_candidates := [L!(Vector(v[1])+v[2]) : v in cs_ss[1..foobar]];
+    if foobar lt #quotients then
+        vprintf AllPolarizations : "next quotient: %o\n",quotients[foobar..foobar+1];
+    end if;
+
+    /*
     for s in ss,c in candidates do
         cs:=Vector(c)+s;
         ncs:=Norm(cs+img_x0);
         if ncs lt norm_y0_eps then
-            assert Abs(ncs - norm_y0) lt eps; 
+            assert Abs(ncs - norm_y0) lt eps; //TODO less than eps here
             Append(~extra_candidates,L!cs);
         end if;
     end for;
+    */
     vprintf AllPolarizations : "number extra candidates: %o\n",#extra_candidates;
     candidates cat:=extra_candidates;
 
