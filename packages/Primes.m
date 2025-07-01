@@ -95,7 +95,11 @@ intrinsic SmallMinimalGensPrimeZFV(P::AlgEtQIdl)->SeqEnum[AlgEtQElt],SeqEnum[Mon
         c:=AbsoluteCoordinates([x],basis)[1]; // g=c_1*V^(g-1)+...+c_(g-1)*V+c_g+c_(g+1)*F+...+c_2g*F^g
         ChangeUniverse(~c,Integers());
         C:=&+[c[i]^2:i in [1..#c]];
-        x_V:=&+[c[k]*[V^i:i in [g-1..1 by -1]][k]:k in [1..g-1]];
+        if g eq 1 then
+            x_V:=0;
+        else
+            x_V:=&+[c[k]*[V^i:i in [g-1..1 by -1]][k]:k in [1..g-1]];
+        end if;
         x_F:=&+[c[g+k]*F^k:k in [0..g]];
         return RemoveBlanks(Sprint(x_V+x_F)),C;
     end function;

@@ -58,11 +58,13 @@ input_slow_4 = ${fld_scripts}input_slow_4
 issues_wk = ${fld_comp}issues_wk
 issues_cm = ${fld_comp}issues_cm
 issues_pols = ${fld_comp}issues_pols
+issues_sing_primes = ${fld_comp}issues_sing_primes
 
 # output of the scripts
 fld_out_wk = ${fld_comp}output_wk/
 fld_out_cm = ${fld_comp}output_cm/
 fld_out_pols = ${fld_comp}output_pols/
+fld_out_sing_primes = ${fld_comp}output_sing_primes/
 
 degree_bounds = [4,9,25]
 
@@ -248,3 +250,16 @@ run_script_cm_missing:
 	parallel -j ${jobs_cm} --resume --joblog ${fld_comp}joblog_cm_missing -a ${input_cm_missing} magma -b fld_out:=${fld_out_cm} issues:=${issues_cm} s:={} ${fld_scripts}script_cm.m
 	@echo "run_script_cm_missing has finished on:" >> ${my_log}
 	@date >> ${my_log}
+
+run_script_sing_primes:
+	@echo "(re)starting run_script_sing_primes on:" >> ${my_log}
+	@make -s log_versions_last_commits
+	parallel -j 20 --resume --joblog ${fld_comp}joblog_sing_primes -a ${input} magma -b fld_out_wk:=${fld_out_wk} fld_out_sing_primes:=${fld_out_sing_primes} issues:=${issues_sing_primes} s:={} ${fld_scripts}script_sing_primes.m
+	@echo "run_script_cm_missing has finished on:" >> ${my_log}
+	@date >> ${my_log}
+
+clean_failed_script_sing_primes:
+	rm ${fld_comp}joblog_sing_primes 
+	rm ${fld_out_sing_primes}av_fq_isog/* || true
+	rm ${fld_out_sing_primes}av_fq_we/* || true
+

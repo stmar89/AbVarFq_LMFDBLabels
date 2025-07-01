@@ -46,8 +46,8 @@ split:=Split(label_isog,".");
 g:=eval(split[1]);
 q:=eval(split[2]);
 
-av_fq_we_output := Sprintf("%oav_fq_we/%o", fld_out_pols, label_isog);
-av_fq_isog_output := Sprintf("%oav_fq_isog/%o", fld_out_pols, label_isog);
+av_fq_we_output := Sprintf("%oav_fq_we/%o", fld_out_sing_primes, label_isog);
+av_fq_isog_output := Sprintf("%oav_fq_isog/%o", fld_out_sing_primes, label_isog);
 
 // early exit if already done
 if OpenTest(av_fq_isog_output,"r") then
@@ -61,11 +61,12 @@ try
     ZFV := LoadSchemaWKClasses(str_we);
     A := Algebra(ZFV);
 catch e
-    printf "*********************************************\nmissing some precomputed data for %o\n%o\n", label,e;
-    fprintf issues, "*********************************************\nmissing some precomputed data%o\n%o\n", label,e;
+    printf "*********************************************\nmissing some precomputed data for %o\n%o\n", label_isog,e;
+    fprintf issues, "*********************************************\nmissing some precomputed data%o\n%o\n", label_isog,e;
 end try;
 
 try
+    t0:=Cputime();
     assert assigned ZFV`WKICM;
     ss:=SortSingularPrimes(ZFV);
     singular_primes:=[];
@@ -92,9 +93,13 @@ try
             rel_cond:=ColonIdeal(OneIdeal(ZFV),ZFV!!OneIdeal(S));
             assert rel_cond subset ZFV;
             pp:=PrimesAbove(rel_cond);
-            singular_support:=&cat([P in pp select "1" else "0" : P in ss ]);
-            singular_support:=Sprint(StringToInteger(singular_support,2));
-            assert (singular_support eq "0") eq (S eq ZFV);
+            if #pp eq 0 then
+                assert S eq ZFV;
+                singular_support:="0";
+            else
+                singular_support:=&cat([P in pp select "1" else "0" : P in ss ]);
+                singular_support:=Sprint(StringToInteger(singular_support,2));
+            end if;
         else
             singular_support:="\\N";
         end if;
@@ -107,10 +112,11 @@ try
     for we_line in av_fq_we do
         fprintf av_fq_we_output, "%o\n", we_line;
     end for;
-    printf "%o : done\n",label; 
+    t1:=Cputime(t0);
+    printf "%o : done in %o seconds\n",label_isog,t1; 
 catch e
-    printf "*********************************************\n%o\n%o\n", label,e;
-    fprintf issues, "*********************************************\n%o\n%o\n", label,e;
+    printf "*********************************************\n%o\n%o\n", label_isog,e;
+    fprintf issues, "*********************************************\n%o\n%o\n", label_isog,e;
 end try;
 quit;
 
