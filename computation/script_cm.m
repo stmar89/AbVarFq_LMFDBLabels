@@ -9,8 +9,10 @@
     AttachSpec("~/CHIMP/CHIMP.spec");
     AttachSpec("~/AlgEt/spec");
     AttachSpec("~/AbVarFq_LMFDBLabels/spec");
-
+    
+    SetVerbose("padictocc",1);
     try 
+        printf "starting with %o\n",s;
         P<x>:=PolynomialRing(Integers());
         f:=P!eval(s);
         label:=IsogenyLabel(f);
@@ -33,6 +35,7 @@
                 go:=true;
             catch e
                 k+:=30;
+                e;
                 printf "increasing precision to %o for %o\n",k,label;
             end try;
         end while;
