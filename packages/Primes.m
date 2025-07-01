@@ -94,9 +94,10 @@ intrinsic SmallMinimalGensPrimeZFV(P::AlgEtQIdl)->SeqEnum[AlgEtQElt],SeqEnum[Mon
     // eg: V^2+3+F+F^5
         c:=AbsoluteCoordinates([x],basis)[1]; // g=c_1*V^(g-1)+...+c_(g-1)*V+c_g+c_(g+1)*F+...+c_2g*F^g
         ChangeUniverse(~c,Integers());
+        C:=&+[c[i]^2:i in [1..#c]];
         x_V:=&+[c[k]*[V^i:i in [g-1..1 by -1]][k]:k in [1..g-1]];
         x_F:=&+[c[g+k]*F^k:k in [0..g]];
-        return RemoveBlanks(Sprint(x_V+x_F));
+        return RemoveBlanks(Sprint(x_V+x_F)),C;
     end function;
     test,p:=IsPrimePower(qq);
     assert test;
@@ -109,23 +110,25 @@ intrinsic SmallMinimalGensPrimeZFV(P::AlgEtQIdl)->SeqEnum[AlgEtQElt],SeqEnum[Mon
     until P eq Ideal(R,gens);
     // we have a set of generators
     // now we modify them, by adding to each gens[2..n] a random element of P2, to minimize the
-    better_gens:=[Ap];
-    out_str:=[Sprint(p)];
-    for x in gens[2..n] do
-        str_x:=print_as_poly_in_ZFV(x);
-        better_x:=x;
-        for i in [1..100] do
-            xx:=x+Random(P2);
-            str_xx:=print_as_poly_in_ZFV(xx);
-            if #str_xx lt #str_x then
-                better_x:=xx;
-                str_x:=str_xx;
-            end if;
+    repeat // this repeat .. until is not probably not very smart...
+        better_gens:=[Ap];
+        out_str:=[Sprint(p)];
+        for ix->x in gens[2..n] do
+            str_x,C_x:=print_as_poly_in_ZFV(x);
+            better_x:=x;
+            for i in [1..100] do
+                xx:=x+Random(P2);
+                str_xx,C_xx:=print_as_poly_in_ZFV(xx);
+                if #str_xx lt #str_x or (#str_xx eq #str_x and C_xx lt C_x) then
+                    better_x:=xx;
+                    str_x:=str_xx;
+                    C_x:=C_xx;
+                end if;
+            end for;
+            Append(~better_gens,better_x);
+            Append(~out_str,str_x);
         end for;
-        Append(~better_gens,better_x);
-        Append(~out_str,str_x);
-    end for;
-    assert P eq Ideal(R,better_gens);
+    until P eq Ideal(R,better_gens);
     return better_gens,out_str;
 end intrinsic;
 

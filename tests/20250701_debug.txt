@@ -1,0 +1,238 @@
+/* vim: set syntax=magma :*/
+fld_comp:="~/287_abvarfq_lmfdb_recomputation/";
+fld_out_wk:="~/287_abvarfq_lmfdb_recomputation/output_wk/";
+fld_out_cm:="~/287_abvarfq_lmfdb_recomputation/output_cm/";
+fld_out_pols:="~/287_abvarfq_lmfdb_recomputation/output_pols/";
+degree_bounds:="[4,9,25]";
+
+AttachSpec("~/CHIMP/CHIMP.spec");
+AttachSpec("~/AlgEt/spec");
+AttachSpec("~/AbVarFq_LMFDBLabels/spec");
+SetClassGroupBounds("GRH");
+SetColumns(0);
+SetDebugOnError(true);
+SetVerbose("AllPolarizations",1);
+
+s:="4.2.a_e_b_i";
+s:="5.2.h_z_ck_eq_hg";
+_,_,h:=LabelToPoly(s);
+s:=Sprint(Coefficients(h));
+
+PP<x>:=PolynomialRing(Integers());
+h:=PP!eval(s);
+label:=IsogenyLabel(h);
+split:=Split(label,".");
+g:=eval(split[1]);
+q:=eval(split[2]);
+_,p:=IsPrimePower(q);
+is_ordinary:=IsCoprime(Coefficients(h)[(Degree(h) div 2)+1], p);
+assert is_ordinary;
+av_fq_pol_output := Sprintf("%oav_fq_pol/%o", fld_out_pols, label);
+av_fq_we_output := Sprintf("%oav_fq_we/%o", fld_out_pols, label);
+av_fq_isog_output := Sprintf("%oav_fq_isog/%o", fld_out_pols, label);
+allproduct_output := Sprintf("%oallproduct/%o", fld_out_pols, label);
+cmfile := Sprintf("%o_cm.txt", fld_out_cm * label);
+degree_bounds := eval(degree_bounds);
+av_fq_we_columns := ["label", "pic_invs", "pic_basis", "is_product", "product_partition", "is_conjugate_stable", "generator_over_ZFV", "is_Zconductor_sum", "is_ZFVconductor_sum"];
+av_fq_isog_columns := ["pic_prime_gens","size"];
+                                                                                                                  av_fq_pol_columns := ["label", "isog_label", "endomorphism_ring", "isom_label", "degree", "kernel", "degree_rr", "kernel_rr", "degree_rl", "kernel_rl", "degree_lr", "kernel_lr", "degree_ll", "kernel_ll", "aut_group", "geom_aut_group", "is_jacobian", "representative"];
+function print_ivec(v : json:=false)                                                                                  base := json select "[%o]" else "{%o}";
+    if Type(v) eq SeqEnum or Type(v) eq Tup then
+       return Sprintf(base, Join([$$(c : json:=json) : c in v], ","));                                               end if;
+    return Sprint(v);
+end function;
+
+commlines := Split(Read(Sprintf("%ocommutative_geom_endalg/%o.%o", fld_comp, g, q)), "\n");
+ZFV := LoadSchemaWKClasses(Read(Sprintf("%o_wk.txt", fld_out_wk * label)));
+A := Algebra(ZFV);
+if is_ordinary then
+   assert OpenTest(cmfile, "r");
+   cmdata := Read(cmfile);
+   PHI := LoadpAdicPosCMType(A, cmdata);
+   assert assigned A`pAdicPosCMType;
+end if;
+//A;
+allproduct := true;
+geom_endalg_is_comm := 0;
+for line in commlines do
+   llabel, iscomm := Explode(Split(line, " "));
+   if label eq llabel then
+      geom_endalg_is_comm := (iscomm[1] eq "t");
+      break;
+   end if;
+end for;
+assert geom_endalg_is_comm cmpne 0;
+av_fq_pol := [];
+av_fq_we := [];
+av_fq_isog := AssociativeArray();
+_, cangens := DistinguishedPicGenerators(ZFV);
+_ := DistinguishedPicBases(ZFV); // sets DistinguishedPicBasis for each S
+av_fq_isog["pic_prime_gens"] := print_ivec(cangens);
+isogeny_size:=0;
+
+for S in OverOrders(ZFV) do
+   Pbasis, construction := DistinguishedPicBasis(S);
+   invs, construction := Explode(construction);
+   Sdata := AssociativeArray();
+   Sdata["label"] := WELabel(S);
+   Sdata["pic_invs"] := print_ivec(invs);
+   Sdata["pic_basis"] := print_ivec(construction);
+   product, _, partition := IsProductOfOrdersLMFDB(S);
+   allproduct := allproduct and product;
+   Sdata["is_product"] := product select "t" else "f";
+   Sdata["product_partition"] := print_ivec(partition: json:=true);
+   Sdata["is_conjugate_stable"] := IsConjugateStable(S) select "t" else "f";
+   _, dens, nums := SmallestMonogenicGeneratorOverZFV(S, ZFV);
+   if #dens eq 0 then
+      Sdata["generator_over_ZFV"] := "\\N";
+   else
+      Sdata["generator_over_ZFV"] := Sprintf("[%o,%o]", dens[1], print_ivec(nums[1] : json:=true));
+   end if;
+   Sdata["is_Zconductor_sum"] := (S eq Order(ZBasis(Conductor(S)))) select "t" else "f";
+   Sdata["is_ZFVconductor_sum"] := (S eq Order(ZBasis(Conductor(S)) cat ZBasis(ZFV))) select "t" else "f";
+   assert assigned S`WKICM_bar;
+   assert assigned S`PicardGroup;
+   isogeny_size +:= #WKICM_bar(S) * #PicardGroup(S);
+   Append(~av_fq_we, Sdata);
+end for;
+av_fq_isog["size"] := Sprint(isogeny_size);
+
+_,_,I,den,nums,lambda:=Explode(PPolIteration(ZFV)[1]); 
+den,nums;
+// Found the issue: need to replace Lattice with LAtticeWithBasis
+
+/*
+//ZBasis(I);
+// the issue is with the maximal order, with a non principal class.
+S:=MaximalOrder(A);
+wkimS := WKICM_barDistinguishedRepresentatives(S); 
+assert #wkimS eq 1;
+assert wkimS[1] eq S;
+ppol_poss := PPolPossIteration(S);
+WE:=wkimS[1];
+//#ppol_poss;
+tup:=ppol_poss[1];
+II, pic_ctr := Explode(tup);
+assert I eq II;
+WEI := WE * I;
+pp := PrincipalPolarizations(WEI, PHI);
+seq:=PrintSeqAlgEtQElt(pp);
+//seq;
+
+// OLD STUFF not applicable to this case
+
+// different runs give me 2 polariations
+// the first one seems to be always the same, i
+p0:=A!<[ -745/348279, 1553840/2923105647, -144205/2923105647, 6169/2923105647 ]>;
+//but the second one changes: we get two possible outputs
+p1:=A!<[ -473/1044837, 469610/2923105647, 12854/2923105647, 11864/8769316941 ]>;
+p2:=A!<[ -19642/1044837, 13514950/2923105647, -1310699/2923105647, 154699/8769316941 ]>;
+// I want to check whether they are isomorphic
+U,u:=UnitGroup(S);
+UUbar:=sub<U|[(u(U.i)*ComplexConjugate(u(U.i)))@@u : i in [1..Ngens(U)]]>;
+assert (p1/p2)@@u in UUbar;
+// they are. So nothing wrong so far.
+d0:=DistinguishedRepresentativePolarizationConjugateStableOrder(WEI,p0);
+d1:=DistinguishedRepresentativePolarizationConjugateStableOrder(WEI,p1);
+d2:=DistinguishedRepresentativePolarizationConjugateStableOrder(WEI,p2);
+d1 eq d2; d0,d1,d2;
+// somtimes, not always, these two are not the same!!!
+p2:=pp[1];
+
+// we start diggin into DistinguishedRepresentativePolarizationConjugateStableOrder
+I:=WEI;
+x0:=p2;
+x0;
+S:=MultiplicatorRing(I);
+A:=Algebra(x0);
+g:=Dimension(A) div 2;
+F:=PrimitiveElement(A);
+basis:=ZFVBasis(A);
+homs:=HomsToC(A);
+prec:=Precision(Codomain(homs[1]));
+// are the homs sorted in conjugate pairs?
+assert forall{ k : k in [1..g] | Abs(homs[2*k-1](F) - ComplexConjugate(homs[2*k](F))) lt 10^-(prec div 2)};
+
+homs:=[homs[2*k-1] : k in [1..g]]; //one per conjugate pair to define the Log map
+
+ff:=Conductor(S);
+US,uS:=UnitGroup(S);
+"\nunits",US;
+"\ntorsion units",TorsionSubgroup(US);
+gens_US:=[ uS(g) : g in Generators(US) ]; // the torsion unit probably does do nothing
+// is the unit group the same???
+gens_US_stored:=[A!u:u in[
+<[1,0],[6,-3/2,-3/2,-9/8,-1/2,-1/4,7/8,-1/8]>,
+<[-1,0],[1,0,0,0,0,0,0,0]>,
+<[1,0],[-1,1/2,1/4,1/8,0,0,-1/8,1/8]>,
+<[1,0],[-6,11/2,0,5/8,-1/2,-1/4,-7/8,5/8]>,
+<[1,0],[10,-15/2,-3/4,-3/4,0,1/4,3/2,-3/4]>
+]];
+US_test:=sub<US|[u@@uS:u in gens_US_stored]>;
+assert US_test eq US;
+
+// is sub the same ???
+sub:=sub< US | [(g*ComplexConjugate(g))@@uS : g in gens_US ] >;     // sub = < u * \bar u : u in S^* >
+"\nsub<u*bar{u}>",sub;
+gens_sub_inS:=[ uS(g) : g in Generators(sub) ];
+rnk_sub:=#gens_sub_inS; // 1 in this example
+assert rnk_sub eq g-#Components(A);
+gens_sub_inS_test:=[A!u:u in [
+<[1,0],[24,-27/2,-9/2,-11/8,3/2,1/4,21/8,-11/8]>,
+<[1,0],[40000,287220,-527610,345219/8,264920,-28821/4,-1017817/8,345219/8]>,
+<[1,0],[22661592,146581152,-1087251267/4,22079112,272829459/2,-14742071/4,-260882775/4,22079112]>
+]];
+sub_test:=sub<US|[u@@uS:u in gens_sub_inS_test]>;
+assert sub eq sub_test;
+
+img_gens_sub:=[ h(g) : h in homs , g in gens_sub_inS ];
+assert forall{ x : x in img_gens_sub | Im(x) lt 10^-10 and Re(x) gt 0 };
+
+img_gens_sub:=Matrix([[ Log(Abs(h(g))) : h in homs ] : g in gens_sub_inS ]); // apply Log map
+//"img_gens_sub",img_gens_sub; // this changes sign!
+L:=LatticeWithBasis(img_gens_sub:CheckIndependent:=true);
+LLLBasisMatrix(L);
+img_x0:=Vector([ Log(Abs(h(x0))) : h in homs ]);
+//"img_x0",img_x0; // this is always the same
+closest_vects:=ClosestVectors(L,-img_x0); //note the minus sign!
+//"closest_vects",closest_vects; // this is always the saem
+all_coords:=[ Coordinates(cv) : cv in closest_vects];
+//"all_coords",all_coords; //always the same = [[1]]
+
+candidates:=[ x0*&*[ gens_sub_inS[i]^coord[i] : i in [1..rnk_sub] ] : coord in all_coords ];
+seq:=PrintSeqAlgEtQElt(candidates);
+assert forall{c: c in candidates|(c/x0)@@uS in sub};
+seq[1];
+ccc:=AbsoluteCoordinates(candidates,ZFVBasis(A));
+for cc in ccc do
+    den0:=LCM([ Denominator(c) : c in cc]);
+    nums0:=[c*den0:c in cc];
+    dist:=&+[dd^2:dd in Eltseq(Vector(closest_vects[1])+img_x0)]; //distance squared
+    dist,den0,nums0;
+end for;
+
+/*
+lambda0:=A!<[ -1/7, 2/7 ], [ 29/205, -152/205, 29/820, 111/820, 51/410, 71/820, 11/205, -73/820 ]>;
+lambda01:=A!<[ -1/7, 2/7 ], [ -504/205, 422/205, 111/820, 29/820, -31/410, -11/820, -71/205, 173/820 ]>;
+vvbar:=lambda0/lambda01;
+
+assert (vvbar)@@uS in sub;
+(vvbar)@@uS;
+vvbar;
+vvbar:=Vector([ Log(Abs(h(vvbar))) : h in homs ]);
+
+a0:=[ Log(Abs(h(lambda0))) : h in homs ];
+b0:=[ Log(Abs(h(lambda01))) : h in homs ];
+
+a:=[Log(Abs(h(candidates[1]))):h in homs];
+"\na,a0,b0";
+a,a0,b0;
+abs_a:=&+[ai^2:ai in a]+0.5; abs_a;
+//assert forall{c:c in candidates|abs_a eq Sqrt(&+[Log(Abs(h(c)))^2:h in homs])};
+ss:=[Vector(s[1]):s in ShortVectors(L,2*abs_a)];
+#ss;
+test:=[Vector(a)] cat &cat[[Vector(a)+s,Vector(a)-s]:s in ss];
+
+Min([ Norm(Vector(a0)-t):t in test]);
+Min([ Norm(Vector(b0)-t):t in test]);
+*/
