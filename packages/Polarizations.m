@@ -343,13 +343,14 @@ The output consists of pol,den,nums where
     abs_diff := [Abs(Norm(Vector(c) +  s + img_x0) - norm_y0) : c in candidates, s in ss];
     cs_ss:=[<c,s> : c in candidates, s in ss ];
     ParallelSort(~abs_diff,~cs_ss);
-    
-    quotients := [ i : i->elt in abs_diff | i lt #abs_diff and abs_diff[i+1]/abs_diff[i] gt 10]; //FIXME Edgar
-    foobar := #quotients eq 0 select #abs_diff else quotients[1];
-    extra_candidates := [L!(Vector(v[1])+v[2]) : v in cs_ss[1..foobar]];
-    if foobar lt #quotients then
-        vprintf AllPolarizations : "next quotient: %o\n",quotients[foobar..foobar+1];
-    end if;
+
+    // now we try to divide the candidates by order of magnitude
+    separators := [ i : i->elt in abs_diff | i lt #abs_diff and (abs_diff[i+1] gt 10*abs_diff[i])];
+    vprintf AllPolarizations : "separators: %o\n", [[RealField(3) | abs_diff[i], abs_diff[i+1]] : i in separators];
+    first_block := #separators eq 0 select #abs_diff else separators[1];
+    extra_candidates := [L!(Vector(v[1])+v[2]) : v in cs_ss[1..first_block]];
+    // we also want to make sure that they are indeed small
+    assert forall{c : c in extra_candidates | Abs(Norm(Vector(c)+img_x0) - norm_y0) lt 10^-5};
 
     /*
     for s in ss,c in candidates do
