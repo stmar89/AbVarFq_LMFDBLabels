@@ -141,13 +141,69 @@ clean_failed_script_cm:
 # change in the parallel command input_fast_1 to all the other inputs
 # input_fast_i for i =1,2,3,4
 # input_slow_i for i =1,2,3,4
-# input_test_pol 20 random isogeny classes
-run_script_pols:
+timeout = 300
+run_script_pols_fast1:
 	@echo "(re)starting run_script_pols on:" >> ${my_log}
 	@make -s log_versions_last_commits
-	parallel -j 20 --resume --joblog ${fld_comp}joblog_pols -a ${input_test_pol} magma -b fld_comp:=${fld_comp} fld_out_wk:=${fld_out_wk} fld_out_cm:=${fld_out_cm} fld_out_pols:=${fld_out_pols} issues:=${issues_pols} degree_bounds:=${degree_bounds} s:={} ${fld_scripts}script_pols.m
+	parallel --eta --timeout ${timeout} --memsuspend 100G --resume --joblog ${fld_comp}joblog_pols_fast1 -a ${input_fast_1} magma -b fld_comp:=${fld_comp} fld_out_wk:=${fld_out_wk} fld_out_cm:=${fld_out_cm} fld_out_pols:=${fld_out_pols} issues:=${issues_pols} degree_bounds:=${degree_bounds} s:={} ${fld_scripts}script_pols.m
 	@echo "run_script_pols has finished on:" >> ${my_log}
 	@date >> ${my_log}
+
+run_script_pols_fast2:
+	@echo "(re)starting run_script_pols on:" >> ${my_log}
+	@make -s log_versions_last_commits
+	parallel --eta  --timeout ${timeout} --memsuspend 100G --resume --joblog ${fld_comp}joblog_pols_fast2 -a ${input_fast_2} magma -b fld_comp:=${fld_comp} fld_out_wk:=${fld_out_wk} fld_out_cm:=${fld_out_cm} fld_out_pols:=${fld_out_pols} issues:=${issues_pols} degree_bounds:=${degree_bounds} s:={} ${fld_scripts}script_pols.m
+	@echo "run_script_pols has finished on:" >> ${my_log}
+	@date >> ${my_log}
+
+
+run_script_pols_fast3:
+	@echo "(re)starting run_script_pols on:" >> ${my_log}
+	@make -s log_versions_last_commits
+	parallel --eta  --timeout ${timeout} --memsuspend 100G --resume --joblog ${fld_comp}joblog_pols_fast3 -a ${input_fast_3} magma -b fld_comp:=${fld_comp} fld_out_wk:=${fld_out_wk} fld_out_cm:=${fld_out_cm} fld_out_pols:=${fld_out_pols} issues:=${issues_pols} degree_bounds:=${degree_bounds} s:={} ${fld_scripts}script_pols.m
+	@echo "run_script_pols has finished on:" >> ${my_log}
+	@date >> ${my_log}
+
+
+run_script_pols_fast4:
+	@echo "(re)starting run_script_pols on:" >> ${my_log}
+	@make -s log_versions_last_commits
+	parallel --eta  --timeout ${timeout} --memsuspend 100G --resume --joblog ${fld_comp}joblog_pols_fast4 -a ${input_fast_4} magma -b fld_comp:=${fld_comp} fld_out_wk:=${fld_out_wk} fld_out_cm:=${fld_out_cm} fld_out_pols:=${fld_out_pols} issues:=${issues_pols} degree_bounds:=${degree_bounds} s:={} ${fld_scripts}script_pols.m
+	@echo "run_script_pols has finished on:" >> ${my_log}
+	@date >> ${my_log}
+
+run_script_pols_slow1:
+	@echo "(re)starting run_script_pols on:" >> ${my_log}
+	@make -s log_versions_last_commits
+	parallel --eta  --timeout ${timeout} --memsuspend 100G --resume --joblog ${fld_comp}joblog_pols_slow1 -a ${input_slow_1} magma -b fld_comp:=${fld_comp} fld_out_wk:=${fld_out_wk} fld_out_cm:=${fld_out_cm} fld_out_pols:=${fld_out_pols} issues:=${issues_pols} degree_bounds:=${degree_bounds} s:={} ${fld_scripts}script_pols.m
+	@echo "run_script_pols has finished on:" >> ${my_log}
+	@date >> ${my_log}
+
+
+run_script_pols_slow2:
+	@echo "(re)starting run_script_pols on:" >> ${my_log}
+	@make -s log_versions_last_commits
+	parallel --eta  --timeout ${timeout} --memsuspend 100G --resume --joblog ${fld_comp}joblog_pols_slow2 -a ${input_slow_2} magma -b fld_comp:=${fld_comp} fld_out_wk:=${fld_out_wk} fld_out_cm:=${fld_out_cm} fld_out_pols:=${fld_out_pols} issues:=${issues_pols} degree_bounds:=${degree_bounds} s:={} ${fld_scripts}script_pols.m
+	@echo "run_script_pols has finished on:" >> ${my_log}
+	@date >> ${my_log}
+
+
+run_script_pols_slow3:
+	@echo "(re)starting run_script_pols on:" >> ${my_log}
+	@make -s log_versions_last_commits
+	parallel --eta  --timeout ${timeout} --memsuspend 100G --resume --joblog ${fld_comp}joblog_pols_slow3 -a ${input_slow_3} magma -b fld_comp:=${fld_comp} fld_out_wk:=${fld_out_wk} fld_out_cm:=${fld_out_cm} fld_out_pols:=${fld_out_pols} issues:=${issues_pols} degree_bounds:=${degree_bounds} s:={} ${fld_scripts}script_pols.m
+	@echo "run_script_pols has finished on:" >> ${my_log}
+	@date >> ${my_log}
+
+
+run_script_pols_slow4:
+	@echo "(re)starting run_script_pols on:" >> ${my_log}
+	@make -s log_versions_last_commits
+	parallel --eta --timeout ${timeout}  --memsuspend 100G --resume --joblog ${fld_comp}joblog_pols_slow4 -a ${input_slow_4} magma -b fld_comp:=${fld_comp} fld_out_wk:=${fld_out_wk} fld_out_cm:=${fld_out_cm} fld_out_pols:=${fld_out_pols} issues:=${issues_pols} degree_bounds:=${degree_bounds} s:={} ${fld_scripts}script_pols.m
+	@echo "run_script_pols has finished on:" >> ${my_log}
+	@date >> ${my_log}
+
+
 
 clean_failed_script_pols:
 	rm ~/287_abvarfq_lmfdb_recomputation/output_pols/av_fq_pol/* || true
