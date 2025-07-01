@@ -330,9 +330,8 @@ The output consists of pol,den,nums where
     candidates:=ClosestVectors(L,-img_x0); //note the minus sign!
 
     norm_y0:=Norm(Vector(candidates[1])+img_x0);
-    prec:=30; // this precision parameter is set so because L is contructed using the default precision 30
     eps:=10^-5;
-    assert forall{c:c in candidates|Abs(Norm(Vector(c)+img_x0) - norm_y0) lt 10^-prec};
+    assert forall{c:c in candidates|Abs(Norm(Vector(c)+img_x0) - norm_y0) lt eps};
     // The procedure above is not independent of the initial x0.
     // Indeed, if we started with an isomorphic principal polarization x1, then we could get a different
     // set of candidates y1, also with `minimal' norm norm_y0
