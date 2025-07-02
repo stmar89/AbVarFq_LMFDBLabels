@@ -30,4 +30,4 @@ In the [`example file`](https://github.com/stmar89/AbVarFq_LMFDBLabels/blob/main
 
 ### Further info
 The folder `computation/` contains scripts for the computation and labeling of the isomorphism classes with polarizations used to populate (some entries of) the LMFDB tables `av_fq_isog`, `av_fq_weak_equivalences` and `av_fq_pol`.<br>
-See `computation/Makefile` for more details.
+See [`the corresponding README file`](https://github.com/stmar89/AbVarFq_LMFDBLabels/blob/main/computation/README) for a detailed explanation.
