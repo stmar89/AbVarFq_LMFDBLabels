@@ -216,8 +216,8 @@ clean_failed_script_pols:
 	rm ~/287_abvarfq_lmfdb_recomputation/output_pols/av_fq_we/* || true
 	rm ~/287_abvarfq_lmfdb_recomputation/output_pols/av_fq_isog/* || true
 	rm ~/287_abvarfq_lmfdb_recomputation/output_pols/allproduct/* || true
-	rm ~/287_abvarfq_lmfdb_recomputation/joblog_pols || true
-	rm ~/287_abvarfq_lmfdb_recomputation/issues_pols || true
+	rm ~/287_abvarfq_lmfdb_recomputation/joblog_pols* || true
+	rm ~/287_abvarfq_lmfdb_recomputation/issues_pols* || true
 
 fld_out_pols_test1 = ${fld_comp}output_pols_test1/
 fld_out_pols_test2 = ${fld_comp}output_pols_test2/
