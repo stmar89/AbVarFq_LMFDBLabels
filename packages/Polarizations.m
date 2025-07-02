@@ -293,15 +293,6 @@ The output consists of pol,den,nums where
         return x0, den, nums;
     end if;
 
-    homs:=HomsToC(A); 
-    prec:=Precision(Codomain(homs[1]));
-    // are the homs sorted in conjugate pairs?
-    assert forall{ k : k in [1..g] | Abs(homs[2*k-1](F) - ComplexConjugate(homs[2*k](F))) lt 10^-(prec div 2)};
-    homs:=[homs[2*k-1] : k in [1..g]]; //one per conjugate pair to define the Log map
-
-    Log_map:=function(g)
-        return [ Log(Abs(h(g))) : h in homs ];
-    end function;
         
     
     if is_conjugate_stable then
@@ -325,8 +316,17 @@ The output consists of pol,den,nums where
     rnk_sub:=#gens_sub;
     assert rnk_sub eq g-#Components(A);
     function Candidates(prec)
-        old_default_prec := Precision(RealField());
-        SetDefaultRealFieldPrecision(prec);
+
+        homs:=HomsToC(A : Prec:=prec); 
+        prec:=Precision(Codomain(homs[1]));
+        // are the homs sorted in conjugate pairs?
+        assert forall{ k : k in [1..g] | Abs(homs[2*k-1](F) - ComplexConjugate(homs[2*k](F))) lt 10^-(prec div 2)};
+        homs:=[homs[2*k-1] : k in [1..g]]; //one per conjugate pair to define the Log map
+
+        Log_map:=function(g)
+            return [ Log(Abs(h(g))) : h in homs ];
+        end function;
+
         eps := 10^(prec*0.9);
         img_gens_sub:=Matrix([Log_map(g) : g in gens_sub ]); // apply Log map
         L:=LatticeWithBasis(img_gens_sub);
@@ -337,7 +337,6 @@ The output consists of pol,den,nums where
         norm_y0:=Norm(Vector(candidates[1])+img_x0);
         if not forall{c:c in candidates|Abs(Norm(Vector(c)+img_x0) - norm_y0) lt eps} then
             vprintf AllPolarizations : "prec: %o, candidates not small\n";
-            SetDefaultRealFieldPrecision(old_default_prec);
             return false, _;
         end if;
 
@@ -364,9 +363,9 @@ The output consists of pol,den,nums where
         extra_candidates := [L!(Vector(v[1])+v[2]) : v in cs_ss[1..first_block]];
         // we also want to make sure that they are indeed small
         vprintf AllPolarizations : "%o\n", [RealField(5) | Abs(Norm(Vector(c)+img_x0) - norm_y0) : c in extra_candidates];
-        if not forall{c : c in extra_candidates | Abs(Norm(Vector(c)+img_x0) - norm_y0) lt eps};
+        if not forall{c : c in extra_candidates | Abs(Norm(Vector(c)+img_x0) - norm_y0) lt eps} then
             vprintf AllPolarizations : "prec: %o, extra_candidates not small\n";
-            SetDefaultRealFieldPrecision(old_default_prec);
+            //SetDefaultRealFieldPrecision(old_default_prec);
             return false, _;
         end if;
 
@@ -386,7 +385,7 @@ The output consists of pol,den,nums where
     end function;
 
     prec := 30;
-    for try in [1..10] do
+    for i in [1..10] do
         b, candidates := Candidates(prec);
         if b then break; end if;
         prec *:= 2;
