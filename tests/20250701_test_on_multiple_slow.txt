@@ -13,7 +13,9 @@
     flds:=[
         //"/allproduct/",
         //"/av_fq_isog/",
-        "/av_fq_pol/","/av_fq_we/"];
+        "/av_fq_pol/"
+        //,"/av_fq_we/"
+        ];
 
     for fld in flds do
         printf "\n\ndealing with folder %o\n",fld;
@@ -27,17 +29,18 @@
             strs:=[ Read(fld_base * Sprint(i) * fld * f) : i in [1..4] | f in files_sep[i] ];
             ss:=Seqset(strs);
             if #ss ne 1 then
-                splits:=[ Split(s) : s in ss ];
-                printf "\nterrible %o %o %o %o %o\n",#strs,#ss,#Seqset(splits),#splits[1],f;
-
+                _,_,h:=LabelToPoly(f);
+                fprintf "~/AbVarFq_LMFDBLabels/computation/input_test_pol","%o\n",Coefficients(h);
             end if;
         end for;
     end for;
 
+    /*
     f:="2.49.a_adt";
     fld:="/av_fq_pol/";
     strs:=[ Read(fld_base * Sprint(i) * fld * f) : i in [1..4] | f in files_sep[i] ];
     ss:=Seqset(strs);
     splits:=[ Split(s) : s in ss ];
     for i in [1..8] do splits[1,i];splits[2,i]; end for;
+    */
 
