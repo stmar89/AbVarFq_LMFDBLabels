@@ -281,29 +281,6 @@ The output consists of pol,den,nums where
     S:=MultiplicatorRing(I);
     is_conjugate_stable,Sb:=IsConjugateStable(S);
 
-    A:=Algebra(x0);
-    g:=Dimension(A) div 2;
-    F:=PrimitiveElement(A);
-    basis:=ZFVBasis(A);
-
-    if g eq #Components(A) then // then sub below would be the trivial group and the code would not modify x0. Early exit
-        y0 := AbsoluteCoordinates([x0],basis);
-        den := LCM([Denominator(c) : c in y0[1]]);
-        nums := [den * c : c in y0[1]];
-        return x0, den, nums;
-    end if;
-
-    homs:=HomsToC(A); 
-    prec:=Precision(Codomain(homs[1]));
-    // are the homs sorted in conjugate pairs?
-    assert forall{ k : k in [1..g] | Abs(homs[2*k-1](F) - ComplexConjugate(homs[2*k](F))) lt 10^-(prec div 2)};
-    homs:=[homs[2*k-1] : k in [1..g]]; //one per conjugate pair to define the Log map
-
-    Log_map:=function(g)
-        return [ Log(Abs(h(g))) : h in homs ];
-    end function;
-        
-    
     if is_conjugate_stable then
         // this version is slightly faster
         US,uS:=UnitGroup(S);
@@ -321,13 +298,35 @@ The output consists of pol,den,nums where
     end if;
 
 
+
+    A:=Algebra(x0);
+    g:=Dimension(A) div 2;
+    F:=PrimitiveElement(A);
+    basis:=ZFVBasis(A);
+
+    if g eq #Components(A) then // then sub below would be the trivial group and the code would not modify x0. Early exit
+        y0 := AbsoluteCoordinates([x0],basis);
+        den := LCM([Denominator(c) : c in y0[1]]);
+        nums := [den * c : c in y0[1]];
+        return x0, den, nums;
+    end if;
+
+
+
     // we construct the lattice
     rnk_sub:=#gens_sub;
     assert rnk_sub eq g-#Components(A);
     function Candidates(prec)
-        old_default_prec := Precision(RealField());
-        SetDefaultRealFieldPrecision(prec);
         eps := 10^(prec*0.9);
+        homs:=HomsToC(A : Prec:=prec);
+        assert {Precision(Codomain(h)) : h in homs} eq {prec};
+        // are the homs sorted in conjugate pairs?
+        assert forall{ k : k in [1..g] | Abs(homs[2*k-1](F) - ComplexConjugate(homs[2*k](F))) lt 10^-(prec div 2)};
+        homs:=[homs[2*k-1] : k in [1..g]]; //one per conjugate pair to define the Log map
+
+        Log_map:=function(g)
+            return [ Log(Abs(h(g))) : h in homs ];
+        end function;
         img_gens_sub:=Matrix([Log_map(g) : g in gens_sub ]); // apply Log map
         L:=LatticeWithBasis(img_gens_sub);
         // we find all vectors in L closest to -img_x0
@@ -337,7 +336,6 @@ The output consists of pol,den,nums where
         norm_y0:=Norm(Vector(candidates[1])+img_x0);
         if not forall{c:c in candidates|Abs(Norm(Vector(c)+img_x0) - norm_y0) lt eps} then
             vprintf AllPolarizations : "prec: %o, candidates not small\n";
-            SetDefaultRealFieldPrecision(old_default_prec);
             return false, _;
         end if;
 
@@ -366,7 +364,6 @@ The output consists of pol,den,nums where
         vprintf AllPolarizations : "%o\n", [RealField(5) | Abs(Norm(Vector(c)+img_x0) - norm_y0) : c in extra_candidates];
         if not forall{c : c in extra_candidates | Abs(Norm(Vector(c)+img_x0) - norm_y0) lt eps};
             vprintf AllPolarizations : "prec: %o, extra_candidates not small\n";
-            SetDefaultRealFieldPrecision(old_default_prec);
             return false, _;
         end if;
 
