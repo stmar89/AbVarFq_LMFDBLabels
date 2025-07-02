@@ -237,7 +237,10 @@ run_script_pols_slow4:
 
 clean_failed_script_pols:
 	rm -r ~/287_abvarfq_lmfdb_recomputation/output_pols/ || true
-	mkdir -p ~/287_abvarfq_lmfdb_recomputation/output_pols/{av_fq_pol,av_fq_we,av_fq_isog,allproduct}
+	mkdir -p ~/287_abvarfq_lmfdb_recomputation/output_pols/av_fq_pol
+	mkdir -p ~/287_abvarfq_lmfdb_recomputation/output_pols/av_fq_we
+	mkdir -p ~/287_abvarfq_lmfdb_recomputation/output_pols/av_fq_isog
+	mkdir -p ~/287_abvarfq_lmfdb_recomputation/output_pols/allproduct
 	rm ~/287_abvarfq_lmfdb_recomputation/joblog_pols* || true
 	rm ~/287_abvarfq_lmfdb_recomputation/issues_pols* || true
 
