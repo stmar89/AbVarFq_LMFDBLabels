@@ -46,40 +46,161 @@ and consists of the following files:
 The computation is divided in 4 different stages, some of which depends on others.
 Each stage has corresponding `targets' (rules, if you want) in:
     AbVarFq_LMFDBLabels/computation/Makefile
-
+For the descriptions of all the columns see:
+- https://beta.lmfdb.org/api/av_fq_isog/
+- https://beta.lmfdb.org/api/av_fq_weak_equivalences/
+- https://beta.lmfdb.org/api/av_fq_pol/
 
 # Stage: "weak equivalence classes"
-    input file          weil_poly_sqfree_ord_cs_no_3_25.txt
-    targets             TODO 
-    output folders      TODO
-    output description  TODO
-    notes               It took a couple of days on diophantus.
-                        When there is an order of cohen-macaulay type >2, then the Pic computation is triggered.
+    input file          - weil_poly_sqfree_ord_cs_no_3_25.txt
 
-TODO from here
+    magma scripts       - AbVarFq_LMFDBLabels/computation/script_wk.m 
+
+    targets             - run_script_wk
+                        - clean_failed_script_wk 
+
+    dependencies        - None
+
+    output description  The output for each isogeny class is stored in 
+                            ~/287_abvarfq_lmfdb_recomputation/output_wk/isog_label_wk.txt,
+                        eg. the output of the isogeny class 1.101.a is stored in the file 1.101.a_wk.txt.
+                        Each file contains the following columns of the database av_fq_weak_equivalences:
+                        - label
+                        - we_number
+                        - pic_size
+                        - multiplicator_ring
+                        - isog_label
+                        - ideal_basis_numerators
+                        - ideal_basis_denominator
+                        - is_invertible
+                        - cohen_macaulay_type
+                        - dimensions
+                        - minimal_overorders_I
+                        - rational_invariants
+                        - higher_invariants
+                        - conductor
+                        - conductor_is_Sprime
+                        - conductor_is_Oprime
+                        - conductor_Sindex
+                        - conductor_Oindex
+                        - conductor_class
+
+    notes               - It took a couple of days on diophantus.
+                        - When there is an order of cohen-macaulay type >2, then the Pic computation is triggered.
+                        - The name of the file isn't optimal: remove '_wk.txt' if needed.
+
 # Stage: "singular primes"
-    input file      
-    targets             
-    script command  
-    output folders  
-    output description
-    notes               
+    input file          - weil_poly_sqfree_ord_cs_no_3_25.txt
+
+    magma scripts       - AbVarFq_LMFDBLabels/computation/script_sing_primes.m
+    
+    targets             - run_script_sing_primes
+                        - clean_failed_script_sing_primes
+
+    dependencies        - To be run after the Stage: "weak equivalence classes"  
+
+    output description  Stores in
+                            ~/287_abvarfq_lmfdb_recomputation/output_sing_primes/av_fq_isog/isog_label
+                        the following columns of the table av_fq_isog:
+                        - label_isog                # for matching, of format g.q.coeffs
+                        - singular_primes           # text[], a list of strings describing the singular ideal ideals, sorted using SortPrimes
+                                                    # eg. ["2,1/8*(1 + 129*F - 501*V + 7*F^2)", "5, 1/5*(1 + 3F)", "5,1/25*(2+5*F + F^2)"]
+                        Stores in
+                            ~/287_abvarfq_lmfdb_recomputation/output_sing_primes/av_fq_we/isog_label
+                        the following columns of the table 
+                        * av_fq_weak_equivalences: 
+                        - label_we                  # for matching, of format g.q.coeffs.N.i.w
+                        - singular_support          # \\N unless the we class is an order
+                                                    # 0 for Z[F,V]
+                                                    # base codification of a sting of binary bits where ith value is 1 precisely when (Z[F,V]:S) has support at the ith singular_primes 
+    notes               - Very fast. It probably finished in a few hours on diophantus.     
 
 # Stage: "cm-types"
-    input file      
-    targets             
-    script command  
-    output folders  
-    output description
-    notes               
+    input file          - weil_poly_sqfree_ord_no_3_25.txt # only ordinary ones.
+                        - input_cm_missing                 # 38 classes, see below. 
+
+    targets             - run_script_cm           # It took a couple of days on diophantus, 
+                                                  # failing for 38 classes, see below.
+                        - clean_failed_script_cm
+                        - run_script_cm_missing   # on input_cm_missing, containing 38 classes of dim 5
+                                                  # over F2. They get terminated after a long time. 
+                                                  # It seems that the issue is memory explosion caused
+                                                  # by runnning IsSquare() on an element in a big
+                                                  # Splitting field. Possibly there are more bottlenecks
+                                                  # later.
+
+    dependencies        - None
+
+    output description  Stores in
+                            ~/287_abvarfq_lmfdb_recomputation/output_cm/isog_label_cm.txt
+                        an element which represents a cm_type satisfying the Shimura-Tanyiama formula.
+                        This is not stored in any tble on the lmfdb, but it is loaded in the computation of the polarizations below.
+
+    notes               - The name of the file isn't optimal: remove '_cm.txt' if needed.
 
 # Stage: "picard groups, principal and non-principal polarizations"
-    input file      
-    targets             
-    output folders  
-    output description
-    notes               
+    input file          - input_fast_X, for X=1,..,4
+                        - input_slow_X, for X=1,..,4
+
+    targets             - run_script_pols_fastX, for X=1,..4
+                        - run_script_pols_slowX, for X=1,..4
+    
+    dependencies        - To be run after the Stages "weak equivalence classes" and "cm-types" sine it
+                        loads their output. 
+    
+    output description  1) Stores in
+                            ~/287_abvarfq_lmfdb_recomputation/output_pols/av_fq_isog/isog_label
+                        the following entries of the database av_fq_isog: 
+                        - pic_prime_gens
+                        - size              # number of isomorphism classes
+                        2) Stores in
+                            ~/287_abvarfq_lmfdb_recomputation/output_pols/av_fq_we/isog_label
+                        the following entries of the database av_fq_weak_equivalences: 
+                        - label (for matching)
+                        - pic_invs
+                        - pic_basis
+                        - is_product
+                        - product_partition
+                        - is_conjugate_stable
+                        - generator_over_ZFV
+                        - is_Zconductor_sum
+                        - is_ZFVconductor_sum
+                        3) Stores in
+                            ~/287_abvarfq_lmfdb_recomputation/output_pols/av_fq_pol/isog_label
+                        the following entries of the database av_fq_pol: 
+                        - label,              # label of polarization, of the form
+                                              # g.q.coefffs-N.i.w.j-d.k
+                        - isog_label,         # g.q.coeffs
+                        - endomorphism_ring,  # N.i
+                        - isom_label,         # w.j
+                        - degree,             # d 
+                        - kernel,
+                        - degree_rr,
+                        - kernel_rr,
+                        - degree_rl,
+                        - kernel_rl,
+                        - degree_lr,
+                        - kernel_lr,
+                        - degree_ll,
+                        - kernel_ll,
+                        - aut_group, 
+                        - geom_aut_group      # can say that it is equal to 
+                                              # aut_group when End^0(Fqbar) is commutative; 
+                                              # can check this from av_fq_endalg_data->divalg_dim for 
+                                              # each factor in av_fq_endalg_factors, 
+                        - is_jacobian         # say false if a product at all, none otherwise
+                        - representative      # [den,[n_1,..,n_2g]], where n_1/den,...,n_2g/den are
+                                              # the coefficients of the polarization wrt to the ZFVBasis 
+
+    notes               - This was run on 8 Google clouds by Edgar. It is very slow. 
+                          Probably the bottleneck are the non-principal polarizations.
 
 ##########################
-# Further script in the Makefile
+# Further targets in the Makefile
 ##########################
+- run_script_pols_test      # uses input_test_pol and computes the same outputs as in the last stage
+                            # twice, storing the data in separate folder. Then runs a magma script that 
+                            # compares these outputs. It complains if there are discrepancies, which 
+                            # imply that certain computation of distinguished elements are broken.
+- clean_failed_script_pols_test
+- rm_log, echo_status, log_status, status   # to echo/print stuff about the status of the computation.
