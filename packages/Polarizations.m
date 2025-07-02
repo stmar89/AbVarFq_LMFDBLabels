@@ -320,43 +320,77 @@ The output consists of pol,den,nums where
         gens_sub:=[ u(g) : g in Generators(sub) ];
     end if;
 
+
     // we construct the lattice
     rnk_sub:=#gens_sub;
     assert rnk_sub eq g-#Components(A);
-    img_gens_sub:=Matrix([Log_map(g) : g in gens_sub ]); // apply Log map
-    L:=LatticeWithBasis(img_gens_sub);
-    // we find all vectors in L closest to -img_x0
-    img_x0:=Vector(Log_map(x0));
-    candidates:=ClosestVectors(L,-img_x0); //note the minus sign!
+    function Candidates(prec)
+        old_default_prec := Precision(RealField());
+        SetDefaultRealFieldPrecision(prec);
+        eps := 10^(prec*0.9);
+        img_gens_sub:=Matrix([Log_map(g) : g in gens_sub ]); // apply Log map
+        L:=LatticeWithBasis(img_gens_sub);
+        // we find all vectors in L closest to -img_x0
+        img_x0:=Vector(Log_map(x0));
+        candidates:=ClosestVectors(L,-img_x0); //note the minus sign!
 
-    norm_y0:=Norm(Vector(candidates[1])+img_x0);
-    assert forall{c:c in candidates|Abs(Norm(Vector(c)+img_x0) - norm_y0) lt 10^-5};
-    // The procedure above is not independent of the initial x0.
-    // Indeed, if we started with an isomorphic principal polarization x1, then we could get a different
-    // set of candidates y1, also with `minimal' norm norm_y0
-    // Each y1 will be of the form y1=l+y0 for some l in L.
-    // By the triangular inequality we have that Norm(l) <= 2*norm_y0.
-    // We enumerate elements of L satisfying this ineq and expand the list of candidates accordingly.
-    ss:=[Vector(s[1]):s in ShortVectors(L,4.4*norm_y0)];
-    ss cat:=[-s:s in ss]; //ShortVectors is only up to sign
-    Append(~ss,Parent(Vector(candidates[1]))!0); // we want to have the originaly candidates as well
-    extra_candidates:=[];
-    abs_diff := [Abs(Norm(Vector(c) +  s + img_x0) - norm_y0) : c in candidates, s in ss];
-    cs_ss:=[<c,s> : c in candidates, s in ss ];
-    ParallelSort(~abs_diff,~cs_ss);
-    vprintf AllPolarizations : "%o\n", abs_diff;
+        norm_y0:=Norm(Vector(candidates[1])+img_x0);
+        if not forall{c:c in candidates|Abs(Norm(Vector(c)+img_x0) - norm_y0) lt eps} then
+            vprintf AllPolarizations : "prec: %o, candidates not small\n";
+            SetDefaultRealFieldPrecision(old_default_prec);
+            return false, _;
+        end if;
 
-    // now we try to divide the candidates by order of magnitude
-    separators := [ i : i->elt in abs_diff | i lt #abs_diff and (abs_diff[i+1] gt 10*abs_diff[i])];
-    vprintf AllPolarizations : "separators: %o\n", [[RealField(3) | abs_diff[i], abs_diff[i+1]] : i in separators];
-    first_block := #separators eq 0 select #abs_diff else separators[1];
-    extra_candidates := [L!(Vector(v[1])+v[2]) : v in cs_ss[1..first_block]];
-    // we also want to make sure that they are indeed small
-    vprintf AllPolarizations : "%o\n", [Abs(Norm(Vector(c)+img_x0) - norm_y0) : c in extra_candidates];
-    assert forall{c : c in extra_candidates | Abs(Norm(Vector(c)+img_x0) - norm_y0) lt 10^-5};
+        // The procedure above is not independent of the initial x0.
+        // Indeed, if we started with an isomorphic principal polarization x1, then we could get a different
+        // set of candidates y1, also with `minimal' norm norm_y0
+        // Each y1 will be of the form y1=l+y0 for some l in L.
+        // By the triangular inequality we have that Norm(l) <= 4*norm_y0.
+        // We enumerate elements of L satisfying this ineq and expand the list of candidates accordingly.
+        // 4.4 is just to give it 10% margin error
+        ss:=[Vector(s[1]):s in ShortVectors(L,4.4*norm_y0)];
+        Append(~ss,Parent(Vector(candidates[1]))!0); // we want to have the originaly candidates as well
+        ss cat:=[-s:s in ss]; //ShortVectors is only up to sign
+        extra_candidates:=[];
+        abs_diff := [Abs(Norm(Vector(c) +  s + img_x0) - norm_y0) : c in candidates, s in ss];
+        cs_ss:=[<c,s> : c in candidates, s in ss ];
+        ParallelSort(~abs_diff,~cs_ss);
+        vprintf AllPolarizations : "abs_diff: %o\n", abs_diff;
 
-    vprintf AllPolarizations : "number extra candidates: %o\n",#extra_candidates-#candidates;
-    candidates:=extra_candidates;
+        // now we try to divide the candidates by order of magnitude
+        separators := [ i : i->elt in abs_diff | i lt #abs_diff and (abs_diff[i+1] gt 10*abs_diff[i])];
+        vprintf AllPolarizations : "prec: %o, separators: %o\n", prec, [[RealField(5) | abs_diff[i], abs_diff[i+1]] : i in separators];
+        first_block := #separators eq 0 select #abs_diff else separators[1];
+        extra_candidates := [L!(Vector(v[1])+v[2]) : v in cs_ss[1..first_block]];
+        // we also want to make sure that they are indeed small
+        vprintf AllPolarizations : "%o\n", [RealField(5) | Abs(Norm(Vector(c)+img_x0) - norm_y0) : c in extra_candidates];
+        if not forall{c : c in extra_candidates | Abs(Norm(Vector(c)+img_x0) - norm_y0) lt eps};
+            vprintf AllPolarizations : "prec: %o, extra_candidates not small\n";
+            SetDefaultRealFieldPrecision(old_default_prec);
+            return false, _;
+        end if;
+
+        /*
+        for s in ss,c in candidates do
+            cs:=Vector(c)+s;
+            ncs:=Norm(cs+img_x0);
+            if ncs lt norm_y0_eps then
+                assert Abs(ncs - norm_y0) lt eps; //TODO less than eps here
+                Append(~extra_candidates,L!cs);
+            end if;
+        end for;
+        */
+        vprintf AllPolarizations : "number extra candidates: %o\n",#extra_candidates-#candidates;
+        candidates:=extra_candidates;
+        return true, candidates;
+    end function;
+
+    prec := 30;
+    for try in [1..10] do
+        b, candidates := Candidates(prec);
+        if b then break; end if;
+        prec *:= 2;
+    end for;
 
     // now we move back to K
     all_coords:=[ Coordinates(cv) : cv in candidates];
