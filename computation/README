@@ -1,15 +1,29 @@
-### Notes about planning the computation ###
+##########################
+# INPUT
+# The input of the computation consists of the Weil polynomials h(x) with no repeated complex roots (squarefree) of all isogeny classes of abelian varieties of dimension g over the finite field FF_q for the values listed below, that are ordianry or defined over a prime field (i.e. q is prime).
+#
+# g=1, q in {2,3,4,5,7,8,9,11,13,16,17,19,23,25,27,29,31,32,37,41,43,47,49,53,59,61,64,67,71,73,79,81,83,89,97,101,103,107,109,113,121,125,127,128}
+# g=2, q in {2,3,4,5,7,8,9,11,13,16,17,19,23,25,27,29,31,32,37,41,43,47,49,53,59,61,64,67,71,73,79,81,83,89,97,101,103,107,109,113,121,125,127,128}
+# g=3, q in {2,3,4,5,7,8,9,16,25}
+# g=4, q in {2,3,4}
+# g=5, q in {2}
+#
+# For the computation of polarizations we restrict ourselves to the isogeny classes from the list above that are ordinary.
+#
+# The input is sorted according to how many isogeny classes we have for that pair and is stored in 
+# AbVarFq_LMFDBLabels/computation/weil_poly_sqfree_ord_cs.txt
+# (unsorted input is in AbVarFq_LMFDBLabels/computation/weil_poly_sqfree_ord_cs_unsorted.txt)
+#
+# The 3 biggest pairs <g,q> are
+# <4, 4>, <3, 16>, <3, 25> with 21.248,46.552,284.484 isogeny classes, resp.
+# In particular, removing <3,25> could cut the computation by (a bit less) than half.
+#
+# After an intial attempy, I have decided to remove <3,25> from the first run.
+#
+###########################
 
-- DONE First we want to sort the input. 
-    How many classes per <g,q>? 
-    Some part of the computation might be done only on a subset of the input.
-    I would put the `biggest' <g,q> at the end, so that we can interrupt the computation.
-- How many scripts?
-    I'd say 3:
-    a) schema WKClasses
-    b) pAdicPosElt (only ordinary; expensive comp of GaloisGroup)
-    c) polarizations of degrees [1,4,9,25] (depends on the expensive comp of Pic).
-    
-    a) and b) are independent from each other.
-    a) should be very fast.
-    c) depends on both a) and b).
+# TODO
+# make a list of what each file contains, relating it to the colums of the tables
+# which can be found at:
+# https://github.com/roed314/root-unitary/blob/stage_based/postgres_schema.md
+

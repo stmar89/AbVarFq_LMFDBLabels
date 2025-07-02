@@ -1,36 +1,15 @@
-##########################
-# INPUT
-# The input of the computation consists of the Weil polynomials h(x) with no repeated complex roots (squarefree) of all isogeny classes of abelian varieties of dimension g over the finite field FF_q for the values listed below, that are ordianry or defined over a prime field (i.e. q is prime).
-#
-# g=1, q in {2,3,4,5,7,8,9,11,13,16,17,19,23,25,27,29,31,32,37,41,43,47,49,53,59,61,64,67,71,73,79,81,83,89,97,101,103,107,109,113,121,125,127,128}
-# g=2, q in {2,3,4,5,7,8,9,11,13,16,17,19,23,25,27,29,31,32,37,41,43,47,49,53,59,61,64,67,71,73,79,81,83,89,97,101,103,107,109,113,121,125,127,128}
-# g=3, q in {2,3,4,5,7,8,9,16,25}
-# g=4, q in {2,3,4}
-# g=5, q in {2}
-#
-# For the computation of polarizations we restrict ourselves to the isogeny classes from the list above that are ordinary.
-#
-# The input is sorted according to how many isogeny classes we have for that pair and is stored in 
-# AbVarFq_LMFDBLabels/computation/weil_poly_sqfree_ord_cs.txt
-# (unsorted input is in AbVarFq_LMFDBLabels/computation/weil_poly_sqfree_ord_cs_unsorted.txt)
-#
-# The 3 biggest pairs <g,q> are
-# <4, 4>, <3, 16>, <3, 25> with 21.248,46.552,284.484 isogeny classes, resp.
-# In particular, removing <3,25> could cut the computation by (a bit less) than half.
-#
-# After an intial attempy, I have decided to remove <3,25> from the first run.
-#
-###########################
+##################
+# Folders
+##################
 
-# TODO
-# make a list of what each file contains, relating it to the colums of the tables
-# which can be found at:
-# https://github.com/roed314/root-unitary/blob/stage_based/postgres_schema.md
-
-# here the temp data and outputs are stored
 fld_comp = ~/287_abvarfq_lmfdb_recomputation/
 # where all the scripts are
 fld_scripts = ~/AbVarFq_LMFDBLabels/computation/
+
+##################
+# inputs
+##################
+
 # coeffs of the input poly, sorted (see above)
 # after some thinking I have decided to remove 3.25 from the first round of recomputation
 #input = ${fld_scripts}weil_poly_sqfree_ord_cs.txt
@@ -38,12 +17,11 @@ fld_scripts = ~/AbVarFq_LMFDBLabels/computation/
 input = ${fld_scripts}weil_poly_sqfree_ord_cs_no_3_25.txt
 input_ord = ${fld_scripts}weil_poly_sqfree_ord_no_3_25.txt
 # where to store versions used and status (see below)
-my_log = ${fld_comp}my_log
 
-input_test_pol = ${fld_scripts}input_test_pol
-
+# for script_pols
 input_cm_missing = ${fld_scripts}input_cm_missing
 
+# for script_pols
 input_fast_1 = ${fld_scripts}input_fast_1
 input_fast_2 = ${fld_scripts}input_fast_2
 input_fast_3 = ${fld_scripts}input_fast_3
@@ -53,20 +31,39 @@ input_slow_1 = ${fld_scripts}input_slow_1
 input_slow_2 = ${fld_scripts}input_slow_2
 input_slow_3 = ${fld_scripts}input_slow_3
 input_slow_4 = ${fld_scripts}input_slow_4
+# for tests
+input_test_pol = ${fld_scripts}input_test_pol
 
+##################
+# my log and issue files
+##################
+
+my_log = ${fld_comp}my_log
 # we collect here the issue from the scripts
 issues_wk = ${fld_comp}issues_wk
 issues_cm = ${fld_comp}issues_cm
 issues_pols = ${fld_comp}issues_pols
 issues_sing_primes = ${fld_comp}issues_sing_primes
 
-# output of the scripts
+##################
+# output folders
+##################
+
 fld_out_wk = ${fld_comp}output_wk/
 fld_out_cm = ${fld_comp}output_cm/
 fld_out_pols = ${fld_comp}output_pols/
 fld_out_sing_primes = ${fld_comp}output_sing_primes/
 
+##################
+# degrees of non-princ. 
+# pols to be computed
+##################
+
 degree_bounds = [4,9,25]
+
+##################
+# scripts for logging
+##################
 
 rm_log:
 	rm ${my_log} || true
@@ -120,6 +117,10 @@ status:
 	@make -s echo_status
 	@make -s log_status
 
+##################
+# scripts for weak eq classes
+##################
+
 run_script_wk:
 	@echo "(re)starting run_script_wk on:" >> ${my_log}
 	@make -s log_versions_last_commits
@@ -131,6 +132,22 @@ clean_failed_script_wk:
 	rm ~/287_abvarfq_lmfdb_recomputation/output_wk/*
 	rm ~/287_abvarfq_lmfdb_recomputation/joblog_wk
 	rm ~/287_abvarfq_lmfdb_recomputation/issues_wk
+
+run_script_sing_primes:
+	@echo "(re)starting run_script_sing_primes on:" >> ${my_log}
+	@make -s log_versions_last_commits
+	parallel -j 20 --u --resume --joblog ${fld_comp}joblog_sing_primes -a ${input} magma -b fld_out_wk:=${fld_out_wk} fld_out_sing_primes:=${fld_out_sing_primes} issues:=${issues_sing_primes} s:={} ${fld_scripts}script_sing_primes.m
+	@echo "run_script_cm_missing has finished on:" >> ${my_log}
+	@date >> ${my_log}
+
+clean_failed_script_sing_primes:
+	rm ${fld_comp}joblog_sing_primes 
+	rm ${fld_out_sing_primes}av_fq_isog/* || true
+	rm ${fld_out_sing_primes}av_fq_we/* || true
+
+##################
+# scripts for cm-types
+##################
 
 run_script_cm:
 	@echo "(re)starting run_script_cm on:" >> ${my_log}
@@ -144,9 +161,18 @@ clean_failed_script_cm:
 	rm ~/287_abvarfq_lmfdb_recomputation/joblog_cm
 	rm ~/287_abvarfq_lmfdb_recomputation/issues_cm
 
-# change in the parallel command input_fast_1 to all the other inputs
-# input_fast_i for i =1,2,3,4
-# input_slow_i for i =1,2,3,4
+jobs_cm = 1
+run_script_cm_missing:
+	@echo "(re)starting run_script_cm_missing on:" >> ${my_log}
+	@make -s log_versions_last_commits
+	parallel -j ${jobs_cm} --resume --joblog ${fld_comp}joblog_cm_missing -a ${input_cm_missing} magma -b fld_out:=${fld_out_cm} issues:=${issues_cm} s:={} ${fld_scripts}script_cm.m
+	@echo "run_script_cm_missing has finished on:" >> ${my_log}
+	@date >> ${my_log}
+
+##################
+# scripts for polarizations
+##################
+
 timeout = 300
 run_script_pols_fast1:
 	@echo "(re)starting run_script_pols on:" >> ${my_log}
@@ -209,8 +235,6 @@ run_script_pols_slow4:
 	@echo "run_script_pols has finished on:" >> ${my_log}
 	@date >> ${my_log}
 
-
-
 clean_failed_script_pols:
 	rm ~/287_abvarfq_lmfdb_recomputation/output_pols/av_fq_pol/* || true
 	rm ~/287_abvarfq_lmfdb_recomputation/output_pols/av_fq_we/* || true
@@ -218,6 +242,11 @@ clean_failed_script_pols:
 	rm ~/287_abvarfq_lmfdb_recomputation/output_pols/allproduct/* || true
 	rm ~/287_abvarfq_lmfdb_recomputation/joblog_pols || true
 	rm ~/287_abvarfq_lmfdb_recomputation/issues_pols || true
+
+##################
+# folders and scripts 
+# for testing polarisations
+##################
 
 fld_out_pols_test1 = ${fld_comp}output_pols_test1/
 fld_out_pols_test2 = ${fld_comp}output_pols_test2/
@@ -245,25 +274,4 @@ clean_failed_script_pols_test:
 	rm ~/287_abvarfq_lmfdb_recomputation/output_pols_test2/allproduct/* || true
 	rm ~/287_abvarfq_lmfdb_recomputation/joblog_pols_test2 || true
 	rm ~/287_abvarfq_lmfdb_recomputation/issues_pols_test2 || true
-
-# change line 191 below, to modify the number of jobs, and the parameter of --memsuspend
-jobs_cm = 1
-run_script_cm_missing:
-	@echo "(re)starting run_script_cm_missing on:" >> ${my_log}
-	@make -s log_versions_last_commits
-	parallel -j ${jobs_cm} --resume --joblog ${fld_comp}joblog_cm_missing -a ${input_cm_missing} magma -b fld_out:=${fld_out_cm} issues:=${issues_cm} s:={} ${fld_scripts}script_cm.m
-	@echo "run_script_cm_missing has finished on:" >> ${my_log}
-	@date >> ${my_log}
-
-run_script_sing_primes:
-	@echo "(re)starting run_script_sing_primes on:" >> ${my_log}
-	@make -s log_versions_last_commits
-	parallel -j 20 --u --resume --joblog ${fld_comp}joblog_sing_primes -a ${input} magma -b fld_out_wk:=${fld_out_wk} fld_out_sing_primes:=${fld_out_sing_primes} issues:=${issues_sing_primes} s:={} ${fld_scripts}script_sing_primes.m
-	@echo "run_script_cm_missing has finished on:" >> ${my_log}
-	@date >> ${my_log}
-
-clean_failed_script_sing_primes:
-	rm ${fld_comp}joblog_sing_primes 
-	rm ${fld_out_sing_primes}av_fq_isog/* || true
-	rm ${fld_out_sing_primes}av_fq_we/* || true
 
