@@ -317,7 +317,9 @@ The output consists of pol,den,nums where
     assert rnk_sub eq g-#Components(A);
 
     function Candidates(prec)
-
+    // This function returns a boolean and, if true, all the vectors in L that are closest to the (image of) y0.
+    // The input is a precision parameter. The returned boolean is false when we detect that the precision needs
+    // to be increased.
         homs:=HomsToC(A : Prec:=prec); 
         prec:=Precision(Codomain(homs[1]));
         // are the homs sorted in conjugate pairs?
@@ -351,54 +353,33 @@ The output consists of pol,den,nums where
         ss:=[Vector(s[1]):s in ShortVectors(L,4.4*norm_y0)];
         ss cat:=[-s:s in ss]; //ShortVectors is only up to sign
         Append(~ss,Parent(Vector(candidates[1]))!0); // we want to have the originaly candidates as well,
-                                                     // we achieve this bu artificially adding the zero vector
-                                                     // to the ss.
+                                                     // we achieve this by adding the zero vector to ss.
 
-        // Some of the short vectors s in ss might give c+s which further fro 
+        // Some of the short vectors s in ss might give c+s such that |c+s+y0| > |y0|, that is,
+        // s moves c in the wrong direction. We want to exclude those s's.
         abs_diff := [Abs(Norm(Vector(c) +  s + img_x0) - norm_y0) : c in candidates, s in ss];
         cs_ss:=[<c,s> : c in candidates, s in ss ];
         ParallelSort(~abs_diff,~cs_ss);
+        // after having sorted the `moved vectors' of the form c+s with respect to how far from y0, 
+        // from closest to furthest, we keep only the ones which not further than the treshold eps.
         ind:=Max([i:i in [1..#abs_diff] | abs_diff[i] lt eps]);
-
         if ind lt #abs_diff and abs_diff[ind+1]^2 lt eps then
+            // here we check that the first exclided one is relatively (in terms of eps) from y0.
+            // If this is not the case, then the function returns false and
+            // we need to increase the precision.
+            vprintf AllPolarizations : "prec: %o, the first excluded candidate is still quite close to y0. Increase the precision.\n";
             return false, _;
         end if;
-
         cs_ss:=cs_ss[1..ind];
         vprintf AllPolarizations : "ind: %o\n", ind;
         vprintf AllPolarizations : "abs_diff: %o\n", abs_diff;
 
-        /*
-        // now we try to divide the candidates by order of magnitude
-        separators := [ i : i->elt in abs_diff | i lt #abs_diff and (abs_diff[i+1] gt 10*abs_diff[i])];
-        vprintf AllPolarizations : "prec: %o, separators: %o\n", prec, [[RealField(5) | abs_diff[i], abs_diff[i+1]] : i in separators];
-        first_block := #separators eq 0 select #abs_diff else separators[1];
-        vprintf AllPolarizations : "first_block: %o\n",cs_ss[1..first_block];
-        */
-
+        // we coerce all the vectors into L
         extra_candidates := [L!(Vector(v[1])+v[2]) : v in cs_ss];
-        // we also want to make sure that they are indeed small
+        vprintf AllPolarizations : "number extra candidates found using short vectors: %o\n",#extra_candidates-#candidates;
         vprintf AllPolarizations : "%o\n", [RealField(5) | Abs(Norm(Vector(c)+img_x0) - norm_y0) : c in extra_candidates];
-        if not forall{c : c in extra_candidates | Abs(Norm(Vector(c)+img_x0) - norm_y0) lt eps} then
-            vprintf AllPolarizations : "prec: %o, extra_candidates not small\n";
-            //SetDefaultRealFieldPrecision(old_default_prec);
-            return false, _;
-        end if;
-
-        /*
-        for s in ss,c in candidates do
-            cs:=Vector(c)+s;
-            ncs:=Norm(cs+img_x0);
-            if ncs lt norm_y0_eps then
-                assert Abs(ncs - norm_y0) lt eps; //TODO less than eps here
-                Append(~extra_candidates,L!cs);
-            end if;
-        end for;
-        */
-        vprintf AllPolarizations : "number extra candidates: %o\n",#extra_candidates-#candidates;
         candidates:=extra_candidates;
         vprintf AllPolarizations : "candidates: %o\n",candidates;
-        vprintf AllPolarizations : "Norm(Vector(c)+img_x0) for each c: %o\n",[ Norm(Vector(c)+img_x0) : c in candidates];
         return true, candidates;
     end function;
 
