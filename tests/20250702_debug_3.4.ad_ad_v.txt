@@ -1,0 +1,143 @@
+/* vim: set syntax=magma :*/
+fld_comp:="~/287_abvarfq_lmfdb_recomputation/";
+fld_out_wk:="~/287_abvarfq_lmfdb_recomputation/output_wk/";
+fld_out_cm:="~/287_abvarfq_lmfdb_recomputation/output_cm/";
+fld_out_pols:="~/287_abvarfq_lmfdb_recomputation/output_pols/";
+degree_bounds:="[4,9,25]";
+
+AttachSpec("~/CHIMP/CHIMP.spec");
+AttachSpec("~/AlgEt/spec");
+AttachSpec("~/AbVarFq_LMFDBLabels/spec");
+SetClassGroupBounds("GRH");
+SetColumns(0);
+SetDebugOnError(true);
+SetVerbose("AllPolarizations",1);
+
+s:="3.4.ad_ad_v";
+s:="2.125.a_acf";
+_,_,h:=LabelToPoly(s);
+s:=Sprint(Coefficients(h));
+
+PP<x>:=PolynomialRing(Integers());
+h:=PP!eval(s);
+label:=IsogenyLabel(h);
+split:=Split(label,".");
+g:=eval(split[1]);
+q:=eval(split[2]);
+_,p:=IsPrimePower(q);
+is_ordinary:=IsCoprime(Coefficients(h)[(Degree(h) div 2)+1], p);
+assert is_ordinary;
+av_fq_pol_output := Sprintf("%oav_fq_pol/%o", fld_out_pols, label);
+av_fq_we_output := Sprintf("%oav_fq_we/%o", fld_out_pols, label);
+av_fq_isog_output := Sprintf("%oav_fq_isog/%o", fld_out_pols, label);
+allproduct_output := Sprintf("%oallproduct/%o", fld_out_pols, label);
+cmfile := Sprintf("%o_cm.txt", fld_out_cm * label);
+degree_bounds := eval(degree_bounds);
+av_fq_we_columns := ["label", "pic_invs", "pic_basis", "is_product", "product_partition", "is_conjugate_stable", "generator_over_ZFV", "is_Zconductor_sum", "is_ZFVconductor_sum"];
+av_fq_isog_columns := ["pic_prime_gens","size"];
+                                                                                                                  av_fq_pol_columns := ["label", "isog_label", "endomorphism_ring", "isom_label", "degree", "kernel", "degree_rr", "kernel_rr", "degree_rl", "kernel_rl", "degree_lr", "kernel_lr", "degree_ll", "kernel_ll", "aut_group", "geom_aut_group", "is_jacobian", "representative"];
+function print_ivec(v : json:=false)                                                                                  base := json select "[%o]" else "{%o}";
+    if Type(v) eq SeqEnum or Type(v) eq Tup then
+       return Sprintf(base, Join([$$(c : json:=json) : c in v], ","));                                               end if;
+    return Sprint(v);
+end function;
+
+commlines := Split(Read(Sprintf("%ocommutative_geom_endalg/%o.%o", fld_comp, g, q)), "\n");
+ZFV := LoadSchemaWKClasses(Read(Sprintf("%o_wk.txt", fld_out_wk * label)));
+A := Algebra(ZFV);
+if is_ordinary then
+   assert OpenTest(cmfile, "r");
+   cmdata := Read(cmfile);
+   PHI := LoadpAdicPosCMType(A, cmdata);
+   assert assigned A`pAdicPosCMType;
+end if;
+//A;
+allproduct := true;
+geom_endalg_is_comm := 0;
+for line in commlines do
+   llabel, iscomm := Explode(Split(line, " "));
+   if label eq llabel then
+      geom_endalg_is_comm := (iscomm[1] eq "t");
+      break;
+   end if;
+end for;
+assert geom_endalg_is_comm cmpne 0;
+av_fq_pol := [];
+av_fq_we := [];
+av_fq_isog := AssociativeArray();
+_, cangens := DistinguishedPicGenerators(ZFV);
+_ := DistinguishedPicBases(ZFV); // sets DistinguishedPicBasis for each S
+av_fq_isog["pic_prime_gens"] := print_ivec(cangens);
+isogeny_size:=0;
+
+for S in OverOrders(ZFV) do
+   Pbasis, construction := DistinguishedPicBasis(S);
+   invs, construction := Explode(construction);
+   Sdata := AssociativeArray();
+   Sdata["label"] := WELabel(S);
+   Sdata["pic_invs"] := print_ivec(invs);
+   Sdata["pic_basis"] := print_ivec(construction);
+   product, _, partition := IsProductOfOrdersLMFDB(S);
+   allproduct := allproduct and product;
+   Sdata["is_product"] := product select "t" else "f";
+   Sdata["product_partition"] := print_ivec(partition: json:=true);
+   Sdata["is_conjugate_stable"] := IsConjugateStable(S) select "t" else "f";
+   _, dens, nums := SmallestMonogenicGeneratorOverZFV(S, ZFV);
+   if #dens eq 0 then
+      Sdata["generator_over_ZFV"] := "\\N";
+   else
+      Sdata["generator_over_ZFV"] := Sprintf("[%o,%o]", dens[1], print_ivec(nums[1] : json:=true));
+   end if;
+   Sdata["is_Zconductor_sum"] := (S eq Order(ZBasis(Conductor(S)))) select "t" else "f";
+   Sdata["is_ZFVconductor_sum"] := (S eq Order(ZBasis(Conductor(S)) cat ZBasis(ZFV))) select "t" else "f";
+   assert assigned S`WKICM_bar;
+   assert assigned S`PicardGroup;
+   isogeny_size +:= #WKICM_bar(S) * #PicardGroup(S);
+   Append(~av_fq_we, Sdata);
+end for;
+
+_,_,I,den,nums,lambda:=Explode(PPolIteration(ZFV)[1]);
+den,nums;
+
+ZBasis(I);
+// the issue is with the maximal order 
+S:=MaximalOrder(A);
+wkimS := WKICM_barDistinguishedRepresentatives(S); 
+assert #wkimS eq 1;
+assert wkimS[1] eq S;
+ppol_poss := PPolPossIteration(S);
+WE:=wkimS[1];
+//#ppol_poss;
+tup:=ppol_poss[1];
+II, pic_ctr := Explode(tup);
+assert I eq II;
+WEI := WE * I;
+ZBasis(WEI);
+
+SetVerbose("AllPolarizations",1);
+SetColumns(0);
+for k in [1..5] do
+    // If I run multiple times the next lines I get different outputs
+    printf "%oth run\n",k;
+    pp := PrincipalPolarizations(WEI, PHI);
+    dd:=[ DistinguishedRepresentativePolarization(WEI,p) : p in pp ];
+    seq_pp:=PrintSeqAlgEtQElt(pp);
+    seq_dd:=PrintSeqAlgEtQElt(dd);
+    for i in [1,2] do
+        printf "\ti=%o seq_pp[i]=%o,seq_dd[i]=%o\n",i,seq_pp[i],seq_dd[i];
+    end for;
+end for;
+
+/*
+// we get always 2 pp
+// the first one seems to be always the same, i
+p0:=A!<[ 97/390, 0, -1/195, 0 ]>;
+//but the second one changes: we get two possible outputs
+p1:=A!<[ 679/195, 24/49, -14/195, -1/98 ]>;
+p2:=A!<[ 679/195, -24/49, -14/195, 1/98 ]>;
+// I want to check whether they are isomorphic
+U,u:=UnitGroup(S);
+UUbar:=sub<U|[(u(U.i)*ComplexConjugate(u(U.i)))@@u : i in [1..Ngens(U)]]>;
+assert (p1/p2)@@u in UUbar;
+// they are. So nothing wrong so far.
+*/

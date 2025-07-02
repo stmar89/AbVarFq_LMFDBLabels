@@ -37,10 +37,8 @@
                 end for;
             end if;
         end for;
-        printf "... all good!\n",fld;
     end for;
 
-    printf "All tests passed: congrats!\n";
     quit;
 
 
