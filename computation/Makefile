@@ -236,12 +236,13 @@ run_script_pols_slow4:
 	@date >> ${my_log}
 
 clean_failed_script_pols:
-	rm ~/287_abvarfq_lmfdb_recomputation/output_pols/av_fq_pol/* || true
-	rm ~/287_abvarfq_lmfdb_recomputation/output_pols/av_fq_we/* || true
-	rm ~/287_abvarfq_lmfdb_recomputation/output_pols/av_fq_isog/* || true
-	rm ~/287_abvarfq_lmfdb_recomputation/output_pols/allproduct/* || true
-	rm ~/287_abvarfq_lmfdb_recomputation/joblog_pols || true
-	rm ~/287_abvarfq_lmfdb_recomputation/issues_pols || true
+	rm -r ~/287_abvarfq_lmfdb_recomputation/output_pols/ || true
+	mkdir -p ~/287_abvarfq_lmfdb_recomputation/output_pols/av_fq_pol
+	mkdir -p ~/287_abvarfq_lmfdb_recomputation/output_pols/av_fq_we
+	mkdir -p ~/287_abvarfq_lmfdb_recomputation/output_pols/av_fq_isog
+	mkdir -p ~/287_abvarfq_lmfdb_recomputation/output_pols/allproduct
+	rm ~/287_abvarfq_lmfdb_recomputation/joblog_pols* || true
+	rm ~/287_abvarfq_lmfdb_recomputation/issues_pols* || true
 
 ##################
 # folders and scripts 
