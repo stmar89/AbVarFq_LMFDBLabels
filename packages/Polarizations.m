@@ -292,9 +292,7 @@ The output consists of pol,den,nums where
         nums := [den * c : c in y0[1]];
         return x0, den, nums;
     end if;
-
         
-    
     if is_conjugate_stable then
         // this version is slightly faster
         US,uS:=UnitGroup(S);
@@ -312,22 +310,25 @@ The output consists of pol,den,nums where
     end if;
 
 
-    // we construct the lattice
+    // The Log-Minkowski lattice L of <u*\bar{u}> is constructed in the 
+    // function below (since we want to control the precision)
+    // It will have rank:
     rnk_sub:=#gens_sub;
     assert rnk_sub eq g-#Components(A);
+
     function Candidates(prec)
 
         homs:=HomsToC(A : Prec:=prec); 
         prec:=Precision(Codomain(homs[1]));
         // are the homs sorted in conjugate pairs?
-        assert forall{ k : k in [1..g] | Abs(homs[2*k-1](F) - ComplexConjugate(homs[2*k](F))) lt 10^-(prec div 2)};
+        assert forall{ k : k in [1..g]|Abs(homs[2*k-1](F) - ComplexConjugate(homs[2*k](F))) lt 10^-(prec div 2)};
         homs:=[homs[2*k-1] : k in [1..g]]; //one per conjugate pair to define the Log map
 
-        Log_map:=function(g)
+        Log_map:=function(g) //Log_\Phi
             return [ Log(Abs(h(g))) : h in homs ];
         end function;
 
-        eps := 10^(prec*0.9);
+        eps := 10^(-prec*0.9);
         img_gens_sub:=Matrix([Log_map(g) : g in gens_sub ]); // apply Log map
         L:=LatticeWithBasis(img_gens_sub);
         // we find all vectors in L closest to -img_x0
@@ -348,19 +349,34 @@ The output consists of pol,den,nums where
         // We enumerate elements of L satisfying this ineq and expand the list of candidates accordingly.
         // 4.4 is just to give it 10% margin error
         ss:=[Vector(s[1]):s in ShortVectors(L,4.4*norm_y0)];
-        Append(~ss,Parent(Vector(candidates[1]))!0); // we want to have the originaly candidates as well
         ss cat:=[-s:s in ss]; //ShortVectors is only up to sign
-        extra_candidates:=[];
+        Append(~ss,Parent(Vector(candidates[1]))!0); // we want to have the originaly candidates as well,
+                                                     // we achieve this bu artificially adding the zero vector
+                                                     // to the ss.
+
+        // Some of the short vectors s in ss might give c+s which further fro 
         abs_diff := [Abs(Norm(Vector(c) +  s + img_x0) - norm_y0) : c in candidates, s in ss];
         cs_ss:=[<c,s> : c in candidates, s in ss ];
         ParallelSort(~abs_diff,~cs_ss);
+        ind:=Max([i:i in [1..#abs_diff] | abs_diff[i] lt eps]);
+
+        if ind lt #abs_diff and abs_diff[ind+1]^2 lt eps then
+            return false, _;
+        end if;
+
+        cs_ss:=cs_ss[1..ind];
+        vprintf AllPolarizations : "ind: %o\n", ind;
         vprintf AllPolarizations : "abs_diff: %o\n", abs_diff;
 
+        /*
         // now we try to divide the candidates by order of magnitude
         separators := [ i : i->elt in abs_diff | i lt #abs_diff and (abs_diff[i+1] gt 10*abs_diff[i])];
         vprintf AllPolarizations : "prec: %o, separators: %o\n", prec, [[RealField(5) | abs_diff[i], abs_diff[i+1]] : i in separators];
         first_block := #separators eq 0 select #abs_diff else separators[1];
-        extra_candidates := [L!(Vector(v[1])+v[2]) : v in cs_ss[1..first_block]];
+        vprintf AllPolarizations : "first_block: %o\n",cs_ss[1..first_block];
+        */
+
+        extra_candidates := [L!(Vector(v[1])+v[2]) : v in cs_ss];
         // we also want to make sure that they are indeed small
         vprintf AllPolarizations : "%o\n", [RealField(5) | Abs(Norm(Vector(c)+img_x0) - norm_y0) : c in extra_candidates];
         if not forall{c : c in extra_candidates | Abs(Norm(Vector(c)+img_x0) - norm_y0) lt eps} then
@@ -381,6 +397,8 @@ The output consists of pol,den,nums where
         */
         vprintf AllPolarizations : "number extra candidates: %o\n",#extra_candidates-#candidates;
         candidates:=extra_candidates;
+        vprintf AllPolarizations : "candidates: %o\n",candidates;
+        vprintf AllPolarizations : "Norm(Vector(c)+img_x0) for each c: %o\n",[ Norm(Vector(c)+img_x0) : c in candidates];
         return true, candidates;
     end function;
 
@@ -397,11 +415,19 @@ The output consists of pol,den,nums where
     // Now, I sort the candidates with respect to lexicographic order of the coefficients 
     // wrt to [V^(g-1),...,V,1,F,...,F^g],
     // and take the smallest.
-    sort_keys_candidates:=[ AbsoluteCoordinates([c],basis)[1] : c in candidates ];
+    coordinates:=[ AbsoluteCoordinates([c],basis)[1] : c in candidates ];
+    sort_keys_candidates:=[];
+    for cand_coord in coordinates do
+        den := LCM([Denominator(c) : c in cand_coord]);
+        nums := [den*c : c in cand_coord];
+        Append(~sort_keys_candidates,[den] cat nums);
+    end for;
     ParallelSort(~sort_keys_candidates,~candidates);
-    den := LCM([Denominator(c) : c in sort_keys_candidates[1]]);
-    nums := [den*c : c in sort_keys_candidates[1]];
-
-    return candidates[1], den, nums;
+    
+    out_candidate:=candidates[1];
+    sort_key_out_candidate:=sort_keys_candidates[1];
+    den:=sort_key_out_candidate[1];
+    nums:=sort_key_out_candidate[2..#sort_key_out_candidate];
+    return out_candidate,den,nums;
 end intrinsic;
 
