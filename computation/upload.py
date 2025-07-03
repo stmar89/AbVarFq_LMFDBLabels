@@ -88,12 +88,6 @@ def create_upload_files(infolder):
             D["number_of_we"] = we_cnt
         ISOG["weak_equivalence_count"] = str(we_cnt)
 
-        # Whether all isomorphism classes are a nontrivial product.  In the case so far (commutative endomorphism ring), this doesn't depend on whether you're considering them as polarized or unpolarized abelian varieties.
-        pcnt = Counter(rec["is_product"] for rec in ORDERS)
-        assert pcnt[r"\N"] == 0
-        for col in ["all_unpolarized_product", "all_polarized_product"]:
-            ISOG[col] = "t" if pcnt["f"] == 0 else "f"
-
         # The maximum Cohen-Macaulay type
         cm_max = max(int(rec["cohen_macaulay_type"]) for rec in ORDERS)
         ISOG["cohen_macaulay_max"] = str(cm_max)
@@ -114,8 +108,8 @@ def create_upload_files(infolder):
             pcnt = P.count(",") + 1
         ISOG["ZFV_singular_count"] = str(pcnt)
 
-        # The size of the Picard group of Z[F,V]
         if label in pol_labels:
+            # The size of the Picard group of Z[F,V]
             maxind = str(max(int(D["index"]) for D in ORDER))
             ZFV = [w for w in ORDERS if w["index"] == maxind]
             assert len(ZFV) == 1
@@ -123,8 +117,16 @@ def create_upload_files(infolder):
             ISOG["ZFV_pic_size"] = ZFV["pic_size"]
             for D in POL.values():
                 D["pol_ctr"] = D["label"].split(".")[-1]
+
+            # Whether all isomorphism classes are a nontrivial product.  In the case so far (commutative endomorphism ring), this doesn't depend on whether you're considering them as polarized or unpolarized abelian varieties.
+            pcnt = Counter(rec["is_product"] for rec in ORDERS)
+            assert pcnt[r"\N"] == 0
+            for col in ["all_unpolarized_product", "all_polarized_product"]:
+                ISOG[col] = "t" if pcnt["f"] == 0 else "f"
+
         else:
-            ISOG["ZFV_pic_size"] = r"\N"
+            for col in ["all_unpolarized_product", "all_polarized_product", "ZFV_pic_size"]:
+                ISOG[col] = r"\N"
     print(f"Computing columns, done in {time.time()-t0}s                                 ")
 
     for tbl, these_labels, cols in [
