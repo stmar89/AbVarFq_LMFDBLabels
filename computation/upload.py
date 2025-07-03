@@ -46,8 +46,8 @@ def create_upload_files(infolder):
             (label_todo, we_folder, "wk", "weak_equivalences", we_cols, "_wk.txt"),
             (label_todo, sing_folder_isog, "sing_isog", "isog", sing_isog_cols, ""),
             (label_todo, sing_folder_we, "sing_we", "weak_equivalences", sing_we_cols, ""),
-            (label_todo, pol_folder_isog, "pol_isog", "isog", pol_isog_cols, ""),
-            (label_todo, pol_folder_we, "pol_we", "weak_equivalences", pol_we_cols, ""),
+            (pol_label_todo, pol_folder_isog, "pol_isog", "isog", pol_isog_cols, ""),
+            (pol_label_todo, pol_folder_we, "pol_we", "weak_equivalences", pol_we_cols, ""),
             (pol_label_todo, pol_folder_pol, "pol_pol", "pol", pol_pol_cols, ""),
     ]:
         print(f"Reading {fname}, {len(labels)} files to load")
