@@ -50,7 +50,7 @@ def create_upload_files(infolder):
             (pol_label_todo, pol_folder_we, "pol_we", "weak_equivalences", pol_we_cols, ""),
             (pol_label_todo, pol_folder_pol, "pol_pol", "pol", pol_pol_cols, ""),
     ]:
-        print(f"Reading {fname}, {len(labels)} files to load")
+        print(f"Reading {fname}, {len(these_labels)} files to load")
         T = db["av_fq_"+tbl]
         assert all(col in T.search_cols for col in cols)
         t0 = time.time()
@@ -74,34 +74,36 @@ def create_upload_files(infolder):
     print(f"Computing columns, {len(labels)} labels to do")
     for i, label in enumerate(label_todo):
         ISOG = data["isog"][label][label]
-        WE = data["weak_equivalences"][label]
+        WE = data["weak_equivalences"][label].values()
+        ORDERS = [rec for rec in WE if rec["is_invertible"] == "t"]
         POL = data["pol"][label]
         if i % 1000 == 0:
             print(f"Computing columns, {i} {label:20} {time.time()-t0}s           ", end="\r")
 
         # Add index, number_of_we to the weak equivalence and isogeny data
         we_cnt = len(WE)
-        for D in WE.values():
+        for D in ORDERS:
             D["index"] = D["multiplicator_ring"].split(".")[0]
+        for D in WE:
             D["number_of_we"] = we_cnt
         ISOG["weak_equivalence_count"] = str(we_cnt)
 
         # Whether all isomorphism classes are a nontrivial product.  In the case so far (commutative endomorphism ring), this doesn't depend on whether you're considering them as polarized or unpolarized abelian varieties.
-        pcnt = Counter(rec["is_product"] != r"\N" for rec in WE.values())
+        pcnt = Counter(rec["is_product"] for rec in ORDERS)
         assert pcnt[r"\N"] == 0
         for col in ["all_unpolarized_product", "all_polarized_product"]:
             ISOG[col] = "t" if pcnt["f"] == 0 else "f"
 
         # The maximum Cohen-Macaulay type
-        cm_max = max(int(rec["cohen_macaulay_type"]) for rec in WE.values())
+        cm_max = max(int(rec["cohen_macaulay_type"]) for rec in ORDERS)
         ISOG["cohen_macaulay_max"] = str(cm_max)
 
         # The number of endomorphism rings
-        er_cnt = len([rec for rec in WE.values() if rec["is_invertible"] == "t"])
+        er_cnt = len([rec for rec in ORDERS])
         ISOG["endomorphism_ring_count"] = str(er_cnt)
 
         # The number of distinct group structures
-        gs_cnt = len(set(rec["rational_invariants"] for rec in WE.values()))
+        gs_cnt = len(set(rec["rational_invariants"] for rec in WE))
         ISOG["group_structure_count"] = str(gs_cnt)
 
         # The number of singular primes
@@ -114,8 +116,8 @@ def create_upload_files(infolder):
 
         # The size of the Picard group of Z[F,V]
         if label in pol_labels:
-            maxind = str(max(int(D["index"]) for D in WE.values()))
-            ZFV = [w for w in WE.values() if w["index"] == maxind]
+            maxind = str(max(int(D["index"]) for D in ORDER))
+            ZFV = [w for w in ORDERS if w["index"] == maxind]
             assert len(ZFV) == 1
             ZFV = ZFV[0]
             ISOG["ZFV_pic_size"] = ZFV["pic_size"]
