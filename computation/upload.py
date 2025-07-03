@@ -110,7 +110,7 @@ def create_upload_files(infolder):
 
         if label in pol_labels:
             # The size of the Picard group of Z[F,V]
-            maxind = str(max(int(D["index"]) for D in ORDER))
+            maxind = str(max(int(D["index"]) for D in ORDERS))
             ZFV = [w for w in ORDERS if w["index"] == maxind]
             assert len(ZFV) == 1
             ZFV = ZFV[0]
