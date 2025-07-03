@@ -52,7 +52,7 @@ def create_upload_files(infolder):
     ]:
         print(f"Reading {fname}, {len(labels)} files to load")
         T = db["av_fq_"+tbl]
-        assert all(col in T.search_cols)
+        assert all(col in T.search_cols for col in cols)
         t0 = time.time()
         for i, label in enumerate(these_labels):
             if i % 1000 == 0:
