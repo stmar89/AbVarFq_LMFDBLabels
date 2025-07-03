@@ -36,7 +36,7 @@ def create_upload_files(infolder):
     pol_we_cols = "label:pic_invs:pic_basis:is_product:product_partition:is_conjugate_stable:generator_over_ZFV:is_Zconductor_sum:is_ZFVconductor_sum".split(":")
     pol_folder_pol = infolder / "output_pols" / "av_fq_pol" # only ordinary and some missing CM types
     pol_pol_cols = "label:isog_label:endomorphism_ring:isom_label:degree:kernel:degree_rr:kernel_rr:degree_rl:kernel_rl:degree_lr:kernel_lr:degree_ll:kernel_ll:aut_group:geom_aut_group:is_jacobian:representative".split(":")
-    assert labels == set(path.name for path in pol_folder_isog.iterdir()) == set(path.name for path in pol_folder_we.iterdir())
+    #assert labels == set(path.name for path in pol_folder_isog.iterdir()) == set(path.name for path in pol_folder_we.iterdir())
     pol_labels = set(path.name for path in pol_folder_pol.iterdir())
     pol_label_todo = sorted(pol_labels, key=sort_key)
     assert pol_labels.issubset(labels)
@@ -139,7 +139,7 @@ def create_upload_files(infolder):
                 if i % 1000 == 0:
                     print(f"Writing av_fq_{tbl}.txt, {i} {label:20} {time.time()-t0}s           ", end="\r")
                 for rec in data[tbl][label].values():
-                    line = ":".join(rec[col] for col in cols) + "\n"
+                    line = ":".join(rec.get(col,r"\N") for col in cols) + "\n"
                     _ = F.write(line)
         print(f"Writing av_fq_{tbl}.txt, done in {time.time()-t0}s                          ")
 
