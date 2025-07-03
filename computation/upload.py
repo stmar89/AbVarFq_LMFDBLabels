@@ -57,7 +57,7 @@ def create_upload_files(infolder):
         for i, label in enumerate(these_labels):
             if i % 1000 == 0:
                 print(f"Reading {fname}, {i} {label:20} {time.time()-t0}s           ", end="\r")
-            with open(folder / label + suff) as F:
+            with open(folder / (label + suff)) as F:
                 for line in F:
                     pieces = line.strip().split(":")
                     assert len(pieces) == len(cols)
