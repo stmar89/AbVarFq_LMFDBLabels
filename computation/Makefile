@@ -137,7 +137,7 @@ run_script_sing_primes:
 	@echo "(re)starting run_script_sing_primes on:" >> ${my_log}
 	@make -s log_versions_last_commits
 	parallel -j 20 --u --resume --joblog ${fld_comp}joblog_sing_primes -a ${input} magma -b fld_out_wk:=${fld_out_wk} fld_out_sing_primes:=${fld_out_sing_primes} issues:=${issues_sing_primes} s:={} ${fld_scripts}script_sing_primes.m
-	@echo "run_script_cm_missing has finished on:" >> ${my_log}
+	@echo "run_script_sing_primes has finished on:" >> ${my_log}
 	@date >> ${my_log}
 
 clean_failed_script_sing_primes:
@@ -161,11 +161,11 @@ clean_failed_script_cm:
 	rm ~/287_abvarfq_lmfdb_recomputation/joblog_cm
 	rm ~/287_abvarfq_lmfdb_recomputation/issues_cm
 
-jobs_cm = 1
+jobs_cm = 18
 run_script_cm_missing:
 	@echo "(re)starting run_script_cm_missing on:" >> ${my_log}
 	@make -s log_versions_last_commits
-	parallel -j ${jobs_cm} --resume --joblog ${fld_comp}joblog_cm_missing -a ${input_cm_missing} magma -b fld_out:=${fld_out_cm} issues:=${issues_cm} s:={} ${fld_scripts}script_cm.m
+	parallel -j ${jobs_cm} --u --resume --joblog ${fld_comp}joblog_cm_missing -a ${input_cm_missing} magma -b fld_out:=${fld_out_cm} issues:=${issues_cm} s:={} ${fld_scripts}script_cm_missing.m
 	@echo "run_script_cm_missing has finished on:" >> ${my_log}
 	@date >> ${my_log}
 

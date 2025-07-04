@@ -5,6 +5,7 @@
 */
 
     SetColumns(0);
+    SetAssertions(2);
 
     path1:="~/287_abvarfq_lmfdb_recomputation/output_pols_test1/";
     path2:="~/287_abvarfq_lmfdb_recomputation/output_pols_test2/";
