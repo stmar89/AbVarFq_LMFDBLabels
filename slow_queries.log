@@ -1,0 +1,4 @@
+2025-07-03 16:23:06,188 - SELECT table_name, column_name, udt_name::regtype FROM information_schema.columns ORDER BY table_name, ordinal_position ran in [91m 0.31499481201171875s [0m
+2025-07-03 16:25:57,561 - SELECT table_name, column_name, udt_name::regtype FROM information_schema.columns ORDER BY table_name, ordinal_position ran in [91m 0.3027782440185547s [0m
+2025-07-03 16:44:11,018 - SELECT table_name, column_name, udt_name::regtype FROM information_schema.columns ORDER BY table_name, ordinal_position ran in [91m 1.021519660949707s [0m
+2025-07-03 16:44:11,227 - SELECT name, label_col, sort, count_cutoff, id_ordered, out_of_order, has_extras, stats_valid, total, include_nones FROM meta_tables ran in [91m 0.16314101219177246s [0m
