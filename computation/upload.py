@@ -88,7 +88,7 @@ def create_upload_files(infolder, parallelopts="-j32 --timeout 60"):
                 D["multiplicator_ring"] = D["multiplicator_ring"].split("-")[1] # Discussing on Zulip now....    
             D["index"] = D["multiplicator_ring"].split(".")[0]
         for D in WE:
-            D["number_of_we"] = we_cnt
+            D["number_of_we"] = str(we_cnt)
         ISOG["weak_equivalence_count"] = str(we_cnt)
 
         # The maximum Cohen-Macaulay type
@@ -205,6 +205,7 @@ def compute_diagramx(data, parallelopts="-j32 --timeout 60"):
                 _ = F.write("graph 1.0\n")
                 for mring in mlabels:
                     _ = F.write(f'node "{mring}" 0.5\n')
+            todo.pop() # Remove label from todo list
         else:
             nodes = ";\n".join(nodes)
             edges = ";\n".join(edges)
