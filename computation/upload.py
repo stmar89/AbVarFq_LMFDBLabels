@@ -17,7 +17,7 @@ def create_upload_files(infolder):
     polcnts = Counter()
     infolder = Path(infolder)
 
-    updated_isog_cols = "label:ZFV_singular_primes:ZFV_singular_count:ZFV_pic_size:pic_prime_gens:size:weak_equivalence_count:endomorphism_ring_count:group_structure_count:all_unpolarized_product:all_polarized_product:cohen_macaulay_max".split(":")
+    updated_isog_cols = "label:ZFV_singular_primes:ZFV_singular_count:ZFV_pic_size:pic_prime_gens:size:weak_equivalence_count:endomorphism_ring_count:group_structure_count:all_unpolarized_product:all_polarized_product:cohen_macaulay_max:principal_polarization_count".split(":")
 
     we_folder = infolder / "output_wk"
     we_cols = "label:we_number:pic_size:multiplicator_ring:isog_label:ideal_basis_numerators:ideal_basis_denominator:is_invertible:cohen_macaulay_type:dimensions:minimal_overorders:rational_invariants:higher_invariants:conductor:conductor_is_Sprime:conductor_is_Oprime:conductor_Sindex:conductor_Oindex:conductor_class".split(":")
@@ -83,6 +83,8 @@ def create_upload_files(infolder):
         # Add index, number_of_we to the weak equivalence and isogeny data
         we_cnt = len(WE)
         for D in ORDERS:
+            if "-" in D["multiplicator_ring"]:
+                D["multiplicator_ring"] = D["multiplicator_ring"].split("-")[1] # Discussing on Zulip now....    
             D["index"] = D["multiplicator_ring"].split(".")[0]
         for D in WE:
             D["number_of_we"] = we_cnt
@@ -123,9 +125,10 @@ def create_upload_files(infolder):
             assert pcnt[r"\N"] == 0
             for col in ["all_unpolarized_product", "all_polarized_product"]:
                 ISOG[col] = "t" if pcnt["f"] == 0 else "f"
+            ISOG["principal_polarization_count"] = str(len([D for D in POL.values() if D["degree"] == "1"]))
 
         else:
-            for col in ["all_unpolarized_product", "all_polarized_product", "ZFV_pic_size"]:
+            for col in ["all_unpolarized_product", "all_polarized_product", "ZFV_pic_size", "principal_polarization_count"]:
                 ISOG[col] = r"\N"
     print(f"Computing columns, done in {time.time()-t0}s                                 ")
 
