@@ -194,8 +194,8 @@ def compute_diagramx(data, parallelopts="-j32 --timeout 60"):
                     factored_index = "1"
                 else:
                     factored_index = r"*".join((f"{p}{e}" if e > 1 else f"{p}") for (p, e) in N.factor())
-                label = "[%s]%s" % (factored_index, pic_size)
-                nodes.append(f'"{mring}" [label="{label}",shape=plaintext]')
+                tex = "[%s]%s" % (factored_index, pic_size)
+                nodes.append(f'"{mring}" [label="{tex}",shape=plaintext]')
                 if min_over:
                     edges.append(f'"{mring}" -> {{"{min_over}"}} [dir=none]')
                 ranks[sum(e for (p,e) in N.factor())].append(mring)
