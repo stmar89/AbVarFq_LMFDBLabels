@@ -12,7 +12,7 @@ def sort_key(label):
     pieces = re.split(r"\.|_|-", label)
     return tuple(int(c) if c.isdigit() else class_to_int(c) for c in pieces)
 
-def create_upload_files(infolder):
+def create_upload_files(infolder, parallelopts="-j32 --timeout 60"):
     # We create an update file for av_fq_isog and reload/update files for av_fq_weak_equivalences and av_fq_pol
     polcnts = Counter()
     infolder = Path(infolder)
@@ -72,6 +72,7 @@ def create_upload_files(infolder):
 
     # Add in data to isog beyond just size,singular_primes,pic_prime_gens
     print(f"Computing columns, {len(labels)} labels to do")
+    t0 = time.time()
     for i, label in enumerate(label_todo):
         ISOG = data["isog"][label][label]
         WE = data["weak_equivalences"][label].values()
@@ -132,6 +133,13 @@ def create_upload_files(infolder):
                 ISOG[col] = r"\N"
     print(f"Computing columns, done in {time.time()-t0}s                                 ")
 
+    compute_diagramx(data, parallelopts)
+    #print("Setting diagramx")
+    #for label in label_todo:
+    #    for wlabel, W in data["weak_equivalences"][label].items():
+    #        if W["is_invertible"] == "t":
+    #            W["diagramx"] = diagramx[wlabel]
+
     for tbl, these_labels, cols in [
             ("isog", label_todo, updated_isog_cols),
             ("weak_equivalences", label_todo, db.av_fq_weak_equivalences.search_cols),
@@ -150,18 +158,19 @@ def create_upload_files(infolder):
                     _ = F.write(line)
         print(f"Writing av_fq_{tbl}.txt, done in {time.time()-t0}s                          ")
 
-def compute_diagramx(basefolder, outfile="av_fq_diagramx.update", parallelopts="-j32 --timeout 60"):
+def compute_diagramx(data, parallelopts="-j32 --timeout 60"):
     # Given a folder containing weak equivalence data (in the form read by LoadSchemaWKClasses), uses graphviz to find a layout for the endomorphism rings in each weak equivalence class.
-    diagramx = {}
     todofile = Path("/tmp/abvar_diagramx.todo")
     indir = Path("/tmp/abvar_diagramx_in")
     outdir = Path("/tmp/abvar_diagramx_out")
-    base = Path(basefolder)
     indir.mkdir(exist_ok=True)
     outdir.mkdir(exist_ok=True)
     todo = []
-    for path in base.iterdir():
-        label = path.name
+    t0 = time.time()
+    print(f"Computing diagramx; writing {len(data['weak_equivalences'])} graphviz input files")
+    for i, (label, D) in enumerate(data["weak_equivalences"].items()):
+        if i % 1000 == 0:
+            print(f"Graphviz input, {i} {label:20} {time.time()-t0}s           ", end="\r")
         if (outdir / label).exists(): # diagramx already computed for this isogeny class
             continue
         todo.append(label)
@@ -171,30 +180,27 @@ def compute_diagramx(basefolder, outfile="av_fq_diagramx.update", parallelopts="
         edges = []
         ranks = defaultdict(list)
         mlabels = []
-        with open(path) as F:
-            for line in F:
-                pieces = line.strip().split(":")
-                invertible, mring, min_over, pic_size = pieces[7], pieces[3], pieces[10], pieces[2]
-                if invertible == "t":
-                    mlabels.append(mring)
-                    if len(min_over) == 2: # [] or {}
-                        min_over = ""
-                    else:
-                        min_over = '","'.join(min_over[1:-1].split(","))
-                    N = ZZ(mring.split(".")[0])
-                    # We get an approximation to the latex used (we don't omit .1 when there's only one mring of a given index; it won't matter since in that case horizontal space isn't a big deal; and we omit the number of weak equivalence classes with a given mring)
-                    if N == 1:
-                        factored_index = "1"
-                    else:
-                        factored_index = r"\cdot".join((f"{p}^{{{e}}}" if e > 1 else f"{p}") for (p, e) in N.factor())
-                    istr = f"_{{{i}}}"
-                    tex = "[%s]%s%s" % (factored_index, pic_size, istr)
-                    nodes.append(f'"{mring}" [label="{tex}",shape=plaintext]')
-                    if min_over:
-                        edges.append(f'"{mring}" -> {{"{min_over}"}} [dir=none]')
-                    ranks[sum(e for (p,e) in N.factor())].append(mring)
+        for W in D.values():
+            if W["is_invertible"] == "t":
+                mring, min_over, pic_size = W["multiplicator_ring"], W["minimal_overorders"], W["pic_size"]
+                mlabels.append(mring)
+                if len(min_over) == 2: # {}
+                    min_over = ""
+                else:
+                    min_over = '","'.join(min_over[1:-1].split(",")) # outside quotes added below
+                N = ZZ(W["index"])
+                # We get an approximation to the length of the latex output used (we don't omit .1 when there's only one mring of a given index; it won't matter since in that case horizontal space isn't a big deal; and we omit the number of weak equivalence classes with a given mring)
+                if N == 1:
+                    factored_index = "1"
+                else:
+                    factored_index = r"*".join((f"{p}{e}" if e > 1 else f"{p}") for (p, e) in N.factor())
+                label = "[%s]%s" % (factored_index, pic_size)
+                nodes.append(f'"{mring}" [label="{label}",shape=plaintext]')
+                if min_over:
+                    edges.append(f'"{mring}" -> {{"{min_over}"}} [dir=none]')
+                ranks[sum(e for (p,e) in N.factor())].append(mring)
         if len(nodes) <= 3:
-            # early exits, since we don't need to do anything in these cases
+            # early exit, since we don't need to do anything in these cases
             with open(outdir / label, "w") as F:
                 _ = F.write("graph 1.0\n")
                 for mring in mlabels:
@@ -215,36 +221,44 @@ splines=line;
 """
             with open(indir / label, "w") as F:
                 _ = F.write(graph)
+    print(f"Graphviz input, done in {time.time()-t0}s              ")
     if todo:
         with open(todofile, "w") as Ftodo:
             _ = Ftodo.write("\n".join(todo) + "\n")
+        print(f"Running parallel dot on {len(todo)} input files...")
+        t0 = time.time()
         subprocess.run('parallel %s -a %s "dot -Tplain -o %s/{1} %s/{1}"' % (parallelopts, todofile, outdir, indir), shell=True, check=True)
-    with open(outfile, "w") as Fout:
-        _ = Fout.write("label|diagramx\ntext|smallint\n\n")
-        for path in outdir.iterdir():
-            label = path.name
-            with open(outdir / label) as F:
-                # When there are long output lines, dot uses a backslash at the end of the line to indicate a line continuation.
-                maxx = 0
-                minx = 10000
-                lines = []
-                continuing = False
-                for line in F:
-                    line = line.strip()
-                    if continuing:
-                        lines[-1] += line
-                    else:
-                        lines.append(line)
-                    continuing = line[-1] == "\\"
-                    if continuing:
-                        lines[-1] = lines[-1][:-1]
-                for line in lines:
-                    if line == "graph 1.0":
-                        scale = 1.0
-                    elif line.startswith("graph"):
-                        scale = float(line.split()[2])
-                    elif line.startswith("node"):
-                        pieces = line.split()
-                        mring = pieces[1].replace('"', '')
-                        diagram_x = int(round(10000 * float(pieces[2]) / scale))
-                        _ = Fout.write(f"{label}.{mring}.1|{diagram_x}\n")
+        print(f"Parallel dot complete in {time.time()-t0}s")
+    print(f"Reading graphviz, {len(data['weak_equivalences'])} output files")
+    t0 = time.time()
+    for i, path in enumerate(outdir.iterdir()):
+        label = path.name
+        if i % 1000 == 0:
+            print(f"Reading graphviz, {i} {label:20} {time.time()-t0}s            ", end="\r")
+        with open(outdir / label) as F:
+            # When there are long output lines, dot uses a backslash at the end of the line to indicate a line continuation.
+            maxx = 0
+            minx = 10000
+            lines = []
+            continuing = False
+            for line in F:
+                line = line.strip()
+                if continuing:
+                    lines[-1] += line
+                else:
+                    lines.append(line)
+                continuing = line[-1] == "\\"
+                if continuing:
+                    lines[-1] = lines[-1][:-1]
+            for line in lines:
+                if line == "graph 1.0":
+                    scale = 1.0
+                elif line.startswith("graph"):
+                    scale = float(line.split()[2])
+                elif line.startswith("node"):
+                    pieces = line.split()
+                    mring = pieces[1].replace('"', '')
+                    diagram_x = int(round(10000 * float(pieces[2]) / scale))
+                    Rlabel = f"{label}-{mring}.1"
+                    data["weak_equivalences"][label][Rlabel]["diagramx"] = str(diagram_x)
+    print(f"Reading graphviz, done in {time.time()-t0}s                     ")
