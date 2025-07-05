@@ -276,3 +276,127 @@ clean_failed_script_pols_test:
 	rm ~/287_abvarfq_lmfdb_recomputation/joblog_pols_test2 || true
 	rm ~/287_abvarfq_lmfdb_recomputation/issues_pols_test2 || true
 
+##################
+# folders and scripts for 
+# all computations for g=3, q=25
+##################
+
+fld_comp_3_25 = ~/287_abvarfq_lmfdb_recomputation_3_25/
+fld_out_wk_3_25 = ${fld_comp_3_25}output_wk/
+my_log_3_25 = ${fld_comp_3_25}my_log
+input_3_25 = ${fld_scripts}weil_poly_sqfree_ord_only_3_25.txt
+issues_wk_3_25 = ${fld_comp_3_25}issues_wk_3_25
+
+rm_log_3_25:
+	rm ${my_log_3_25} || true
+
+log_versions_last_commits_3_25:
+	@date >> ${my_log_3_25}
+	@echo "magma version:" >> ${my_log_3_25}
+	@magma -b -e 'GetVersion();' >> ${my_log_3_25}
+	@echo last git commit for CHIMP: >> ${my_log_3_25}
+	@git -C ~/CHIMP/ log -n 1 --pretty=format:"%H" >> ${my_log_3_25}
+	@echo "\nlast git commit for AlgEt:" >> ${my_log_3_25}
+	@git -C ~/AlgEt/ log -n 1 --pretty=format:"%H" >> ${my_log_3_25}
+	@echo "\nlast git commit for AbVarFq_LMFDBLabels:" >> ${my_log_3_25}
+	@git -C ~/AbVarFq_LMFDBLabels/ log -n 1 --pretty=format:"%H" >> ${my_log_3_25}
+	@echo "\n" >> ${my_log_3_25}
+
+jobs_wk_3_25 = 18
+run_script_wk_3_25:
+	@echo "(re)starting run_script_wk_3_25 on:" >> ${my_log_3_25}
+	@make -s log_versions_last_commits_3_25
+	parallel -j ${jobs_wk_3_25} --resume --joblog ${fld_comp_3_25}joblog_wk_3_25 -a ${input_3_25} magma -b fld_out:=${fld_out_wk_3_25} issues:=${issues_wk_3_25} s:={} ${fld_scripts}script_wk.m
+	@echo "run_script_wk_3_25 has finished on:" >> ${my_log_3_25}
+	@date >> ${my_log_3_25}
+
+clean_failed_script_wk_3_25:
+	rm ${fld_out_wk_3_25}* || true
+	rm ${fld_comp_3_25}joblog_wk_3_25 || true
+	rm ${issues_wk_3_25} || true
+
+# TODO the following are not tested
+
+jobs_sing_primes_3_25 = 18
+fld_out_sing_primes_3_25 = ${fld_comp_3_25}output_sing_primes/
+issues_sing_primes_3_25 = ${fld_comp_3_25}issues_sing_primes_3_25
+
+run_script_sing_primes_3_25:
+	@echo "(re)starting run_script_sing_primes_3_25 on:" >> ${my_log_3_25}
+	@make -s log_versions_last_commits_3_25
+	parallel -j ${jobs_sing_primes_3_25} --u --resume --joblog ${fld_comp_3_25}joblog_sing_primes_3_25 -a ${input_3_25} magma -b fld_out_wk:=${fld_out_wk_3_25} fld_out_sing_primes:=${fld_out_sing_primes_3_25} issues:=${issues_sing_primes_3_25} s:={} ${fld_scripts}script_sing_primes.m
+	@echo "run_script_sing_primes_wk_3_25 has finished on:" >> ${my_log_wk_3_25}
+	@date >> ${my_log_wk_3_25}
+
+clean_failed_script_sing_primes_3_25:
+	rm ${fld_comp_3_25}joblog_sing_primes_wk_3_25 
+	rm ${fld_out_sing_primes_wk_3_25}av_fq_isog/* || true
+	rm ${fld_out_sing_primes_wk_3_25}av_fq_we/* || true
+
+fld_out_cm_3_25 = ${fld_comp_3_25}output_cm/
+issues_cm_3_25 = ${fld_comp_3_25}issues_cm_3_25
+
+run_script_cm_3_25:
+	@echo "(re)starting run_script_cm_3_25 on:" >> ${my_log_3_25}
+	@make -s log_versions_last_commits_3_25
+	parallel -j 18 --memsuspend 100G --resume --joblog ${fld_comp_3_25}joblog_cm_3_25 -a ${input_3_25} magma -b fld_out:=${fld_out_cm_3_25} issues:=${issues_cm_3_25} s:={} ${fld_scripts}script_cm.m
+	@echo "run_script_cm_3_25 has finished on:" >> ${my_log_3_25}
+	@date >> ${my_log_3_25}
+
+clean_failed_script_cm_3_25:
+	rm ${fld_out_cm_3_25}*
+	rm ${fld_comp_3_25}joblog_cm_3_25
+	rm ${issues_cm_3_25}
+
+timeout_pols_3_25 = 3600
+fld_out_pols_3_25 = ${fld_comp_3_25}output_pols/
+
+run_script_pols_3_25:
+	@echo "(re)starting run_script_pols_3_25 on:" >> ${my_log_3_25}
+	@make -s log_versions_last_commits_3_25
+	parallel --eta --timeout ${timeout_pols_3_25}  --resume --joblog ${fld_comp_3_25}joblog_pols_3_25 -a ${input_3_25} magma -b fld_comp:=${fld_comp_3_25} fld_out_wk:=${fld_out_wk_3_25} fld_out_cm:=${fld_out_cm_3_25} fld_out_pols:=${fld_out_pols_3_25} issues:=${issues_pols_3_25} degree_bounds:=${degree_bounds} s:={} ${fld_scripts}script_pols.m
+	@echo "run_script_pols_3_25 has finished on:" >> ${my_log_3_25}
+	@date >> ${my_log_3_25}
+
+clean_failed_script_pols_3_25:
+	rm -r ${fld_out_pols_3_25} || true
+	mkdir -p ${fld_out_pols_3_25}av_fq_pol
+	mkdir -p ${fld_out_pols_3_25}av_fq_we
+	mkdir -p ${fld_out_pols_3_25}av_fq_isog
+	mkdir -p ${fld_out_pols_3_25}allproduct
+	rm ${fld_comp_3_25}joblog_pols_3_25 || true
+	rm ${issues_pols_3_25} || true
+
+echo_status_3_25:
+	@echo "status on_3_25"
+	@date
+	@echo "number of inputs_3_25:"
+	@cat ${input_3_25} | wc -l
+	@echo "script_wk_3_25 completed :"
+	@ls ${fld_out_wk_3_25} | wc -l
+	@echo "script_cm_3_25 completed:"
+	@ls ${fld_out_cm_3_25} | wc -l
+	@echo "script_pols_3_25 completed :"
+	@ls ${fld_out_pols_3_25}av_fq_isog | wc -l
+	@echo "script_sing_primes_3_25 completed :"
+	@ls ${fld_out_sing_primes_3_25}av_fq_isog | wc -l
+
+log_status_3_25:
+	@echo "status on_3_25:" >> ${my_log_3_25}
+	@date >> ${my_log_3_25}
+	@echo "number of inputs_3_25 :" >> ${my_log_3_25}
+	@cat ${input_3_25} | wc -l >> ${my_log_3_25}
+	@echo "script_wk_3_25 completed :" >> ${my_log_3_25}
+	@ls ${fld_out_wk_3_25} | wc -l >> ${my_log_3_25}
+	@echo "script_cm completed:" >> ${my_log_3_25}
+	@ls ${fld_out_cm_3_25} | wc -l >> ${my_log_3_25}
+	@echo "script_pols completed :" >> ${my_log_3_25}
+	@ls ${fld_out_pols_3_25}av_fq_isog | wc -l >> ${my_log_3_25}
+	@echo "script_sing_primes completed :" >> ${my_log_3_25}
+	@ls ${fld_out_sing_primes_3_25}av_fq_isog | wc -l >> ${my_log_3_25}
+	@echo "\n" >> ${my_log_3_25}
+
+status_3_25:
+	@make -s echo_status_3_25
+	@make -s log_status_3_25
+
