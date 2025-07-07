@@ -306,7 +306,7 @@ jobs_wk_3_25 = 18
 run_script_wk_3_25:
 	@echo "(re)starting run_script_wk_3_25 on:" >> ${my_log_3_25}
 	@make -s log_versions_last_commits_3_25
-	parallel -j ${jobs_wk_3_25} --resume --joblog ${fld_comp_3_25}joblog_wk_3_25 -a ${input_3_25} magma -b fld_out:=${fld_out_wk_3_25} issues:=${issues_wk_3_25} s:={} ${fld_scripts}script_wk.m
+	parallel -j ${jobs_wk_3_25} --memsuspend 100G -resume --joblog ${fld_comp_3_25}joblog_wk_3_25 -a ${input_3_25} magma -b fld_out:=${fld_out_wk_3_25} issues:=${issues_wk_3_25} s:={} ${fld_scripts}script_wk.m
 	@echo "run_script_wk_3_25 has finished on:" >> ${my_log_3_25}
 	@date >> ${my_log_3_25}
 
