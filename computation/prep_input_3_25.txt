@@ -1,0 +1,26 @@
+/* vim: set syntax=magma : */
+
+// we look for an order which is not Bass and has multiple singular primes above the same rational prime.
+
+    AttachSpec("~/CHIMP/CHIMP.spec");
+    AttachSpec("~/AlgEt/spec");
+    AttachSpec("~/AbVarFq_LMFDBLabels/spec");
+
+    P<x>:=PolynomialRing(Integers());
+
+    time all:=[c : c in Split(Read("~/AbVarFq_LMFDBLabels/computation/weil_poly_sqfree_ord_cs_unsorted.txt"))];
+    
+    file_out:="~/AbVarFq_LMFDBLabels/computation/weil_poly_sqfree_ord_only_3_25.txt";
+
+    tot:=#all; perc:=0;
+    for ic->cc in all do
+        if Truncate(ic/tot*100) gt perc then perc+:=1; printf "%o%% ",perc; end if;
+        c:=Split(cc,"[ ,]");
+        g:=(#c-1) div 2;
+        if g eq 3 and c[1] eq "15625" then
+            cg:=c[g+1];
+            is_ord:=cg[#cg] notin {"0","5"}; //not divisible by 5
+            assert is_ord;
+            fprintf file_out,"%o\n",cc;
+        end if;
+    end for;

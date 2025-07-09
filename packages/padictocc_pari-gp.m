@@ -131,15 +131,14 @@ intrinsic pAdicToComplexRoots(f::RngUPolElt[FldRat], p::RngIntElt : precpAdic :=
                 /*
                 cmd := Sprintf(
                        "{
-                       h = Pol(Vecrev(%o),'a); 
+                       h = Polrev(%o); 
                        F = nfinit(h);
-                       elt = Mod(Pol(Vecrev(%o),'a),h);
+                       elt = Polrev(%o);
                        bl = nfeltissquare(F, elt , &y);
-                       print1([ bl , Vecrev(y) ])
+                       if(bl,print1([ bl , Vecrev(lift(nfbasistoalg(F,y))) ]),print1([ 0 , 0 ]));
                        }",
                        Coefficients(DefiningPolynomial(F)),Eltseq(elt));
                 */
-                // but the function nfeltissquare is bugged. below there is a workaround.
                 cmd := Sprintf(
                        "{
                        h = Pol(Vecrev(%o),'a); 

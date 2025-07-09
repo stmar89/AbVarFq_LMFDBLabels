@@ -1,2 +1,7 @@
 *.swp
 *.sig
+av_fq_isog.txt
+av_fq_pol.txt
+av_fq_weak_equivalences.txt
+slow_queries.log
+flasklog

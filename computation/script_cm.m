@@ -10,7 +10,7 @@
     AttachSpec("~/AlgEt/spec");
     AttachSpec("~/AbVarFq_LMFDBLabels/spec");
     
-    SetVerbose("padictocc",1);
+    //SetVerbose("padictocc",1);
     try 
         printf "starting with %o\n",s;
         P<x>:=PolynomialRing(Integers());
