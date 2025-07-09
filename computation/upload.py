@@ -17,7 +17,7 @@ def create_upload_files(infolder, parallelopts="-j32 --timeout 60"):
     polcnts = Counter()
     infolder = Path(infolder)
 
-    updated_isog_cols = "label:ZFV_singular_primes:ZFV_singular_count:ZFV_pic_size:pic_prime_gens:size:weak_equivalence_count:endomorphism_ring_count:group_structure_count:all_unpolarized_product:all_polarized_product:cohen_macaulay_max:principal_polarization_count".split(":")
+    updated_isog_cols = "label:zfv_singular_primes:zfv_singular_count:zfv_pic_size:pic_prime_gens:size:weak_equivalence_count:endomorphism_ring_count:group_structure_count:all_unpolarized_product:all_polarized_product:cohen_macaulay_max:principal_polarization_count".split(":")
 
     we_folder = infolder / "output_wk"
     we_cols = "label:we_number:pic_size:multiplicator_ring:isog_label:ideal_basis_numerators:ideal_basis_denominator:is_invertible:cohen_macaulay_type:dimensions:minimal_overorders:rational_invariants:higher_invariants:conductor:conductor_is_Sprime:conductor_is_Oprime:conductor_Sindex:conductor_Oindex:conductor_class".split(":")
@@ -25,7 +25,7 @@ def create_upload_files(infolder, parallelopts="-j32 --timeout 60"):
     label_todo = sorted(labels, key=sort_key)
 
     sing_folder_isog = infolder / "output_sing_primes" / "av_fq_isog"
-    sing_isog_cols = "label:ZFV_singular_primes".split(":")
+    sing_isog_cols = "label:zfv_singular_primes".split(":")
     sing_folder_we = infolder / "output_sing_primes" / "av_fq_we"
     sing_we_cols = "label:singular_support".split(":")
     assert labels == set(path.name for path in sing_folder_isog.iterdir()) == set(path.name for path in sing_folder_we.iterdir())
@@ -104,12 +104,17 @@ def create_upload_files(infolder, parallelopts="-j32 --timeout 60"):
         ISOG["group_structure_count"] = str(gs_cnt)
 
         # The number of singular primes
-        P = ISOG["ZFV_singular_primes"]
+        P = ISOG["zfv_singular_primes"]
         if P == "{}":
             pcnt = 0
         else:
-            pcnt = P.count(",") + 1
-        ISOG["ZFV_singular_count"] = str(pcnt)
+            if '"' in P:
+                pcnt = P.count('","') + 1
+            elif "'" in P:
+                pcnt = P.count("','") + 1
+            else:
+                pcnt = P.count(",") + 1
+        ISOG["zfv_singular_count"] = str(pcnt)
 
         if label in pol_labels:
             # The size of the Picard group of Z[F,V]
@@ -117,7 +122,7 @@ def create_upload_files(infolder, parallelopts="-j32 --timeout 60"):
             ZFV = [w for w in ORDERS if w["index"] == maxind]
             assert len(ZFV) == 1
             ZFV = ZFV[0]
-            ISOG["ZFV_pic_size"] = ZFV["pic_size"]
+            ISOG["zfv_pic_size"] = ZFV["pic_size"]
             for D in POL.values():
                 D["pol_ctr"] = D["label"].split(".")[-1]
 
@@ -129,7 +134,7 @@ def create_upload_files(infolder, parallelopts="-j32 --timeout 60"):
             ISOG["principal_polarization_count"] = str(len([D for D in POL.values() if D["degree"] == "1"]))
 
         else:
-            for col in ["all_unpolarized_product", "all_polarized_product", "ZFV_pic_size", "principal_polarization_count"]:
+            for col in ["all_unpolarized_product", "all_polarized_product", "zfv_pic_size", "principal_polarization_count"]:
                 ISOG[col] = r"\N"
     print(f"Computing columns, done in {time.time()-t0}s                                 ")
 
@@ -170,7 +175,7 @@ def compute_diagramx(data, parallelopts="-j32 --timeout 60"):
     print(f"Computing diagramx; writing {len(data['weak_equivalences'])} graphviz input files")
     for i, (label, D) in enumerate(data["weak_equivalences"].items()):
         if i % 1000 == 0:
-            print(f"Graphviz input, {i} {label:20} {time.time()-t0}s           ", end="\r")
+            print(f"Graphviz input, {i} {label:20} {time.time()-t0}s                           ", end="\r")
         if (outdir / label).exists(): # diagramx already computed for this isogeny class
             continue
         todo.append(label)
