@@ -339,7 +339,7 @@ issues_cm_3_25 = ${fld_comp_3_25}issues_cm_3_25
 run_script_cm_3_25:
 	@echo "(re)starting run_script_cm_3_25 on:" >> ${my_log_3_25}
 	@make -s log_versions_last_commits_3_25
-	parallel -j 18 --memsuspend 100G --resume --joblog ${fld_comp_3_25}joblog_cm_3_25 -a ${input_3_25} magma -b fld_out:=${fld_out_cm_3_25} issues:=${issues_cm_3_25} s:={} ${fld_scripts}script_cm.m
+	parallel -j 10 --resume --joblog ${fld_comp_3_25}joblog_cm_3_25 -a ${input_3_25} magma -b fld_out:=${fld_out_cm_3_25} issues:=${issues_cm_3_25} s:={} ${fld_scripts}script_cm.m
 	@echo "run_script_cm_3_25 has finished on:" >> ${my_log_3_25}
 	@date >> ${my_log_3_25}
 
@@ -350,12 +350,13 @@ clean_failed_script_cm_3_25:
 
 timeout_pols_3_25 = 3600
 fld_out_pols_3_25 = ${fld_comp_3_25}output_pols/
+issues_pols_3_25 = ${fld_comp_3_25}issues_pols_3_25
 
 run_script_pols_3_25:
 	@echo "(re)starting run_script_pols_3_25 on:" >> ${my_log_3_25}
 	@make -s log_versions_last_commits_3_25
 	parallel --eta --timeout ${timeout_pols_3_25}  --resume --joblog ${fld_comp_3_25}joblog_pols_3_25 -a ${input_3_25} magma -b fld_comp:=${fld_comp_3_25} fld_out_wk:=${fld_out_wk_3_25} fld_out_cm:=${fld_out_cm_3_25} fld_out_pols:=${fld_out_pols_3_25} issues:=${issues_pols_3_25} degree_bounds:=${degree_bounds} s:={} ${fld_scripts}script_pols.m
-	@echo "run_script_pols_3_25 has finished on:" >> ${my_log_3_25}
+	@echo "run_script_pols_3_25 has finished on:" >> ${my_log_3_25}for ll in l :
 	@date >> ${my_log_3_25}
 
 clean_failed_script_pols_3_25:
