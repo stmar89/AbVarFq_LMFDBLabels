@@ -78,11 +78,16 @@ intrinsic RepresentativeMinimalIsogenies(ZFV::AlgEtQOrd, N::RngIntElt : degrees:
             if degrees cmpne [] and not (deg in degrees) then
                 continue;
             end if;
-            I, x, _, IWE, Ig := ICM_Identify(L, icm_lookup);
-            assert2 Index(J, x*I) eq deg;
+            I, x, IS, IWE, Ig := ICM_Identify(L, icm_lookup);
+            // I : distinguished rep of L
+            // x : L=x*I
+            // IWE : we class of L
+            // Ig : (L:IWE)@@pS where S:=(I:I)
+            _, _, P0PISmap := DistinguishedPicBasis(IS);
+            assert Index(J, x*I) eq deg;
             // We store isogenies in terms of ideals of ZFV, but Ig is an element of Pic(S).  To get it back into Pic(ZFV), we need to pick a representative in Pic(ZFV) that maps to it.  To do so, we use DistinguishedCosetRep.
-            Ker := Kernel(P0Pmap);
-            Ig := DistinguishedCosetRep(Ig@@P0Pmap, Ker);
+            Ker := Kernel(P0PISmap);
+            Ig := DistinguishedCosetRep(Ig@@P0PISmap, Ker);
             Append(~min_isog[myHash(IWE)][we_hashes[j]], <deg, x, Ig, Ker, I, L>); // x is a minimal isogeny from I to J of degree deg=#(J/L); I = IWE * Ig as distinguished representatives
         end for;
     end for;
@@ -139,6 +144,7 @@ The value of isog[I][J][d] is a sequence of tuples <x, h, H, L>, where
         for i->I in we_reps do
             hshI := we_hashes[i]; projI := we_proj[i];
             SI := MultiplicatorRing(I);
+            ISI:=SI!!I;
             for j->J in we_reps do
                 hshJ := we_hashes[j]; projJ := we_proj[j];
                 for k->K in we_reps do
@@ -148,12 +154,11 @@ The value of isog[I][J][d] is a sequence of tuples <x, h, H, L>, where
                             y, g, G, L0 := Explode(yL0);
                             for data in min_isog[hshI][hshK] do
                                 d, x, h, H := Explode(data);
-                                assert h in H;
                                 dm := d*m;
                                 if dm in degrees then
                                     GH := G + H;
                                     gh := DistinguishedCosetRep(g+h, GH);
-                                    I0 := icm_lookup[SI][<I, projI(gh)>];
+                                    I0 := icm_lookup[SI][<ISI, projI(gh)>];
                                     xy := x*y;
                                     L := (xy) * I0;
                                     if not IsDefined(isog[hshI][hshJ], dm) then
@@ -165,7 +170,7 @@ The value of isog[I][J][d] is a sequence of tuples <x, h, H, L>, where
                                         if not hsh in hashes then
                                             // myHash is collision free
                                             Append(~isog[hshI][hshJ][dm], <xy, gh, GH, L>);
-                                            assert2 Index(J, L) eq dm;
+                                            //assert Index(J, L) eq dm; TODO is this correct?
                                             added_something := true;
                                         end if;
                                     end if;

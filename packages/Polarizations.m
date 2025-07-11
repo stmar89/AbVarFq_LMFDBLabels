@@ -342,7 +342,6 @@ The value of the array for the isomorphism class I is the tuple <pol,den,nums,de
 - den and nums are sequence of integers representing the lcm of the denominators of and the numerators of the coefficients of pol wrt the ZFVBasis;
 - dec is the output of DecompositionKernelOfIsogeny;
 - label is the label of the polarized abelian variety, in the format g.q.coeffs-N.i.w.j-d.k.}
-}
     require not 1 in degree_bounds : "Do not use AllNonprincipalPolarizations to compute principal polarizations";
     isog_label:=IsogenyLabel(DefiningPolynomial(Algebra(ZFV)));
     t_tot := Cputime();
@@ -374,6 +373,7 @@ The value of the array for the isomorphism class I is the tuple <pol,den,nums,de
                     for v in transversal_US_USplus(S) do
                         pp := x*v; // TODO: need to think about how to use IsPrincipal appropriately here.
                         if is_polarization(pp, PHI) then
+                            assert Index(Iv,pp*I) eq d;
                             got_one := true;
                             break;
                         end if;
@@ -386,11 +386,11 @@ The value of the array for the isomorphism class I is the tuple <pol,den,nums,de
             t_can_Jd:=Cputime();
             pols_deg_d_up_to_iso:={};
             for x0 in pols_deg_d do
-                pol,den,num:=DistinguishedRepresentativePolarization(J,x0);
+                pol,den,nums:=DistinguishedRepresentativePolarization(J,x0);
                 Include(~pols_deg_d_up_to_iso, <pol,den,nums>); //isomorphic pols will have the same distinguished rep
             end for;
             t_can +:=Cputime(t_can_Jd);
-            assert2 forall{ pol : pol in pols_deg_d_up_to_iso | d eq Index(Iv, pol[1]*I) }; // sanity check
+            assert forall{ pol : pol in pols_deg_d_up_to_iso | d eq Index(Iv, pol[1]*I) }; // sanity check
             if #pols_deg_d_up_to_iso gt 0 then
                 // now, pols_deg_d_up_to_iso contains tuples <can,den,nums> each one 
                 // representing an isomorphism class of polarizations of J of degree d.
@@ -402,7 +402,7 @@ The value of the array for the isomorphism class I is the tuple <pol,den,nums,de
                     label:=Sprintf("%o-%o.%o",isom_label,d,k);
                     Append(~pols_deg_d_up_to_iso_with_labels,<pol[1],pol[2],pol[3],label>);
                 end for;
-                Ipols[d]:=[ < pol[1] , pol[2] , pol[3], DecompositionKernelOfIsogeny(J,Jv,pol[1]),pol[4] > : pol in pols_deg_d_up_to_iso_with_labels ]; //TODO we have both I and J in this line. Is this correct?
+                Ipols[d]:=[ < pol[1] , pol[2] , pol[3], DecompositionKernelOfIsogeny(I,Iv,pol[1]),pol[4] > : pol in pols_deg_d_up_to_iso_with_labels ]; //TODO we have both I and J in this line. Is this correct?
             end if;
         end for;
         all_pols[I]:=Ipols;
