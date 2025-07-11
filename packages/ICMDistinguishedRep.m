@@ -15,7 +15,14 @@ is_weak_eq_same_mult_ring:=function(I,J)
 end function;
 
 intrinsic ICM_DistinguishedRepresentatives(ZFV::AlgEtQOrd) -> SeqEnum[AlgEtQIdl], Assoc
-{Given the Frobenius order of a squafree isogeny class it returns the distinguished representatives of the isomorphism classes. Each ideal has a label attached to it.}
+{
+Given the Frobenius order of a squarefree isogeny class, return
+ - the distinguished representatives of the isomorphism classes. Each ideal has a label attached to it.
+ - an associative array A with keys the orders S above ZFV.
+   A[S] is an associative array with keys pairs <WE, x> where WE is a distinguished representative of a
+   weak equivalence class with endormophism ring S and x is an element of Pic(S).  The value associated
+   to <WE, x> is WI, which is the product of WE and the distinguished ideal representing x (as a ZFV ideal)
+}
     if assigned ZFV`ICM_DistinguishedRepresentatives then
         return Explode(ZFV`ICM_DistinguishedRepresentatives);
     end if;

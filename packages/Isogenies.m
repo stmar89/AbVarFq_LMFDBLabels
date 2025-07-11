@@ -5,10 +5,10 @@ declare verbose AllIsogenies,1;
 
 declare attributes AlgEtQOrd: RepresentativeMinimalIsogeniesTo;
 
-intrinsic DistinguishedCosetRep(g::GrpAbElt, H::GrpAb) -> GrpAbElt, GrpAb
-{Given an element g and a subgroup H of an ambient abelian group G, finds a canonically chosen representative of g+H (and also returns H itself for convenience).  The output only depends on g+H.}
+intrinsic DistinguishedCosetRep(g::GrpAbElt, H::GrpAb) -> GrpAbElt
+{Given an element g and a subgroup H of an ambient abelian group G, finds a canonically chosen representative of g+H.  The output only depends on g+H.}
     if Order(g) eq 1 then
-        return g, H;
+        return g;
     end if;
     G := Parent(g);
     if (#H)^2 le #G then
@@ -21,7 +21,7 @@ intrinsic DistinguishedCosetRep(g::GrpAbElt, H::GrpAb) -> GrpAbElt, GrpAb
                 first := eh;
             end if;
         end for;
-        return best, H;
+        return best;
     else
         // iterate over G until you find an element of g+H
         for h in G do
@@ -34,12 +34,15 @@ intrinsic DistinguishedCosetRep(g::GrpAbElt, H::GrpAb) -> GrpAbElt, GrpAb
 end intrinsic;
 
 
-//TODO The code of the next few intrinsic is very complicated (eg many nested for loops). Needs more explaination.
-
-// The following two intrinsics give representative isogenies under the action of Pic(Z[F,V]).  
+// The following two intrinsics give representative isogenies under the action of Pic(Z[F,V]).
 intrinsic RepresentativeMinimalIsogenies(ZFV::AlgEtQOrd, N::RngIntElt : degrees:=[])->Assoc
-{Given the ZFV order of a squarefree isogeny class, it returns an associative array, indexed by the distinguished representatives J of isomorphism classes, in which each entry contains an associative array with data describing isogenies to J. This data consists of a tuple ... 
-//TODO finish descr
+{Given the ZFV order of a squarefree isogeny class, it returns an associative array, indexed by the distinguished representatives J of isomorphism classes, in which each entry contains an associative array with data describing isogenies to J. This data consists of a tuple <deg, x, Ig, Ker, I, L> where
+- deg is the degree of the isogeny
+- x is an element representing the isogeny, ie x*I < J.
+- Ig is an element of Pic(ZFV) mapping to (x*I : W) where W is the distinguished rep of the weak equivalence class of I
+- Ker is the kernel of Pic(ZFV) -> Pic(S), where S is the endomorphism ring of J
+- I is the domain of the isogeny (the distinguished rep of the weak equivalence class)
+- L is x*I, the image of the isogeny
 }
     if not assigned ZFV`RepresentativeMinimalIsogeniesTo then
         ZFV`RepresentativeMinimalIsogeniesTo := AssociativeArray();
@@ -56,6 +59,7 @@ intrinsic RepresentativeMinimalIsogenies(ZFV::AlgEtQOrd, N::RngIntElt : degrees:
     min_isog := AssociativeArray();
     we_reps := &cat[[icm_lookup[S][<WE, P.0>] : WE in WKICM_barDistinguishedRepresentatives(S) ] where P := PicardGroup(S) : S in OverOrders(ZFV)];
     we_hashes := [myHash(J) : J in we_reps];
+    // min_isog[I][J] will be the minimal isogenies from I to J
     for i->I in we_reps do
         min_isog[we_hashes[i]] := AssociativeArray();
         for j->J in we_reps do
@@ -66,15 +70,19 @@ intrinsic RepresentativeMinimalIsogenies(ZFV::AlgEtQOrd, N::RngIntElt : degrees:
         S := MultiplicatorRing(J);
         P := PicardGroup(S);
         _, _, P0Pmap := DistinguishedPicBasis(S);
+        // P0Pmap: Pic(ZFV) -> Pic(S)
         Ls := MaximalIntermediateIdeals(J, N*J);
+        // These are ideals L with N*J < L < J, and no L' with L < L' < J.
         for L in Ls do
             deg := Index(J, L);
             if degrees cmpne [] and not (deg in degrees) then
                 continue;
             end if;
-            I, x, IS, IWE, Ig := ICM_Identify(L, icm_lookup);
+            I, x, _, IWE, Ig := ICM_Identify(L, icm_lookup);
             assert2 Index(J, x*I) eq deg;
-            Ig, Ker := DistinguishedCosetRep(Ig@@P0Pmap, Kernel(P0Pmap));
+            // We store isogenies in terms of ideals of ZFV, but Ig is an element of Pic(S).  To get it back into Pic(ZFV), we need to pick a representative in Pic(ZFV) that maps to it.  To do so, we use DistinguishedCosetRep.
+            Ker := Kernel(P0Pmap);
+            Ig := DistinguishedCosetRep(Ig@@P0Pmap, Ker);
             Append(~min_isog[myHash(IWE)][we_hashes[j]], <deg, x, Ig, Ker, I, L>); // x is a minimal isogeny from I to J of degree deg=#(J/L); I = IWE * Ig as distinguished representatives
         end for;
     end for;
@@ -83,9 +91,17 @@ intrinsic RepresentativeMinimalIsogenies(ZFV::AlgEtQOrd, N::RngIntElt : degrees:
 end intrinsic;
 
 intrinsic RepresentativeIsogenies(ZFV::AlgEtQOrd, degree_bounds::SeqEnum)->Assoc
-{}
+{
+Returns an associative array isog so that isog[myHash(I)][myHash(J)][d] is a sequence of all isogenies from I to J of degree d.  Here I and J loop of the distinguished representatives of the weak equivalence classes of ZFV, and d>1 loops over divisors of elements of degree_bounds.  Note that, if no such isogeny exists the key d is not assigned (rather than being an empty sequence).
+The value of isog[I][J][d] is a sequence of tuples <x, h, H, L>, where
+- x is an element representing the isogeny, ie x*I < J.
+- h is an element of Pic(ZFV) mapping to (x*I : W) where W is the distinguished rep of the weak equivalence class of I
+- H in the kernel of Pic(ZFV) -> Pic(S), where S is the endomorphism ring of J
+- L is x*I, the image of the isogeny
+}
     N := LCM(degree_bounds);
     degrees := {};
+    // construct the set of nontrivial divisors of the elements in degree_bounds
     for B in degree_bounds do
         for d in Divisors(B) do
             if d eq 1 then continue; end if;
@@ -101,6 +117,7 @@ intrinsic RepresentativeIsogenies(ZFV::AlgEtQOrd, degree_bounds::SeqEnum)->Assoc
     we_hashes := [myHash(J) : J in we_reps];
     we_proj := &cat[[P0Pmap where _,_,P0Pmap := DistinguishedPicBasis(S) : WE in WKICM_barDistinguishedRepresentatives(S) ] : S in OverOrders(ZFV)];
     isog := AssociativeArray();
+    // We initialize the output isog using minimal isogenies computed by RepresentativeMinimalIsogenies
     for i->I in we_reps do
         hshI := we_hashes[i];
         isog[hshI] := AssociativeArray();
@@ -116,6 +133,7 @@ intrinsic RepresentativeIsogenies(ZFV::AlgEtQOrd, degree_bounds::SeqEnum)->Assoc
             end for;
         end for;
     end for;
+    // We add to isog all possible compositions with degree in degrees.
     while true do
         added_something := false;
         for i->I in we_reps do
@@ -132,7 +150,8 @@ intrinsic RepresentativeIsogenies(ZFV::AlgEtQOrd, degree_bounds::SeqEnum)->Assoc
                                 d, x, h, H := Explode(data);
                                 dm := d*m;
                                 if dm in degrees then
-                                    gh, GH := DistinguishedCosetRep(g+h, G+H);
+                                    GH := G + H;
+                                    gh := DistinguishedCosetRep(g+h, GH);
                                     I0 := icm_lookup[SI][<I, projI(gh)>];
                                     xy := x*y;
                                     L := (xy) * I0;
