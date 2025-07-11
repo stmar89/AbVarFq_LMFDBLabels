@@ -41,7 +41,6 @@ Given the Frobenius order of a squarefree isogeny class, return
                 WI := ZFVWE * I;
                 require assigned WE`WELabel : "WE`Label not assigned. Run FillSchemaWEClasses(ZFV) first.";
                 WI`IsomLabel := Sprintf("%o.%o", WE`WELabel, ctr);
-                    WI`IsomLabel := Sprintf("%o.%o", WE`WELabel, ctr);
                 WI`WErep := ZFVWE;
                 WI`Pelt := Pelt@@proj;
                 icm_lookup[S][<WE, Pelt>] := WI;
