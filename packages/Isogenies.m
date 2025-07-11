@@ -139,54 +139,57 @@ The value of isog[I][J][d] is a sequence of tuples <x, h, H, L>, where
     we_proj := &cat[[P0Pmap where _,_,P0Pmap := DistinguishedPicBasis(S) : WE in WKICM_barDistinguishedRepresentatives(S) ] : S in OverOrders(ZFV)];
     isog := AssociativeArray();
     // We initialize the output isog using minimal isogenies computed by RepresentativeMinimalIsogenies
-    for i->I in we_reps do
-        hshI := we_hashes[i];
-        isog[hshI] := AssociativeArray();
-        for j->J in we_reps do
-            hshJ := we_hashes[j];
-            isog[hshI][hshJ] := AssociativeArray();
-            for data in min_isog[hshI][hshJ] do
-                d, x, h, H, _, L := Explode(data);
-                if not IsDefined(isog[hshI][hshJ], d) then
-                    isog[hshI][hshJ][d] := [];
+    for i->WI in we_reps do
+        hshWI := we_hashes[i];
+        isog[hshWI] := AssociativeArray();
+        for j->WJ in we_reps do
+            hshWJ := we_hashes[j];
+            isog[hshWI][hshWJ] := AssociativeArray();
+            for data in min_isog[hshWI][hshWJ] do
+                d, x, h, H, I, L := Explode(data);
+                // x*I = L c WJ with d=[WJ:I]
+                // I~L~WI (wk eq)
+                // I = WI*h as isom classes
+                if not IsDefined(isog[hshWI][hshWJ], d) then
+                    isog[hshWI][hshWJ][d] := [];
                 end if;
-                Append(~isog[hshI][hshJ][d], <x, h, H, L>);
+                Append(~isog[hshWI][hshWJ][d], <x, h, H, L>);
             end for;
         end for;
     end for;
     // We add to isog all possible compositions with degree in degrees.
     while true do
         added_something := false;
-        for i->I in we_reps do
-            hshI := we_hashes[i]; projI := we_proj[i];
-            SI := MultiplicatorRing(I);
-            ISI:=SI!!I;
-            for j->J in we_reps do
-                hshJ := we_hashes[j]; projJ := we_proj[j];
-                for k->K in we_reps do
-                    hshK := we_hashes[k]; projK := we_proj[k];
-                    for m->known in isog[hshK][hshJ] do
+        for i->WI in we_reps do
+            hshWI := we_hashes[i]; projWI := we_proj[i];
+            S := MultiplicatorRing(WI);
+            SWI:=S!!WI;
+            for j->WJ in we_reps do
+                hshWJ := we_hashes[j]; projWJ := we_proj[j];
+                for k->WK in we_reps do
+                    hshWK := we_hashes[k]; projWK := we_proj[k];
+                    for m->known in isog[hshWK][hshWJ] do
                         for yL0 in known do
                             y, g, G, L0 := Explode(yL0);
-                            for data in min_isog[hshI][hshK] do
+                            for data in min_isog[hshWI][hshWK] do
                                 d, x, h, H := Explode(data);
                                 dm := d*m;
                                 if dm in degrees then
                                     GH := G + H;
                                     gh := DistinguishedCosetRep(g+h, GH);
-                                    I0 := icm_lookup[SI][<ISI, projI(gh)>];
+                                    I0 := icm_lookup[S][<SWI, projWI(gh)>];
                                     xy := x*y;
                                     L := (xy) * I0;
-                                    if not IsDefined(isog[hshI][hshJ], dm) then
-                                        isog[hshI][hshJ][dm] := [<xy, gh, GH, L>];
+                                    if not IsDefined(isog[hshWI][hshWJ], dm) then
+                                        isog[hshWI][hshWJ][dm] := [<xy, gh, GH, L>];
                                         added_something := true;
                                     else
                                         hsh := myHash(L);
-                                        hashes := {myHash(M[4]) : M in isog[hshI][hshJ][dm]};
+                                        hashes := {myHash(M[4]) : M in isog[hshWI][hshWJ][dm]};
                                         if not hsh in hashes then
                                             // myHash is collision free
-                                            Append(~isog[hshI][hshJ][dm], <xy, gh, GH, L>);
-                                            //assert Index(J, L) eq dm; TODO is this correct?
+                                            Append(~isog[hshWI][hshWJ][dm], <xy, gh, GH, L>);
+                                            assert Index(WJ, L) eq dm; //TODO is this correct?
                                             added_something := true;
                                         end if;
                                     end if;
