@@ -104,7 +104,9 @@ intrinsic RepresentativeMinimalIsogenies(ZFV::AlgEtQOrd, N::RngIntElt : degrees:
             // We store isogenies in terms of ideals of ZFV, but Ig is an element of Pic(S).  To get it back into Pic(ZFV), we need to pick a representative in Pic(ZFV) that maps to it.  To do so, we use DistinguishedCosetRep.
             Ker := Kernel(P0PISmap);
             Ig := DistinguishedCosetRep(Ig@@P0PISmap, Ker);
-            Append(~min_isog[myHash(IWE)][we_hashes[j]], <deg, x, Ig, Ker, I, L>); // x is a minimal isogeny from I to J of degree deg=#(J/L); I = IWE * Ig as distinguished representatives
+            Append(~min_isog[myHash(IWE)][we_hashes[j]], <deg, x, Ig, Ker, I, L>); 
+            // x is a minimal isogeny from I to J of degree deg=#(J/L); 
+            // I = IWE * Ig as distinguished representatives
         end for;
     end for;
     ZFV`RepresentativeMinimalIsogeniesTo[<N, degrees>] := min_isog;
@@ -147,9 +149,10 @@ The value of isog[I][J][d] is a sequence of tuples <x, h, H, L>, where
             isog[hshWI][hshWJ] := AssociativeArray();
             for data in min_isog[hshWI][hshWJ] do
                 d, x, h, H, I, L := Explode(data);
-                // x*I = L c WJ with d=[WJ:I]
+                // x*I = L c WJ with d=[WJ:x*I]
                 // I~L~WI (wk eq)
-                // I = WI*h as isom classes
+                // h = (L:WI) in Pic(ZFV)
+                // H = Ker( Pic(ZFV)->Pic(S) ) where S=(WJ:WJ)
                 if not IsDefined(isog[hshWI][hshWJ], d) then
                     isog[hshWI][hshWJ][d] := [];
                 end if;
@@ -171,8 +174,15 @@ The value of isog[I][J][d] is a sequence of tuples <x, h, H, L>, where
                     for m->known in isog[hshWK][hshWJ] do
                         for yL0 in known do
                             y, g, G, L0 := Explode(yL0);
+                            // y*J = L0 c WJ with m=[WJ:y*J]
+                            // g = (L0:WK) in Pic(ZFV)
+                            // G = Ker( Pic(ZFV)-> Pic(WK:WK) )
                             for data in min_isog[hshWI][hshWK] do
-                                d, x, h, H := Explode(data);
+                                d, x, h, H := Explode(data); // does not assign the last 2 values I,L
+                                // x*I = L c WK with [WK:x*I] = d
+                                // I ~ WI (wk eq)
+                                // h = (L:WI) in Pic(ZFV)
+                                // H = Ker(Pic(ZFV)->Pic((WK:WK)))
                                 dm := d*m;
                                 if dm in degrees then
                                     GH := G + H;
