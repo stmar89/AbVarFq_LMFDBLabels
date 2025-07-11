@@ -92,7 +92,7 @@ end intrinsic;
 
 intrinsic RepresentativeIsogenies(ZFV::AlgEtQOrd, degree_bounds::SeqEnum)->Assoc
 {
-Returns an associative array isog so that isog[myHash(I)][myHash(J)][d] is a sequence of all isogenies from I to J of degree d.  Here I and J loop of the distinguished representatives of the weak equivalence classes of ZFV, and d>1 loops over divisors of elements of degree_bounds.  Note that, if no such isogeny exists the key d is not assigned (rather than being an empty sequence).
+Returns an associative array isog so that isog[myHash(I)][myHash(J)][d] is a sequence of all isogenies from I to J of degree d.  Here I and J loop over the distinguished representatives of the weak equivalence classes of ZFV, and d>1 loops over divisors of elements of degree_bounds.  Note that, if no such isogeny exists the key d is not assigned (rather than being an empty sequence).
 The value of isog[I][J][d] is a sequence of tuples <x, h, H, L>, where
 - x is an element representing the isogeny, ie x*I < J.
 - h is an element of Pic(ZFV) mapping to (x*I : W) where W is the distinguished rep of the weak equivalence class of I
@@ -148,6 +148,7 @@ The value of isog[I][J][d] is a sequence of tuples <x, h, H, L>, where
                             y, g, G, L0 := Explode(yL0);
                             for data in min_isog[hshI][hshK] do
                                 d, x, h, H := Explode(data);
+                                assert h in H;
                                 dm := d*m;
                                 if dm in degrees then
                                     GH := G + H;

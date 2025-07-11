@@ -335,17 +335,14 @@ The output consists of pol,den,nums where
     return out_candidate,den,nums;
 end intrinsic;
 
-//TODO rename AllNonprincipalPolarizations
-intrinsic NonprincipalPolarizations(ZFV::AlgEtQOrd, PHI::AlgEtQCMType, degree_bounds::SeqEnum[RngIntElt])->Assoc
-{Given the Z[F,V] order of an isogeny squarefree class, a p-Adic positive CMType PHI it returns an associative array whose keys are the distinguished representatives of all isomorphism classes.
-//TODO complete, getting inspired from AllNonprincipalPolarizations in old_legacy.m, copied below.
-.}
-//{Given the Z[F,V] order of an ordinary isogeny squarefree class, a p-Adic positive CMType PHI it returns an associative array whose keys are the distinguished representatives of all isomorphism classes. The value of the array for the isomorphism class I is the tuple <pol,den,nums,dec,label> where:
-//- pol is the distinguished representative of an isomorphism class of a polarizations of I;
-//- den and nums are sequence of integers representing the lcm of the denominators of and the numerators of the coefficients of pol wrt the ZFVBasis;
-//- dec is the output of DecompositionKernelOfIsogeny;
-//- label is the label of the polarized abelian variety, in the format g.q.coeffs-N.i.w.j-d.k.}
-    //TODO is the next require needed?
+intrinsic AllNonprincipalPolarizations(ZFV::AlgEtQOrd, PHI::AlgEtQCMType, degree_bounds::SeqEnum[RngIntElt])->Assoc
+{Given the Z[F,V] order of an ordinary isogeny squarefree class, a p-Adic positive CMType PHI it returns an associative array whose keys are the distinguished representatives of all polarized isomorphism classes.  The degree d>1 loops over divisors of elements of degree_bounds.
+The value of the array for the isomorphism class I is the tuple <pol,den,nums,dec,label> where:
+- pol is the distinguished representative of an isomorphism class of a polarizations of I;
+- den and nums are sequence of integers representing the lcm of the denominators of and the numerators of the coefficients of pol wrt the ZFVBasis;
+- dec is the output of DecompositionKernelOfIsogeny;
+- label is the label of the polarized abelian variety, in the format g.q.coeffs-N.i.w.j-d.k.}
+}
     require not 1 in degree_bounds : "Do not use AllNonprincipalPolarizations to compute principal polarizations";
     isog_label:=IsogenyLabel(DefiningPolynomial(Algebra(ZFV)));
     t_tot := Cputime();
@@ -369,8 +366,8 @@ intrinsic NonprincipalPolarizations(ZFV::AlgEtQOrd, PHI::AlgEtQCMType, degree_bo
             pols_deg_d := [];
             for data in isog_I_J_d do
                 x, h, H, L := Explode(data);
-                // x is the element inducing the isogeny from WI+h to WJ with image L, H is the subgroup of Pic(ZFV) that we can translate our domain by
-                // So x also maps WI+h+Jpic to WJ+Jpic = J, so we just need to see if I can be reached from WI+h+Jpic using the subgroup H
+                // x is the element inducing the isogeny from WI*h to WJ with image L, H is the subgroup of Pic(ZFV) that we can translate our domain by
+                // So x also maps WI*h*Jpic to WJ*Jpic = J, so we just need to see if I can be reached from WI*h*Jpic using the subgroup H
                 if Ipic - Jpic - h in H then
                     // This isogeny has the right domain and codomain to be a polarization.
                     got_one := false;

@@ -366,13 +366,15 @@ end intrinsic;
 
 
 
-intrinsic AllNonprincipalPolarizations(ZFV::AlgEtQOrd, PHI::AlgEtQCMType, degree_bounds::SeqEnum[RngIntElt])->Assoc
-{Given the Z[F,V] order of an ordinary isogeny squarefree class, a p-Adic positive CMType PHI it returns an associative array whose keys are the distinguished representatives of all isomorphism classes. The value of the array for the isomorphism class I is the tuple <pol,den,nums,dec,label> where:
+intrinsic OldNonprincipalPolarizations(ZFV::AlgEtQOrd, PHI::AlgEtQCMType, degree_bounds::SeqEnum[RngIntElt])->Assoc
+{
+Given the Z[F,V] order of an ordinary isogeny squarefree class, a p-Adic positive CMType PHI it returns an associative array whose keys are the distinguished representatives of all isomorphism classes. The value of the array for the isomorphism class I is the tuple <pol,den,nums,dec,label> where:
 - pol is the distinguished representative of an isomorphism class of a polarizations of I;
 - den and nums are sequence of integers representing the lcm of the denominators of and the numerators of the coefficients of pol wrt the ZFVBasis;
 - dec is the output of DecompositionKernelOfIsogeny;
-- label is the label of the polarized abelian variety, in the format g.q.coeffs-N.i.w.j-d.k.}
-    require not 1 in degree_bounds : "Do not use AllNonprincipalPolarizations to compute principal polarizations";
+- label is the label of the polarized abelian variety, in the format g.q.coeffs-N.i.w.j-d.k.
+}
+    require not 1 in degree_bounds : "Do not use OldNonprincipalPolarizations to compute principal polarizations";
     isog_label:=IsogenyLabel(DefiningPolynomial(Algebra(ZFV)));
     t_tot:=Cputime();
     isom_cl, icm_lookup := ICM_DistinguishedRepresentatives(ZFV);
