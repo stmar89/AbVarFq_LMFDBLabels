@@ -39,9 +39,9 @@ Given the Frobenius order of a squarefree isogeny class, return
             for trip in pic_iter do
                 I, ctr, Pelt := Explode(trip);
                 WI := ZFVWE * I;
-                if assigned WE`WELabel then
+                require assigned WE`WELabel : "WE`Label not assigned. Run FillSchemaWEClasses(ZFV) first.";
+                WI`IsomLabel := Sprintf("%o.%o", WE`WELabel, ctr);
                     WI`IsomLabel := Sprintf("%o.%o", WE`WELabel, ctr);
-                end if;
                 WI`WErep := ZFVWE;
                 WI`Pelt := Pelt@@proj;
                 icm_lookup[S][<WE, Pelt>] := WI;
