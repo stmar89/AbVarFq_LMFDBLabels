@@ -188,6 +188,11 @@ The value of isog[I][J][d] is a sequence of tuples <x, h, H, L>, where
                                     GH := G + H;
                                     gh := DistinguishedCosetRep(g+h, GH);
                                     I0 := icm_lookup[S][<SWI, projWI(gh)>];
+                                    // I0 is the dist. rep. of the isom class of WI * projWI(gh)
+                                    // so [I0] = [WI * (L:WI) * (L0:WK) ] = [ L * (L0:WK) ]
+                                    //    = [ x*I * (y*J:WK) ];
+                                    // TODO S: I hope I got it right
+                                    //         what do we get out of this ?
                                     xy := x*y;
                                     L := (xy) * I0;
                                     if not IsDefined(isog[hshWI][hshWJ], dm) then
