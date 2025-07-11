@@ -33,8 +33,24 @@ intrinsic DistinguishedCosetRep(g::GrpAbElt, H::GrpAb) -> GrpAbElt
     end if;
 end intrinsic;
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// The following two intrinsics give representative isogenies under the action of Pic(Z[F,V]):
+// 
+// More precisely, the philosophy behind is that if J is an ideal with (J:J)=S, N is a positive integer and 
+// I is an invertible S-ideal then there is an S-linear bijection between
+// J/NJ <--> JI/NJI,
+// which sends an ideal L such that NJ < L < J with no L' such that L < L' < J 
+// to a submodule LI satisfying the same property wrt to JI.
+// In other words, it sensds maximal subideals of J contaninig NJ to maximal subideals of JI containing NJI.
+// This implies that the minimal isogenies to J are in bijection with the minimal isogenies to JI.
+// 
+// The upshot is that to compute isogenies of bounded degrees (by composing minimal ones) we only need 
+// to loop over the weak equivalence classes, instead of all the isomorphism classes.
+//
+// Since we are not storing Pic(S), but only Pic(ZFV) and the extension maps, we need to keep track of a bunch
+// of additional information to be able to use these bijections. This explainins 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-// The following two intrinsics give representative isogenies under the action of Pic(Z[F,V]).
 intrinsic RepresentativeMinimalIsogenies(ZFV::AlgEtQOrd, N::RngIntElt : degrees:=[])->Assoc
 {Given the ZFV order of a squarefree isogeny class, it returns an associative array, indexed by the distinguished representatives J of isomorphism classes, in which each entry contains an associative array with data describing isogenies to J. This data consists of a tuple <deg, x, Ig, Ker, I, L> where
 - deg is the degree of the isogeny
