@@ -194,17 +194,17 @@ The value of isog[I][J][d] is a sequence of tuples <x, h, H, L>, where
                                     // TODO S: I hope I got it right
                                     //         what do we get out of this ?
                                     xy := x*y;
-                                    L := (xy) * I0;
+                                    LL := (xy) * I0;
                                     if not IsDefined(isog[hshWI][hshWJ], dm) then
-                                        isog[hshWI][hshWJ][dm] := [<xy, gh, GH, L>];
+                                        isog[hshWI][hshWJ][dm] := [<xy, gh, GH, LL>];
                                         added_something := true;
                                     else
-                                        hsh := myHash(L);
+                                        hsh := myHash(LL);
                                         hashes := {myHash(M[4]) : M in isog[hshWI][hshWJ][dm]};
                                         if not hsh in hashes then
                                             // myHash is collision free
-                                            Append(~isog[hshWI][hshWJ][dm], <xy, gh, GH, L>);
-                                            assert Index(WJ, L) eq dm; //TODO is this correct?
+                                            Append(~isog[hshWI][hshWJ][dm], <xy, gh, GH, LL>);
+                                            assert Index(WJ, LL) eq dm; //TODO is this correct?
                                             added_something := true;
                                         end if;
                                     end if;
