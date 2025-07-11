@@ -59,13 +59,19 @@ intrinsic ICM_Identify(L::AlgEtQIdl, icm_lookup::Assoc) -> AlgEtQIdl, AlgEtQElt,
     wkS := WKICM_barDistinguishedRepresentatives(S);
     for i->W in wkS do
         test_wk, cLW, _ := is_weak_eq_same_mult_ring(S!!L,W);
+        assert2 cLW eq ColonIdeal(S!!L,W);
         if test_wk then
             // cLW=(L:W) is invertible, W*cLW = L
             g := cLW@@pS; // in Pic(S)
             I := icm_lookup[S][<W, g>];
             test, x := IsIsomorphic(L, I); // x*I = L
             assert test;
+            assert2 x*I eq L;
             return I, x, S, W, g;
+            // x*I = L, I distinguished
+            // S = (I:I)
+            // W ~ L distinguished
+            // g = (L:W)@@pS in Pic(S)
         end if;
     end for;
 end intrinsic;

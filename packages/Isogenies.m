@@ -17,7 +17,7 @@ intrinsic DistinguishedCosetRep(g::GrpAbElt, H::GrpAb) -> GrpAbElt
         for h in H do
             eh := Eltseq(h);
             if eh lt first then
-                best := h;
+                best := G!h;
                 first := eh;
             end if;
         end for;
@@ -95,17 +95,19 @@ intrinsic RepresentativeMinimalIsogenies(ZFV::AlgEtQOrd, N::RngIntElt : degrees:
                 continue;
             end if;
             I, x, IS, IWE, Ig := ICM_Identify(L, icm_lookup);
-            // I : distinguished rep of L
+            // I : distinguished rep of isom L
             // x : L=x*I
             // IWE : we class of L
-            // Ig : (L:IWE)@@pS where S:=(I:I)
+            // Ig : (L:IWE)@@pIS where IS:=(I:I)
             _, _, P0PISmap := DistinguishedPicBasis(IS);
-            assert Index(J, x*I) eq deg;
+            assert2 Domain(P0PISmap) eq PicardGroup(ZFV);
+            assert2 Codomain(P0PISmap) eq PicardGroup(IS);
+            assert2 Index(J, x*I) eq deg;
             // We store isogenies in terms of ideals of ZFV, but Ig is an element of Pic(S).  To get it back into Pic(ZFV), we need to pick a representative in Pic(ZFV) that maps to it.  To do so, we use DistinguishedCosetRep.
             Ker := Kernel(P0PISmap);
             Ig := DistinguishedCosetRep(Ig@@P0PISmap, Ker);
             Append(~min_isog[myHash(IWE)][we_hashes[j]], <deg, x, Ig, Ker, I, L>); 
-            // x is a minimal isogeny from I to J of degree deg=#(J/L); 
+            // x*I = L c J , deg=#(J/L)
             // I = IWE * Ig as distinguished representatives
         end for;
     end for;
@@ -151,8 +153,11 @@ The value of isog[I][J][d] is a sequence of tuples <x, h, H, L>, where
                 d, x, h, H, I, L := Explode(data);
                 // x*I = L c WJ with d=[WJ:x*I]
                 // I~L~WI (wk eq)
-                // h = (L:WI) in Pic(ZFV)
+                // h = (L:WI) in Pic(WJ:WJ), pulled back in Pic(ZFV) //TODO check assert below
                 // H = Ker( Pic(ZFV)->Pic(S) ) where S=(WJ:WJ)
+                assert x*I eq L;
+                assert d eq Index(WJ,L);
+                //assert we_proj[j](h) eq ColonIdeal(L,WI)@@mS where _,mS:=PicardGroup(MultiplicatorRing(WJ)); // FAILS
                 if not IsDefined(isog[hshWI][hshWJ], d) then
                     isog[hshWI][hshWJ][d] := [];
                 end if;
@@ -174,15 +179,20 @@ The value of isog[I][J][d] is a sequence of tuples <x, h, H, L>, where
                     for m->known in isog[hshWK][hshWJ] do
                         for yL0 in known do
                             y, g, G, L0 := Explode(yL0);
-                            // y*J = L0 c WJ with m=[WJ:y*J]
-                            // g = (L0:WK) in Pic(ZFV)
+                            // y*K = L0 c WJ with m=[WJ:y*K]
+                            // g = (L0:WK) in Pic(ZFV) //TODO
                             // G = Ker( Pic(ZFV)-> Pic(WK:WK) )
+                            assert m eq Index(WJ,L0);
+                            //assert g eq ColonIdeal(L0,WK)@@mZFV where _,mZFV:=PicardGroup(ZFV); //FAILS
                             for data in min_isog[hshWI][hshWK] do
-                                d, x, h, H := Explode(data); // does not assign the last 2 values I,L
+                                d, x, h, H , I, L:= Explode(data); // I and L are used only in the tests
                                 // x*I = L c WK with [WK:x*I] = d
                                 // I ~ WI (wk eq)
-                                // h = (L:WI) in Pic(ZFV)
+                                // h = (L:WI) in Pic(ZFV) //TODO check assert below
                                 // H = Ker(Pic(ZFV)->Pic((WK:WK)))
+                                assert x*I eq L;
+                                assert d eq Index(WK,L);
+                                //assert h eq ColonIdeal(L,WI)@@mZFV where _,mZFV:=PicardGroup(ZFV); //FAILS
                                 dm := d*m;
                                 if dm in degrees then
                                     GH := G + H;
@@ -193,6 +203,7 @@ The value of isog[I][J][d] is a sequence of tuples <x, h, H, L>, where
                                     //    = [ x*I * (y*J:WK) ];
                                     // TODO S: I hope I got it right
                                     //         what do we get out of this ?
+                                    assert (gh - h - g) in GH;
                                     xy := x*y;
                                     LL := (xy) * I0;
                                     if not IsDefined(isog[hshWI][hshWJ], dm) then

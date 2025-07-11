@@ -392,6 +392,7 @@ The value of the array for the isomorphism class I is the tuple <pol,den,nums,de
             t_can +:=Cputime(t_can_Jd);
             assert forall{ pol : pol in pols_deg_d_up_to_iso | d eq Index(Iv, pol[1]*I) }; // sanity check
             if #pols_deg_d_up_to_iso gt 0 then
+                // TODO this part has been moved here in July 2025. Check that everything is in order.
                 // now, pols_deg_d_up_to_iso contains tuples <can,den,nums> each one 
                 // representing an isomorphism class of polarizations of J of degree d.
                 // we sort them to create the labels
@@ -402,7 +403,7 @@ The value of the array for the isomorphism class I is the tuple <pol,den,nums,de
                     label:=Sprintf("%o-%o.%o",isom_label,d,k);
                     Append(~pols_deg_d_up_to_iso_with_labels,<pol[1],pol[2],pol[3],label>);
                 end for;
-                Ipols[d]:=[ < pol[1] , pol[2] , pol[3], DecompositionKernelOfIsogeny(I,Iv,pol[1]),pol[4] > : pol in pols_deg_d_up_to_iso_with_labels ]; //TODO we have both I and J in this line. Is this correct?
+                Ipols[d]:=[ < pol[1] , pol[2] , pol[3], DecompositionKernelOfIsogeny(I,Iv,pol[1]),pol[4] > : pol in pols_deg_d_up_to_iso_with_labels ];
             end if;
         end for;
         all_pols[I]:=Ipols;
