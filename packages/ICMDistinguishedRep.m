@@ -22,12 +22,49 @@ intrinsic ICM_DistinguishedRepresentatives(ZFV::AlgEtQOrd) -> SeqEnum[AlgEtQIdl]
     ans := [];
     icm_lookup := AssociativeArray();
     _ := DistinguishedPicBases(ZFV); // sets bases
-    for S in OverOrders(ZFV) do
+    oo:=OverOrders(ZFV);
+    isog_label:=IsogenyLabel(DefiningPolynomial(Algebra(ZFV)));
+
+    if exists{S:S in oo | not assigned S`WELabel} then
+        oo_sort_keys:=SortKeysOrders(oo);
+        ParallelSort(~oo_sort_keys,~oo);
+        // orders are now sorted.
+        // orders with the same index are grouped together, and already in the right order
+        indices_oo:=[ oo_sort_keys[i][1] : i in [1..#oo] ];
+        // We construct the labels of the orders
+        labels_oo:=[];
+        current_index:=indices_oo[1];
+        i:=0;
+        for iS in [1..#oo] do
+            S:=oo[iS];
+            N:=indices_oo[iS];
+            if N eq current_index then
+                i+:=1;
+            else
+                // we sorted we reset the counter
+                i:=1;
+                current_index:=N;
+            end if;
+            S`WELabel:=Sprintf("%o-%o.%o",isog_label,N,i);
+        end for;
+    end if;
+    for iS in [1..#oo] do
+        S:=oo[iS];
         basis, _, proj := DistinguishedPicBasis(S);
         icm_lookup[S] := AssociativeArray();
         pic_iter := PicIteration(S, basis : include_pic_elt:=true);
         pic_iter := [<ZFV!!x[1], x[2], x[3]> : x in pic_iter];
-        for WE in WKICM_barDistinguishedRepresentatives(S) do
+        wkS:=WKICM_barDistinguishedRepresentatives(S);
+        S`WKICM_bar:=wkS;
+        if exists{WE:WE in wkS | not assigned WE`WELabel} then
+            wkS_sort_keys:=SortKeysWKICM_bar(S);
+            ParallelSort(~wkS_sort_keys,~wkS);
+            for j in [1..#wkS] do
+                WE:=wkS[j];
+                WE`WELabel:=S`WELabel cat Sprintf(".%o",j);
+            end for;
+        end if;
+        for WE in wkS do
             ZFVWE := ZFV!!WE;
             for trip in pic_iter do
                 I, ctr, Pelt := Explode(trip);
