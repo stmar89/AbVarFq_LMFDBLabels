@@ -128,6 +128,7 @@ catch e
 end try;
 
 try
+    t0:=Cputime();
     allproduct := true;
     geom_endalg_is_comm := 0;
     for line in commlines do
@@ -228,7 +229,7 @@ try
 //                    Append(~av_fq_pol, poldata);
 //                end for;
 //            end for;
-        end for;
+//         end for;
     end if;
 
     // we print all outputs
@@ -242,7 +243,7 @@ try
         fprintf av_fq_we_output, "%o\n", Join([we_line[col] : col in av_fq_we_columns], ":");
     end for;
     fprintf av_fq_isog_output, "%o\n", Join([av_fq_isog[col] : col in av_fq_isog_columns], ":");
-    printf "%o : done\n",label; 
+    printf "%o : done in %o\n",label,Cputime(t0); 
 catch e
     printf "*********************************************\n%o\n%o\n", label,e;
     fprintf issues, "*********************************************\n%o\n%o\n", label,e;

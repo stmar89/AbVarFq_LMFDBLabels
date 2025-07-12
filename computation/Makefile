@@ -288,6 +288,7 @@ fld_comp_3_25 = ~/287_abvarfq_lmfdb_recomputation_3_25/
 fld_out_wk_3_25 = ${fld_comp_3_25}output_wk/
 my_log_3_25 = ${fld_comp_3_25}my_log
 input_3_25 = ${fld_scripts}weil_poly_sqfree_ord_only_3_25.txt
+input_3_25_missing = ${fld_scripts}input_wk_3_25_missing.txt
 issues_wk_3_25 = ${fld_comp_3_25}issues_wk_3_25
 
 rm_log_3_25:
@@ -317,8 +318,6 @@ clean_failed_script_wk_3_25:
 	rm ${fld_out_wk_3_25}* || true
 	rm ${fld_comp_3_25}joblog_wk_3_25 || true
 	rm ${issues_wk_3_25} || true
-
-# TODO the following are not tested
 
 jobs_sing_primes_3_25 = 18
 fld_out_sing_primes_3_25 = ${fld_comp_3_25}output_sing_primes/
