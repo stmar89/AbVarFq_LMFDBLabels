@@ -60,6 +60,9 @@ fld_out_sing_primes = ${fld_comp}output_sing_primes/
 ##################
 
 degree_bounds = [4,9,25]
+# 20250711 we are only doing principal polarizations, until the faster code is ready
+# see Todo file
+
 
 ##################
 # scripts for logging

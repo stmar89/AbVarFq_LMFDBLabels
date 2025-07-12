@@ -200,34 +200,34 @@ try
             Append(~av_fq_pol, poldata);
         end for;
         number_of_princ_pols:=#av_fq_pol;
-        for I->Ipols in AllNonprincipalPolarizations(ZFV, PHI, degree_bounds) do
-            S := MultiplicatorRing(I);
-            aut_grp := IdentifyGroup(TorsionSubgroup(UnitGroup(S)));
-            aut_grp := Sprintf("%o.%o", aut_grp[1], aut_grp[2]);
-            isom_label_split:=Split(I`IsomLabel,"-");
-            assert isom_label_split[1] eq label;
-            pieces := Split(isom_label_split[2], "."); //[N,i,w,j]
-            for d->Idpols in Ipols do
-                for data in Idpols do
-                    pol, den, nums, kerinfo , label_pol:= Explode(data);
-                    poldata := AssociativeArray();
-                    poldata["label"] := label_pol;
-                    poldata["isog_label"] := label;
-                    poldata["endomorphism_ring"] := Join(pieces[1..2], ".");
-                    poldata["isom_label"] := Join(pieces[3..4],".");
-                    poldata["degree"] := Sprint(d);
-                    FillKernelInfo(~poldata, kerinfo);
-                    poldata["aut_group"] := aut_grp;
-                    if geom_endalg_is_comm then
-                        poldata["geom_aut_group"] := aut_grp;
-                    else
-                        poldata["geom_aut_group"] := "\\N";
-                    end if;
-                    poldata["is_jacobian"] := "f";
-                    poldata["representative"] := Sprintf("[%o,%o]", den, print_ivec(nums: json:=true));
-                    Append(~av_fq_pol, poldata);
-                end for;
-            end for;
+//        for I->Ipols in AllNonprincipalPolarizations(ZFV, PHI, degree_bounds) do
+//            S := MultiplicatorRing(I);
+//            aut_grp := IdentifyGroup(TorsionSubgroup(UnitGroup(S)));
+//            aut_grp := Sprintf("%o.%o", aut_grp[1], aut_grp[2]);
+//            isom_label_split:=Split(I`IsomLabel,"-");
+//            assert isom_label_split[1] eq label;
+//            pieces := Split(isom_label_split[2], "."); //[N,i,w,j]
+//            for d->Idpols in Ipols do
+//                for data in Idpols do
+//                    pol, den, nums, kerinfo , label_pol:= Explode(data);
+//                    poldata := AssociativeArray();
+//                    poldata["label"] := label_pol;
+//                    poldata["isog_label"] := label;
+//                    poldata["endomorphism_ring"] := Join(pieces[1..2], ".");
+//                    poldata["isom_label"] := Join(pieces[3..4],".");
+//                    poldata["degree"] := Sprint(d);
+//                    FillKernelInfo(~poldata, kerinfo);
+//                    poldata["aut_group"] := aut_grp;
+//                    if geom_endalg_is_comm then
+//                        poldata["geom_aut_group"] := aut_grp;
+//                    else
+//                        poldata["geom_aut_group"] := "\\N";
+//                    end if;
+//                    poldata["is_jacobian"] := "f";
+//                    poldata["representative"] := Sprintf("[%o,%o]", den, print_ivec(nums: json:=true));
+//                    Append(~av_fq_pol, poldata);
+//                end for;
+//            end for;
         end for;
     end if;
 
