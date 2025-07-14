@@ -8,12 +8,8 @@ Updated 2025/07/11 :
     run_script_cm
     run_script_cm_missing (this uses pari-gp)
     run_script_cm_3_25
-
-* Scripts that are almost done 
-    run_script_wk_3_25         : This is running on diophantus. <30 classes missing.
-                                 It will finish in a matter of minutes once I merge-push 
-                                 the new branch of AlgEt with the new version of Pic.
-    run_script_sing_primes_3_25: This depends on the previous one finishing. It will be superfast.
+    run_script_wk_3_25
+    run_script_sing_primes_3_25: 
 
 * Scripts where we have issues:
     run_script_pols_*          : Currently running on Babbage. We have ~50% of the data.
@@ -21,7 +17,7 @@ Updated 2025/07/11 :
                                  More on this issue below.
     run_script_pols_3_25       : This run for a few days on diophantus.
 
-The data produced is on diophantus and babbage in the folder 287_...
+The data produced is on diophantus and babbage in the folders 287_...
 
 ##############################################
 ### Issue with non-principal polarizations ###
@@ -45,20 +41,25 @@ But we believe that there is a bug: in RepresentativeIsogenies there an assert f
 ### Roadmap to pushing the database to production ###
 #####################################################
 In the extremely near future (week after LuCaNT), we decided to:
-    0) Add a line about AbVarFq_integration.m in the README.m
-    1) Write the missing Knowls.
-    2) David has bunch of TODOs for the interface, on his computer.
-    3) Wrap-up the Scripts that are almost done (for 3_25), see above.
-    4) Rerun run_script_pols_3_25 only for principal polarizations. 
-        Stop run_script_pols_* and rerun it only for principal polarizations. 
-        This should be positively affected by the better Pic developed during LuCaNT.
-        We should keep all the data for non-principal polarizations that we have already computed.
-    5) Then we can send into production.
+    TODO
+        -) Add to AbVarFq_integration.m intrinsics for polarizations.
+        -) David has bunch of TODOs for the interface, on his computer.
+        -) Stop run_script_pols_* and rerun it only for principal polarizations. 
+           This should be positively affected by the better Pic developed during LuCaNT.
+           We should keep all the data for non-principal polarizations that we have already computed.
+        -) Then we can send into production.
+    DONE 
+        -) Write the missing Knowls.
+        -) Add a line about AbVarFq_integration.m in the README.m
+        -) Wrap-up the Scripts that are almost done (for 3_25), see above.
+    RUNNING (on diophantus as of July 14, 2025)
+        -) Rerun run_script_pols_3_25 only for principal polarizations. 
 Later:
-    6) If we don't have time to work on it earlier, we plan to start discussing this in September.
-       The better code for non-principal polarizations/isogenies is kind-of-there, and the idea is cool.
-       This should make a good ANTS paper.
-    7) We can expand the database with <4,5>, <5,3> and <6,2>. For <6,2> the obstacle is probably the cm-type. 
-       We should start with that and see if there is hope.
-    8) Add download functionality, that `talks' to the package AbVarFq.
+    TODO
+        -) If we don't have time to work on it earlier, we plan to start discussing this in September.
+           The better code for non-principal polarizations/isogenies is kind-of-there, and the idea is cool.
+           This should make a good ANTS paper.
+        -) We can expand the database with <4,5>, <5,3> and <6,2>. For <6,2> the obstacle is probably the cm-type. 
+           We should start with that and see if there is hope.
+        -) Add download functionality, that `talks' to the package AbVarFq.
 
