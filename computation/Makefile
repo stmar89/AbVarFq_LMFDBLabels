@@ -176,7 +176,14 @@ run_script_cm_missing:
 # scripts for polarizations
 ##################
 
-timeout = 300
+timeout = 3600
+run_script_pols_all_but_3_25:
+	@echo "(re)starting run_script_pols on:" >> ${my_log}
+	@make -s log_versions_last_commits
+	parallel --timeout ${timeout} --memsuspend 100G --resume --joblog ${fld_comp}joblog_pols_all_but_3_25 -a ${input_ord} magma -b fld_comp:=${fld_comp} fld_out_wk:=${fld_out_wk} fld_out_cm:=${fld_out_cm} fld_out_pols:=${fld_out_pols} issues:=${issues_pols} degree_bounds:=${degree_bounds} s:={} ${fld_scripts}script_pols.m
+	@echo "run_script_pols has finished on:" >> ${my_log}
+	@date >> ${my_log}
+
 run_script_pols_fast1:
 	@echo "(re)starting run_script_pols on:" >> ${my_log}
 	@make -s log_versions_last_commits
