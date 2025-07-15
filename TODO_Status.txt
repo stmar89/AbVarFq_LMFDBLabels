@@ -44,16 +44,16 @@ In the extremely near future (week after LuCaNT), we decided to:
     TODO
         -) Add to AbVarFq_integration.m intrinsics for polarizations.
         -) David has bunch of TODOs for the interface, on his computer.
-        -) Stop run_script_pols_* and rerun it only for principal polarizations. 
-           This should be positively affected by the better Pic developed during LuCaNT.
-           We should keep all the data for non-principal polarizations that we have already computed.
         -) Then we can send into production.
     DONE 
         -) Write the missing Knowls.
         -) Add a line about AbVarFq_integration.m in the README.m
         -) Wrap-up the Scripts that are almost done (for 3_25), see above.
     RUNNING (on diophantus as of July 14, 2025)
-        -) Rerun run_script_pols_3_25 only for principal polarizations. 
+        -) diophantus: Rerun run_script_pols_3_25 only for principal polarizations. 
+        -) babbage Stop run_script_pols_* and rerun it only for principal polarizations. 
+        In both cases the data is in the folder /output_pols_using_old_code/.
+        The files contain both principal and non-principal polarizations
 Later:
     TODO
         -) If we don't have time to work on it earlier, we plan to start discussing this in September.
