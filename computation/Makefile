@@ -2,7 +2,7 @@
 # Folders
 ##################
 
-fld_comp = ~/287_abvarfq_lmfdb_recomputation/
+fld_comp = /data/stmar/287_abvarfq_lmfdb_recomputation/
 # where all the scripts are
 fld_scripts = ~/AbVarFq_LMFDBLabels/computation/
 
@@ -132,9 +132,9 @@ run_script_wk:
 	@date >> ${my_log}
 
 clean_failed_script_wk:
-	rm ~/287_abvarfq_lmfdb_recomputation/output_wk/*
-	rm ~/287_abvarfq_lmfdb_recomputation/joblog_wk
-	rm ~/287_abvarfq_lmfdb_recomputation/issues_wk
+	rm ${fld_comp}output_wk/*
+	rm ${fld_comp}joblog_wk
+	rm ${fld_comp}issues_wk
 
 run_script_sing_primes:
 	@echo "(re)starting run_script_sing_primes on:" >> ${my_log}
@@ -160,9 +160,9 @@ run_script_cm:
 	@date >> ${my_log}
 
 clean_failed_script_cm:
-	rm ~/287_abvarfq_lmfdb_recomputation/output_cm/*
-	rm ~/287_abvarfq_lmfdb_recomputation/joblog_cm
-	rm ~/287_abvarfq_lmfdb_recomputation/issues_cm
+	rm ${fld_comp}output_cm/*
+	rm ${fld_comp}joblog_cm
+	rm ${fld_comp}issues_cm
 
 jobs_cm = 18
 run_script_cm_missing:
@@ -176,12 +176,12 @@ run_script_cm_missing:
 # scripts for polarizations
 ##################
 
-timeout_pols_all_but_3_25 = 3600
+#timeout_pols_all_but_3_25 = 3600
 jobs_pols_all_but_3_25 = 60
 run_script_pols_all_but_3_25:
 	@echo "(re)starting run_script_pols on:" >> ${my_log}
 	@make -s log_versions_last_commits
-	parallel --timeout ${timeout_pols_all_but_3_25} --jobs ${jobs_pols_all_but_3_25} --resume --joblog ${fld_comp}joblog_pols_all_but_3_25 -a ${input_ord} magma -b fld_comp:=${fld_comp} fld_out_wk:=${fld_out_wk} fld_out_cm:=${fld_out_cm} fld_out_pols:=${fld_out_pols} issues:=${issues_pols} degree_bounds:=${degree_bounds} s:={} ${fld_scripts}script_pols.m
+	parallel --jobs ${jobs_pols_all_but_3_25} --resume --joblog ${fld_comp}joblog_pols_all_but_3_25 -a ${input_ord} magma -b fld_comp:=${fld_comp} fld_out_wk:=${fld_out_wk} fld_out_cm:=${fld_out_cm} fld_out_pols:=${fld_out_pols} issues:=${issues_pols} degree_bounds:=${degree_bounds} s:={} ${fld_scripts}script_pols.m
 	@echo "run_script_pols has finished on:" >> ${my_log}
 	@date >> ${my_log}
 
@@ -247,13 +247,13 @@ run_script_pols_slow4:
 	@date >> ${my_log}
 
 clean_failed_script_pols:
-	rm -r ~/287_abvarfq_lmfdb_recomputation/output_pols/ || true
-	mkdir -p ~/287_abvarfq_lmfdb_recomputation/output_pols/av_fq_pol
-	mkdir -p ~/287_abvarfq_lmfdb_recomputation/output_pols/av_fq_we
-	mkdir -p ~/287_abvarfq_lmfdb_recomputation/output_pols/av_fq_isog
-	mkdir -p ~/287_abvarfq_lmfdb_recomputation/output_pols/allproduct
-	rm ~/287_abvarfq_lmfdb_recomputation/joblog_pols* || true
-	rm ~/287_abvarfq_lmfdb_recomputation/issues_pols* || true
+	rm -r ${fld_comp}output_pols/ || true
+	mkdir -p ${fld_comp}output_pols/av_fq_pol
+	mkdir -p ${fld_comp}output_pols/av_fq_we
+	mkdir -p ${fld_comp}output_pols/av_fq_isog
+	mkdir -p ${fld_comp}output_pols/allproduct
+	rm ${fld_comp}joblog_pols* || true
+	rm ${fld_comp}issues_pols* || true
 
 ##################
 # folders and scripts 
@@ -274,18 +274,18 @@ run_script_pols_test:
 	magma -b ~/AbVarFq_LMFDBLabels/tests/20250627_test_script_pols.txt
 
 clean_failed_script_pols_test:
-	rm ~/287_abvarfq_lmfdb_recomputation/output_pols_test1/av_fq_pol/* || true
-	rm ~/287_abvarfq_lmfdb_recomputation/output_pols_test1/av_fq_we/* || true
-	rm ~/287_abvarfq_lmfdb_recomputation/output_pols_test1/av_fq_isog/* || true
-	rm ~/287_abvarfq_lmfdb_recomputation/output_pols_test1/allproduct/* || true
-	rm ~/287_abvarfq_lmfdb_recomputation/joblog_pols_test1 || true
-	rm ~/287_abvarfq_lmfdb_recomputation/issues_pols_test1 || true
-	rm ~/287_abvarfq_lmfdb_recomputation/output_pols_test2/av_fq_pol/* || true
-	rm ~/287_abvarfq_lmfdb_recomputation/output_pols_test2/av_fq_we/* || true
-	rm ~/287_abvarfq_lmfdb_recomputation/output_pols_test2/av_fq_isog/* || true
-	rm ~/287_abvarfq_lmfdb_recomputation/output_pols_test2/allproduct/* || true
-	rm ~/287_abvarfq_lmfdb_recomputation/joblog_pols_test2 || true
-	rm ~/287_abvarfq_lmfdb_recomputation/issues_pols_test2 || true
+	rm ${fld_comp}output_pols_test1/av_fq_pol/* || true
+	rm ${fld_comp}output_pols_test1/av_fq_we/* || true
+	rm ${fld_comp}output_pols_test1/av_fq_isog/* || true
+	rm ${fld_comp}output_pols_test1/allproduct/* || true
+	rm ${fld_comp}joblog_pols_test1 || true
+	rm ${fld_comp}issues_pols_test1 || true
+	rm ${fld_comp}output_pols_test2/av_fq_pol/* || true
+	rm ${fld_comp}output_pols_test2/av_fq_we/* || true
+	rm ${fld_comp}output_pols_test2/av_fq_isog/* || true
+	rm ${fld_comp}output_pols_test2/allproduct/* || true
+	rm ${fld_comp}joblog_pols_test2 || true
+	rm ${fld_comp}issues_pols_test2 || true
 
 ##################
 # folders and scripts for 

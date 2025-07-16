@@ -11,15 +11,6 @@
         degree_bounds = string of square integers, eg [ 4, 9, 25 ] 
 */
 
-/* // assignements for debugging. make sure to not fprint anything!
-    fld_comp:="~/287_abvarfq_lmfdb_recomputation/";
-    fld_out_wk:="~/287_abvarfq_lmfdb_recomputation/output_wk/";
-    fld_out_cm:="~/287_abvarfq_lmfdb_recomputation/output_cm/";
-    fld_out_pols:="~/287_abvarfq_lmfdb_recomputation/output_pols/";
-    degree_bounds:="[4,9,25]";
-    s:="[64,-80,44,-19,11,-5,1]"; //3.4.af_l_at
-    s:="[961,-62,-29,-2,1]"; //2.31.ac_abd
-*/
 /*
 
 To compute:
