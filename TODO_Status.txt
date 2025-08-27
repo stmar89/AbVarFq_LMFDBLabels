@@ -63,3 +63,7 @@ Later:
            We should start with that and see if there is hope.
         -) Add download functionality, that `talks' to the package AbVarFq.
 
+Update August 27 2025:
+- I started moving stuff from diophantus to babbage. I have copied files which contain the data about principal and non-principal pols for non-3.25 data onto the new data. I should remove the irrelevant lines from the files. The data about princ pols is reliable, so it should not be a problem.
+- Move all the data for 3_25 to babbage.
+- Clean up space on diophantus
