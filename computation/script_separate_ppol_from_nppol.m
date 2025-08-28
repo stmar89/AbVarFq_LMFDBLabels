@@ -4,13 +4,18 @@
 
     On babbage we had a computation running. it used old code to compute non-principal polarizations.
     the purpose of this script is to take the data about principal polarizations and put it in the right folder.
+
+    20250828: during a non careful migration from diophantus I have readded data about non-pp in some files.
+    I modified the script below to fix that.
     
 */
 
-    // where the files produced with the old code are:
-    fld_old_code:="~/287_abvarfq_lmfdb_recomputation/output_pols_using_old_code/av_fq_pol/";
-    // where we are going to print the lines about pp's:
-    fld_dest_pp:="~/287_abvarfq_lmfdb_recomputation/output_pols/av_fq_pol/";
+    // // where the files produced with the old code are:
+    // fld_old_code:="~/287_abvarfq_lmfdb_recomputation/output_pols_using_old_code/av_fq_pol/";
+    // // where we are going to print the lines about pp's:
+    // fld_dest_pp:="~/287_abvarfq_lmfdb_recomputation/output_pols/av_fq_pol/";
+    fld_old_code:="/data/stmar/287_abvarfq_lmfdb_recomputation/output_after_broken_rsync/av_fq_pol/";
+    fld_dest_pp:="/data/stmar/287_abvarfq_lmfdb_recomputation/output_pols/av_fq_pol/";
     file_list:=Split(Pipe("ls " * fld_old_code,"r"));
     
     tot:=#file_list; perc:=0; num_pol:=0; num_pp:=0;
@@ -32,6 +37,8 @@
             end if;
         end for;
     end for;
+
+    quit;
 
 
 
