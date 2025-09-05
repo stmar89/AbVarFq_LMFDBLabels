@@ -11,7 +11,7 @@
     fld_out_pol:=fld_comp * "output_pols/av_fq_isog/";
 
     printf "Loading input and already-done...\n";
-    time all:=Split(Read("~/AbVarFq_LMFDBLabels/computation/weil_poly_sqfree_ord_cs_no_3_25.txt"));
+    time all:=Split(Read("~/AbVarFq_LMFDBLabels/computation/weil_poly_sqfree_ord_cs_no_3_25.txt")) cat Split(Read("~/AbVarFq_LMFDBLabels/computation/weil_poly_sqfree_ord_only_3_25.txt"));
     princ_pols_joblog:=Read(fld_comp * "joblog_pols_all_but_3_25");
     time fld_out_pol_ls:=[Join(Split(c,".")[1..2],".") : c in Split(Pipe("ls " * fld_out_pol,"r"))];
     printf "...done!\n";
@@ -46,6 +46,7 @@
         printf "<g,q>=%o\ttot =%6o\tdone: pol =%6o\t%o%%\n",k,all_k,done_k_pol,perc_k_pol;
     end for;
 
+    /* for parsing the joblog. not usable anymore after restarting the comp
     princ_pols_joblog:=Split(princ_pols_joblog);
     princ_pols_joblog:=princ_pols_joblog[2..#princ_pols_joblog];
     princ_pols_timed_out:=&+[Split(l,"\t ")[7] eq "-1" select 1 else 0: l in princ_pols_joblog];
@@ -55,7 +56,7 @@
                                 Truncate(done_all_pol*100/tot),
                                 princ_pols_timed_out,
                                 Truncate(princ_pols_timed_out*100/tot);
-
+    */
 
     quit;
 
