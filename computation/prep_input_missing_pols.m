@@ -9,7 +9,18 @@
     AttachSpec("~/AbVarFq_LMFDBLabels/spec");
     PP<x>:=PolynomialRing(Integers());
     input_labels:=[ IsogenyLabel(PP!eval(s)) : s in input ];
-    missing_labels:=Seqset(input_labels) diff Seqset(done);
+    missing_labels:=Setseq(Seqset(input_labels) diff Seqset(done));
+    // we sort putting 4.4, 4.3, 5.2, 3.16, 3.25 at the end, in this order.
+    missing_labels:=[
+        [ l : l in missing_labels | Join(Split(l,".")[1..2],".") notin { "4.4","4.3","5.2","3.16","3.25" }],
+        [ l : l in missing_labels | Join(Split(l,".")[1..2],".") eq "4.4" ],
+        [ l : l in missing_labels | Join(Split(l,".")[1..2],".") eq "4.3" ],
+        [ l : l in missing_labels | Join(Split(l,".")[1..2],".") eq "5.2" ],
+        [ l : l in missing_labels | Join(Split(l,".")[1..2],".") eq "3.16" ],
+        [ l : l in missing_labels | Join(Split(l,".")[1..2],".") eq "3.25" ]
+    ];
+    printf "missing = %o\n",[#c:c in missing_labels];
+    missing_labels:=&cat(missing_labels);
     missing_coeffs:=[ Coefficients(f) where _,_,f:=LabelToPoly(ll) : ll in missing_labels ];
     printf "total input = %o\tdone = %o\tmissing = %o\n",#input,#done,#missing_coeffs;
 

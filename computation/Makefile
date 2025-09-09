@@ -262,7 +262,7 @@ jobs_missing_ppols_with_3_25 = 60
 run_script_missing_ppol_with_3_25:
 	@echo "(re)starting run_script_pols on:" >> ${my_log}
 	@make -s log_versions_last_commits
-	parallel --jobs ${jobs_missing_ppols_with_3_25} --resume --joblog ${fld_comp}joblog_missing_ppols_with_3_25 -a ${input_missing_ppol} magma -b fld_comp:=${fld_comp} fld_out_wk:=${fld_out_wk} fld_out_cm:=${fld_out_cm} fld_out_pols:=${fld_out_pols} issues:=${issues_pols} degree_bounds:=${degree_bounds} s:={} ${fld_scripts}script_pols.m
+	parallel --jobs ${jobs_missing_ppols_with_3_25} --resume --joblog ${fld_comp}joblog_missing_ppols_with_3_25 -a ${input_missing_ppol} magma -b s:={} fld_comp:=${fld_comp} fld_out_wk:=${fld_out_wk} fld_out_cm:=${fld_out_cm} fld_out_pols:=${fld_out_pols} issues:=${issues_pols} degree_bounds:=${degree_bounds} ${fld_scripts}script_pols.m
 	@echo "run_script_pols has finished on:" >> ${my_log}
 	@date >> ${my_log}
 

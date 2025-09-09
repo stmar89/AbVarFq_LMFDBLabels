@@ -62,14 +62,15 @@ AttachSpec("~/AlgEt/spec");
 AttachSpec("~/AbVarFq_LMFDBLabels/spec");
 SetClassGroupBounds("GRH");
 SetColumns(0);
-//SetDebugOnError(true);
+SetDebugOnError(true);
+SetVerbose("pols_closest_vect",1);
 
 //issues //no related fprintf
 fld_comp:="/data/stmar/287_abvarfq_lmfdb_recomputation/";
 fld_out_wk:=fld_comp * "output_wk/";
 fld_out_cm:=fld_comp * "output_cm/";
 fld_out_pols:=fld_comp * "output_pols/";
-s:="[ 27, 9, 9, 6, 3, 1, 1 ]";
+s:="[ 4096, -768, 144, -91, 9, -3, 1 ]";
 degree_bounds:="[ 4, 9, 25 ]"; //not used
 
 PP<x>:=PolynomialRing(Integers());
@@ -233,13 +234,13 @@ try
 
     // we print all outputs
     if is_ordinary and allproduct then
-        // fprintf allproduct_output, "%o\n", number_of_princ_pols;
+        printf "%o\n", number_of_princ_pols;
     end if;
     for pol_line in av_fq_pol do
-        // fprintf av_fq_pol_output, "%o\n", Join([pol_line[col] : col in av_fq_pol_columns], ":");
+        printf "%o\n", Join([pol_line[col] : col in av_fq_pol_columns], ":");
     end for;
     for we_line in av_fq_we do
-        // fprintf av_fq_we_output, "%o\n", Join([we_line[col] : col in av_fq_we_columns], ":");
+        printf "%o\n", Join([we_line[col] : col in av_fq_we_columns], ":");
     end for;
     // fprintf av_fq_isog_output, "%o\n", Join([av_fq_isog[col] : col in av_fq_isog_columns], ":");
     printf "%o : done in %o\n",label,Cputime(t0); 

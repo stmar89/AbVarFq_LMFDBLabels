@@ -1,6 +1,7 @@
 /* vim: set syntax=magma :*/
 
 declare verbose AllPolarizations,1;
+declare verbose pols_closest_vect,1;
 
 declare attributes AlgEtQOrd : PrincipalPolarizationsIsogenyClass,
                                transversal_US_USplus,
@@ -335,7 +336,9 @@ The output consists of pol,den,nums where
         L:=LatticeWithBasis(img_gens_sub);
         // we find all vectors in L closest to -img_x0
         img_x0:=Vector(Log_map(x0));
+        vprintf pols_closest_vect: "running ClosestVectors in %o to %o ...",L,-img_x0;
         candidates:=ClosestVectors(L,-img_x0); //note the minus sign!
+        vprintf pols_closest_vect: "done";
 
         norm_y0:=Norm(Vector(candidates[1])+img_x0);
         if not forall{c:c in candidates|Abs(Norm(Vector(c)+img_x0) - norm_y0) lt eps} then
