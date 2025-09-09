@@ -1,0 +1,74 @@
+################################
+### Status after LuCaNT 2025 ###
+################################
+Updated 2025/07/11 : 
+* Scripts that are done
+    run_script_wk
+    run_script_sing_primes
+    run_script_cm
+    run_script_cm_missing (this uses pari-gp)
+    run_script_cm_3_25
+    run_script_wk_3_25
+    run_script_sing_primes_3_25: 
+
+* Scripts where we have issues:
+    run_script_pols_*          : Currently running on Babbage. We have ~50% of the data.
+                                 We believe that the issue is with the non-principal polarizations.
+                                 More on this issue below.
+    run_script_pols_3_25       : This run for a few days on diophantus.
+
+The data produced is on diophantus and babbage in the folders 287_...
+
+##############################################
+### Issue with non-principal polarizations ###
+##############################################
+We trust the output we have produced so far, but the current code will never finish for big isogeny classes because of the issue described below.
+
+The current code is based on intrinsic with the following dependencies:
+    MaximalIntermediateIdeals --> AllMinimalIsogenies --> IsogeniesByDegree --> AllNonprincipalPolarizations
+The problem is that AllMinimalIsogenies loops over ICM x ICM to compute the isogenies. This is extremely expensive.
+
+We started refactoring the code using some intrinsics that we wrote in 2023 and used for the first round of computations started back then. This can be found in the branch `refactor_pols` of the repo.
+The dependencies are
+    RepresentativeMinimalIsogenies --> RepresentativeIsogenies --> AllNonprincipalPolarizations 
+             DistinguishedPicBasis -->
+             DistinguishedCosetRep --> 
+Note that, in that branch, we moved all the relevant intrinsics in Isogenies.m and Polarizations.m and move the one we don't use in old_legacy.m
+The advantage of this approach is that RepresentativeIsogenies loops only over WKICM x WKICM x WKCIM, which is much better!
+But we believe that there is a bug: in RepresentativeIsogenies there an assert failing: we are trying to add something with the wrong degree! We could not figure out out to solve the problem during the conference.
+
+#####################################################
+### Roadmap to pushing the database to production ###
+#####################################################
+In the extremely near future (week after LuCaNT), we decided to:
+    TODO
+        -) Add to AbVarFq_integration.m intrinsics for polarizations.
+        -) David has bunch of TODOs for the interface, on his computer.
+        -) Then we can send into production.
+    DONE 
+        -) Write the missing Knowls.
+        -) Add a line about AbVarFq_integration.m in the README.m
+        -) Wrap-up the Scripts that are almost done (for 3_25), see above.
+    RUNNING (on diophantus as of July 14, 2025)
+        -) diophantus: Rerun run_script_pols_3_25 only for principal polarizations. 
+        -) babbage Stop run_script_pols_* and rerun it only for principal polarizations. 
+        In both cases the data is in the folder /output_pols_using_old_code/.
+        The files contain both principal and non-principal polarizations
+Later:
+    TODO
+        -) If we don't have time to work on it earlier, we plan to start discussing this in September.
+           The better code for non-principal polarizations/isogenies is kind-of-there, and the idea is cool.
+           This should make a good ANTS paper.
+        -) We can expand the database with <4,5>, <5,3> and <6,2>. For <6,2> the obstacle is probably the cm-type. 
+           We should start with that and see if there is hope.
+        -) Add download functionality, that `talks' to the package AbVarFq.
+
+Update August 27 2025:
+DONE - I started moving stuff from diophantus to babbage. I have copied files which contain the data about principal and non-principal pols for non-3.25 data onto the new data. I should remove the irrelevant lines from the files. The data about princ pols is reliable, so it should not be a problem.
+DONE - Move all the data for 3_25 to babbage.
+DONE - Clean up space on diophantus
+- continue from the file file script_missing_ppol.m to restart the computation for the missing ppols.
+- zip the folder /data/stmar/from_diophantus
+- can remove the folder output_after_broken_rsync
+
+

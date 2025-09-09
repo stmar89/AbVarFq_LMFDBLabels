@@ -31,3 +31,5 @@ In the [`example file`](https://github.com/stmar89/AbVarFq_LMFDBLabels/blob/main
 ### Further info
 The folder `computation/` contains scripts for the computation and labeling of the isomorphism classes with polarizations used to populate (some entries of) the LMFDB tables `av_fq_isog`, `av_fq_weak_equivalences` and `av_fq_pol`.
 See [`the corresponding README file`](https://github.com/stmar89/AbVarFq_LMFDBLabels/blob/main/computation/README) for a detailed explanation.
+
+The file [`AbVarFq_integration`](https://github.com/stmar89/AbVarFq_LMFDBLabels/blob/main/packages/AbVarFq_integration.m) contains the intrinsic `IsomorphismClassesLMFDB` which computes the isomorphism classes of abelian varieties in a given isogeny class using the user-friedly interface provided by the package [`AbVarFq`](https://github.com/stmar89/AbVarFq).

@@ -2,7 +2,7 @@
 # Folders
 ##################
 
-fld_comp = ~/287_abvarfq_lmfdb_recomputation/
+fld_comp = /data/stmar/287_abvarfq_lmfdb_recomputation/
 # where all the scripts are
 fld_scripts = ~/AbVarFq_LMFDBLabels/computation/
 
@@ -34,6 +34,9 @@ input_slow_4 = ${fld_scripts}input_slow_4
 # for tests
 input_test_pol = ${fld_scripts}input_test_pol
 
+#after moving all the princ pols computation to babbage, including 3_25
+input_missing_ppol = ${fld_scripts}weil_poly_missing_pp_script_with_3_25.txt
+
 ##################
 # my log and issue files
 ##################
@@ -60,6 +63,9 @@ fld_out_sing_primes = ${fld_comp}output_sing_primes/
 ##################
 
 degree_bounds = [4,9,25]
+# 20250711 we are only doing principal polarizations, until the faster code is ready
+# see Todo file
+
 
 ##################
 # scripts for logging
@@ -129,9 +135,9 @@ run_script_wk:
 	@date >> ${my_log}
 
 clean_failed_script_wk:
-	rm ~/287_abvarfq_lmfdb_recomputation/output_wk/*
-	rm ~/287_abvarfq_lmfdb_recomputation/joblog_wk
-	rm ~/287_abvarfq_lmfdb_recomputation/issues_wk
+	rm ${fld_comp}output_wk/*
+	rm ${fld_comp}joblog_wk
+	rm ${fld_comp}issues_wk
 
 run_script_sing_primes:
 	@echo "(re)starting run_script_sing_primes on:" >> ${my_log}
@@ -157,9 +163,9 @@ run_script_cm:
 	@date >> ${my_log}
 
 clean_failed_script_cm:
-	rm ~/287_abvarfq_lmfdb_recomputation/output_cm/*
-	rm ~/287_abvarfq_lmfdb_recomputation/joblog_cm
-	rm ~/287_abvarfq_lmfdb_recomputation/issues_cm
+	rm ${fld_comp}output_cm/*
+	rm ${fld_comp}joblog_cm
+	rm ${fld_comp}issues_cm
 
 jobs_cm = 18
 run_script_cm_missing:
@@ -173,7 +179,15 @@ run_script_cm_missing:
 # scripts for polarizations
 ##################
 
-timeout = 300
+#timeout_pols_all_but_3_25 = 3600
+jobs_pols_all_but_3_25 = 60
+run_script_pols_all_but_3_25:
+	@echo "(re)starting run_script_pols on:" >> ${my_log}
+	@make -s log_versions_last_commits
+	parallel --jobs ${jobs_pols_all_but_3_25} --resume --joblog ${fld_comp}joblog_pols_all_but_3_25 -a ${input_ord} magma -b fld_comp:=${fld_comp} fld_out_wk:=${fld_out_wk} fld_out_cm:=${fld_out_cm} fld_out_pols:=${fld_out_pols} issues:=${issues_pols} degree_bounds:=${degree_bounds} s:={} ${fld_scripts}script_pols.m
+	@echo "run_script_pols has finished on:" >> ${my_log}
+	@date >> ${my_log}
+
 run_script_pols_fast1:
 	@echo "(re)starting run_script_pols on:" >> ${my_log}
 	@make -s log_versions_last_commits
@@ -236,13 +250,21 @@ run_script_pols_slow4:
 	@date >> ${my_log}
 
 clean_failed_script_pols:
-	rm -r ~/287_abvarfq_lmfdb_recomputation/output_pols/ || true
-	mkdir -p ~/287_abvarfq_lmfdb_recomputation/output_pols/av_fq_pol
-	mkdir -p ~/287_abvarfq_lmfdb_recomputation/output_pols/av_fq_we
-	mkdir -p ~/287_abvarfq_lmfdb_recomputation/output_pols/av_fq_isog
-	mkdir -p ~/287_abvarfq_lmfdb_recomputation/output_pols/allproduct
-	rm ~/287_abvarfq_lmfdb_recomputation/joblog_pols* || true
-	rm ~/287_abvarfq_lmfdb_recomputation/issues_pols* || true
+	rm -r ${fld_comp}output_pols/ || true
+	mkdir -p ${fld_comp}output_pols/av_fq_pol
+	mkdir -p ${fld_comp}output_pols/av_fq_we
+	mkdir -p ${fld_comp}output_pols/av_fq_isog
+	mkdir -p ${fld_comp}output_pols/allproduct
+	rm ${fld_comp}joblog_pols* || true
+	rm ${fld_comp}issues_pols* || true
+
+jobs_missing_ppols_with_3_25 = 60
+run_script_missing_ppol_with_3_25:
+	@echo "(re)starting run_script_pols on:" >> ${my_log}
+	@make -s log_versions_last_commits
+	parallel --jobs ${jobs_missing_ppols_with_3_25} --resume --joblog ${fld_comp}joblog_missing_ppols_with_3_25 -a ${input_missing_ppol} magma -b s:={} fld_comp:=${fld_comp} fld_out_wk:=${fld_out_wk} fld_out_cm:=${fld_out_cm} fld_out_pols:=${fld_out_pols} issues:=${issues_pols} degree_bounds:=${degree_bounds} ${fld_scripts}script_pols.m
+	@echo "run_script_pols has finished on:" >> ${my_log}
+	@date >> ${my_log}
 
 ##################
 # folders and scripts 
@@ -263,18 +285,18 @@ run_script_pols_test:
 	magma -b ~/AbVarFq_LMFDBLabels/tests/20250627_test_script_pols.txt
 
 clean_failed_script_pols_test:
-	rm ~/287_abvarfq_lmfdb_recomputation/output_pols_test1/av_fq_pol/* || true
-	rm ~/287_abvarfq_lmfdb_recomputation/output_pols_test1/av_fq_we/* || true
-	rm ~/287_abvarfq_lmfdb_recomputation/output_pols_test1/av_fq_isog/* || true
-	rm ~/287_abvarfq_lmfdb_recomputation/output_pols_test1/allproduct/* || true
-	rm ~/287_abvarfq_lmfdb_recomputation/joblog_pols_test1 || true
-	rm ~/287_abvarfq_lmfdb_recomputation/issues_pols_test1 || true
-	rm ~/287_abvarfq_lmfdb_recomputation/output_pols_test2/av_fq_pol/* || true
-	rm ~/287_abvarfq_lmfdb_recomputation/output_pols_test2/av_fq_we/* || true
-	rm ~/287_abvarfq_lmfdb_recomputation/output_pols_test2/av_fq_isog/* || true
-	rm ~/287_abvarfq_lmfdb_recomputation/output_pols_test2/allproduct/* || true
-	rm ~/287_abvarfq_lmfdb_recomputation/joblog_pols_test2 || true
-	rm ~/287_abvarfq_lmfdb_recomputation/issues_pols_test2 || true
+	rm ${fld_comp}output_pols_test1/av_fq_pol/* || true
+	rm ${fld_comp}output_pols_test1/av_fq_we/* || true
+	rm ${fld_comp}output_pols_test1/av_fq_isog/* || true
+	rm ${fld_comp}output_pols_test1/allproduct/* || true
+	rm ${fld_comp}joblog_pols_test1 || true
+	rm ${fld_comp}issues_pols_test1 || true
+	rm ${fld_comp}output_pols_test2/av_fq_pol/* || true
+	rm ${fld_comp}output_pols_test2/av_fq_we/* || true
+	rm ${fld_comp}output_pols_test2/av_fq_isog/* || true
+	rm ${fld_comp}output_pols_test2/allproduct/* || true
+	rm ${fld_comp}joblog_pols_test2 || true
+	rm ${fld_comp}issues_pols_test2 || true
 
 ##################
 # folders and scripts for 
@@ -285,6 +307,7 @@ fld_comp_3_25 = ~/287_abvarfq_lmfdb_recomputation_3_25/
 fld_out_wk_3_25 = ${fld_comp_3_25}output_wk/
 my_log_3_25 = ${fld_comp_3_25}my_log
 input_3_25 = ${fld_scripts}weil_poly_sqfree_ord_only_3_25.txt
+input_3_25_missing = ${fld_scripts}input_wk_3_25_missing.txt
 issues_wk_3_25 = ${fld_comp_3_25}issues_wk_3_25
 
 rm_log_3_25:
@@ -314,8 +337,6 @@ clean_failed_script_wk_3_25:
 	rm ${fld_out_wk_3_25}* || true
 	rm ${fld_comp_3_25}joblog_wk_3_25 || true
 	rm ${issues_wk_3_25} || true
-
-# TODO the following are not tested
 
 jobs_sing_primes_3_25 = 18
 fld_out_sing_primes_3_25 = ${fld_comp_3_25}output_sing_primes/
@@ -355,7 +376,7 @@ issues_pols_3_25 = ${fld_comp_3_25}issues_pols_3_25
 run_script_pols_3_25:
 	@echo "(re)starting run_script_pols_3_25 on:" >> ${my_log_3_25}
 	@make -s log_versions_last_commits_3_25
-	parallel --eta --timeout ${timeout_pols_3_25}  --resume --joblog ${fld_comp_3_25}joblog_pols_3_25 -a ${input_3_25} magma -b fld_comp:=${fld_comp_3_25} fld_out_wk:=${fld_out_wk_3_25} fld_out_cm:=${fld_out_cm_3_25} fld_out_pols:=${fld_out_pols_3_25} issues:=${issues_pols_3_25} degree_bounds:=${degree_bounds} s:={} ${fld_scripts}script_pols.m
+	parallel -j 18 --timeout ${timeout_pols_3_25}  --resume --joblog ${fld_comp_3_25}joblog_pols_3_25 -a ${input_3_25} magma -b fld_comp:=${fld_comp_3_25} fld_out_wk:=${fld_out_wk_3_25} fld_out_cm:=${fld_out_cm_3_25} fld_out_pols:=${fld_out_pols_3_25} issues:=${issues_pols_3_25} degree_bounds:=${degree_bounds} s:={} ${fld_scripts}script_pols.m
 	@echo "run_script_pols_3_25 has finished on:" >> ${my_log_3_25}for ll in l :
 	@date >> ${my_log_3_25}
 
