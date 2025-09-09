@@ -7,14 +7,12 @@
     //AttachSpec("~/AbVarFq_LMFDBLabels/spec");
 
     SetColumns(0);
-
-    fld_out_wk:="~/287_abvarfq_lmfdb_recomputation/output_wk/";
-    fld_out_cm:="~/287_abvarfq_lmfdb_recomputation/output_cm/";
-    fld_out_pol:="~/287_abvarfq_lmfdb_recomputation/output_pols/av_fq_pol/";
+    fld_comp:="/data/stmar/287_abvarfq_lmfdb_recomputation/";
+    fld_out_pol:=fld_comp * "output_pols/av_fq_isog/";
 
     printf "Loading input and already-done...\n";
-    time all:=Split(Read("~/AbVarFq_LMFDBLabels/computation/weil_poly_sqfree_ord_no_3_25.txt"));
-    time fld_out_cm_ls:=[Join(Split(c,".")[1..2],".") : c in Split(Pipe("ls " * fld_out_cm,"r"))];
+    time all:=Split(Read("~/AbVarFq_LMFDBLabels/computation/weil_poly_sqfree_ord_cs_no_3_25.txt")) cat Split(Read("~/AbVarFq_LMFDBLabels/computation/weil_poly_sqfree_ord_only_3_25.txt"));
+    princ_pols_joblog:=Read(fld_comp * "joblog_pols_all_but_3_25");
     time fld_out_pol_ls:=[Join(Split(c,".")[1..2],".") : c in Split(Pipe("ls " * fld_out_pol,"r"))];
     printf "...done!\n";
    
@@ -39,22 +37,26 @@
     sizes:=[arr[k]:k in keys];
     ParallelSort(~sizes,~keys);
 
-    done_all_cm:=0;
     done_all_pol:=0;
     for k in keys do
-        done_k_cm:=#[c : c in fld_out_cm_ls | c eq k];
         done_k_pol:=#[c : c in fld_out_pol_ls | c eq k];
-        done_all_cm +:=done_k_cm;
         done_all_pol +:=done_k_pol;
         all_k:=arr[k];
-        perc_k_cm:=Truncate(done_k_cm*100/all_k);
         perc_k_pol:=Truncate(done_k_pol*100/all_k);
-        printf "<g,q>=%o\ttot =%6o\tdone: cm =%6o, pol =%6o\t%o%% %o%%\n",k,all_k,done_k_cm,done_k_pol,perc_k_cm,perc_k_pol;
+        printf "<g,q>=%o\ttot =%6o\tdone: pol =%6o\t%o%%\n",k,all_k,done_k_pol,perc_k_pol;
     end for;
 
-    printf "\n\ntotal = %o \t done: cm =%7o, pol =%7o\t%o%% %o%%\n",tot,done_all_cm,done_all_pol,
-                                Truncate(done_all_cm*100/tot),
-                                Truncate(done_all_pol*100/tot);
+    /* for parsing the joblog. not usable anymore after restarting the comp
+    princ_pols_joblog:=Split(princ_pols_joblog);
+    princ_pols_joblog:=princ_pols_joblog[2..#princ_pols_joblog];
+    princ_pols_timed_out:=&+[Split(l,"\t ")[7] eq "-1" select 1 else 0: l in princ_pols_joblog];
+    printf "\n\ntotal = %o | princ pols done =%o  %o%% | princ pols timed out =%o %o%%\n",
+                                tot,
+                                done_all_pol,
+                                Truncate(done_all_pol*100/tot),
+                                princ_pols_timed_out,
+                                Truncate(princ_pols_timed_out*100/tot);
+    */
 
     quit;
 
