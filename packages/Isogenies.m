@@ -41,7 +41,7 @@ end intrinsic;
 // J/NJ <--> JI/NJI,
 // which sends an ideal L such that NJ < L < J with no L' such that L < L' < J 
 // to a submodule LI satisfying the same property wrt to JI.
-// In other words, it sensds maximal subideals of J contaninig NJ to maximal subideals of JI containing NJI.
+// In other words, it sends maximal subideals of J contaninig NJ to maximal subideals of JI containing NJI.
 // This implies that the minimal isogenies to J are in bijection with the minimal isogenies to JI.
 // 
 // The upshot is that to compute isogenies of bounded degrees (by composing minimal ones) we only need 
