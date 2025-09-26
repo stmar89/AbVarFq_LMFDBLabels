@@ -12,7 +12,7 @@
     to prepare the input
         magma -b task:=200 ~/AbVarFq_LMFDBLabels/tests/20250926_test_canonical_rep_pols.m 
     to run the parallel
-        ls ~/292_test_canonical_rep_pols/from_babbage | parallel -j 20 --timeout 600 magma -b task:={} ~/AbVarFq_LMFDBLabels/tests/20250926_test_canonical_rep_pols.m
+        ls ~/292_test_canonical_rep_pols/from_babbage | parallel -j 20 magma -b task:={} ~/AbVarFq_LMFDBLabels/tests/20250926_test_canonical_rep_pols.m
 */
 
     AttachSpec("~/AlgEt/spec");
