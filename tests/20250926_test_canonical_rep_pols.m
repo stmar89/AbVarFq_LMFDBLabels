@@ -10,34 +10,47 @@
 
     USAGE: on kovalevksy
     to prepare the input
-        magma ~/AbVarFq_LMFDBLabels/test/20250926_test_canonical_rep_pols.m task:=200
+        magma -b task:=200 ~/AbVarFq_LMFDBLabels/tests/20250926_test_canonical_rep_pols.m 
     to run the parallel
-        ls ~/292_test_canonical_rep_pols/from_babbage | parallel -j 20 --timeout 600 ~/AbVarFq_LMFDBLabels/test/20250926_test_canonical_rep_pols.m task:={}
+        ls ~/292_test_canonical_rep_pols/from_babbage | parallel -j 20 --timeout 600 magma -b task:={} ~/AbVarFq_LMFDBLabels/tests/20250926_test_canonical_rep_pols.m
 */
 
     AttachSpec("~/AlgEt/spec");
     AttachSpec("~/AbVarFq_LMFDBLabels/spec");
+    import "~/AbVarFq_LMFDBLabels/computation/script_pols.m" : print_ivec;
     SetClassGroupBounds("GRH");
     SetColumns(0);
+    _<x>:=PolynomialRing(Integers());
+
     fld:="~/292_test_canonical_rep_pols/"; // on kovalevsky
     babbage_outputs:=fld * "from_babbage/";
     av_fq_pol_columns := ["label", "isog_label", "endomorphism_ring", "isom_label", "degree", "kernel", "degree_rr", "kernel_rr", "degree_rl", "kernel_rl", "degree_lr", "kernel_lr", "degree_ll", "kernel_ll", "aut_group", "geom_aut_group", "is_jacobian", "representative"];
+    file_output_test:=fld * "output_of_test";
 
     prep_input:=procedure(N)
         // we clear out the folder
-        if eval(Pipe("ls " cat babbage_outputs cat " |wc -l","r")) ne "0" then
+        if StringToInteger(Pipe("ls " cat babbage_outputs cat " |wc -l","r")) ne 0 then
             Pipe("rm " cat babbage_outputs cat "*","r");
         end if;
-        assert eval(Pipe("ls " cat babbage_outputs cat " |wc -l","r")) eq 0;
+        assert StringToInteger(Pipe("ls " cat babbage_outputs cat " |wc -l","r")) eq 0;
 
         // we pick N randomly selected elements from 
-        Pipe("ssh stmar@babbage 'find /data/stmar/287_abvarfq_lmfdb_recomputation/output_pols/av_fq_pol -type f -print0 | shuf -z -n " * Sprint(N) * " | xargs -0 -r ls | parallel scp {} stmar@kovalevksy:~/292_test_canonical_rep_pols/from_babbage/'","r");
-        assert eval(Pipe("ls " cat babbage_outputs cat " | wc -l","r")) eq N;
+        Pipe("ssh stmar@babbage.mit.edu 'find /data/stmar/287_abvarfq_lmfdb_recomputation/output_pols/av_fq_pol -type f -print0 | shuf -z -n" * Sprint(N) * " | xargs -0 -r -I '{}' scp '{}' stmar@kovalevsky.mit.edu:~/292_test_canonical_rep_pols/from_babbage/'","r");
+        assert StringToInteger(Pipe("ls " cat babbage_outputs cat " | wc -l","r")) eq StringToInteger(N);
     end procedure;
 
     parallel_script:=procedure(label)
         recomputed := {};
-        original := Seqset(Split(Read(babbage_outputs * label))); //from babbage
+        original0 := Split(Read(babbage_outputs * label)); //from babbage
+        original:= {};
+        // we gt rig of the geom_aut_group stuff
+        for line in original0 do
+            sp:=Split(line,":");
+            sp[16]:="\\N";
+            Include(~original,Join(sp,":"));
+        end for;
+
+            
       
         t0:=Cputime();
         g,q,f:=LabelToPoly(label);
@@ -62,11 +75,11 @@
             aut_grp := IdentifyGroup(TorsionSubgroup(UnitGroup(S)));
             aut_grp := Sprintf("%o.%o", aut_grp[1], aut_grp[2]);
             poldata["aut_group"] := aut_grp;
-            if geom_endalg_is_comm then
-                poldata["geom_aut_group"] := aut_grp;
-            else
+            // if geom_endalg_is_comm then
+            //     poldata["geom_aut_group"] := aut_grp;
+            // else
                 poldata["geom_aut_group"] := "\\N";
-            end if;
+            // end if;
             poldata["is_jacobian"] := IsProductOfOrdersLMFDB(S) select "f" else "\\N";
             poldata["representative"] := Sprintf("[%o,%o]", den, print_ivec(nums: json:=true));
             Include(~recomputed,Join([poldata[col] : col in av_fq_pol_columns], ":"));
@@ -76,8 +89,10 @@
         // test and print outcome
         if recomputed eq original then
             fprintf file_output_test,"OK in %o %o\n",t1,label;
+            printf "OK in %o %o\n",t1,label;
         else
             fprintf file_output_test,"ERROR -------------> %o\n",label;
+            printf "ERROR -------------> %o\n",label;
         end if;
     end procedure;
 
@@ -91,5 +106,6 @@
     else
         error "the input variable task is not of an accepted format: it should be either an integer or a label";
     end if;
-
+    
+    quit;
 
