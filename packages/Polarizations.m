@@ -142,9 +142,10 @@ intrinsic PPolIteration(ZFV::AlgEtQOrd) -> List
     prec := 30;
     while true do
         try
-            PHI:=pAdicPosCMType(A);
+            PHI:=pAdicPosCMType(A : precpAdic:=prec, precCC:=prec);
             break;
         catch e // precision error can happen
+            e;
             prec *:= 2;
         end try;
     end while;
@@ -244,7 +245,7 @@ The output consists of pol,den,nums where
     // This function returns a boolean and, if true, all the vectors in L that are closest to the (image of) y0.
     // The input is a precision parameter. The returned boolean is false when we detect that the precision needs
     // to be increased.
-        homs:=HomsToC(A : Prec:=prec); 
+        homs:=HomsToC(A : Precision:=prec); 
         prec:=Precision(Codomain(homs[1]));
         // are the homs sorted in conjugate pairs?
         assert forall{ k : k in [1..g]|Abs(homs[2*k-1](F) - ComplexConjugate(homs[2*k](F))) lt 10^-(prec div 2)};
