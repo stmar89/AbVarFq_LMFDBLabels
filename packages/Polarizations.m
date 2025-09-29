@@ -145,6 +145,7 @@ intrinsic PPolIteration(ZFV::AlgEtQOrd) -> List
             PHI:=pAdicPosCMType(A : precpAdic:=prec, precCC:=prec);
             break;
         catch e // precision error can happen
+            e;
             prec *:= 2;
         end try;
     end while;
