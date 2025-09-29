@@ -38,7 +38,7 @@ sparsify_CMType:=function(PHI,basis,q)
             for count in [1..count_max] do
                 c:=Random(cc);
                 coeff:=[ c[i] : i in [1..dim] ];
-                bc:=SumOfProducts(coeff,basis);
+                bc:=DotProduct(coeff,basis);
                 if bc ne ComplexConjugate(bc) then
                     bc:=bc-ComplexConjugate(bc); // non zero by the "if" 
                     if not IsZeroDivisor(bc) then
@@ -65,7 +65,7 @@ sparsify_CMType:=function(PHI,basis,q)
             for count in [1..count_max] do
                 c:=Random(cc);
                 coeff:=[ c[i] : i in [1..dim] ];
-                bc:=SumOfProducts(coeff,basis);
+                bc:=DotProduct(coeff,basis);
                 if bc ne ComplexConjugate(bc) then
                     bc:=bc-ComplexConjugate(bc); // non zero by the "if" 
                     if not IsZeroDivisor(bc) then
@@ -127,7 +127,7 @@ intrinsic LoadpAdicPosCMType(A::AlgEtQ,str::MonStgElt)->AlgEtQCMType
     basis:=ZFVBasis(A);
     str:=str[2..#str-1];
     str:=[ StringToInteger(s) : s in Split(str,",") ];
-    b:=SumOfProducts(str,basis);
+    b:=DotProduct(str,basis);
     assert b eq -ComplexConjugate(b);
     PHI:=CMType(b);
     A`pAdicPosCMType:=PHI;

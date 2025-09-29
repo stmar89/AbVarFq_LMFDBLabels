@@ -47,7 +47,7 @@
         denA:=StringToInteger(den_nums_sp[1]);
         numsA:=eval(Join(den_nums_sp[2..#den_nums_sp],","));
         coeffs:=[ n/denA : n in numsA ];
-        b := SumOfProducts(coeffs,basis);
+        b := DotProduct(coeffs,basis);
         PHI:=CMType(b);
         A`pAdicPosCMType:=PHI;
     end procedure;
