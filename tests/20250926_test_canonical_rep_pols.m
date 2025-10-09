@@ -11,13 +11,23 @@
     USAGE: on kovalevksy
     to prepare the input
         magma -b task:=200 ~/AbVarFq_LMFDBLabels/tests/20250926_test_canonical_rep_pols.m 
-    to run the parallel
+    to remove all relevant .sig
+        rm ~/AlgEt/AlgEtQ/*.sig
+        rm ~/AbVarFq_LMFDBLabels/packages/*.sig
+    to run the parallel (current version of magma)
         ls ~/292_test_canonical_rep_pols/from_babbage | parallel -j 20 magma -b task:={} ~/AbVarFq_LMFDBLabels/tests/20250926_test_canonical_rep_pols.m
+    to run the parallel (older version of magma)
+        ls ~/292_test_canonical_rep_pols/from_babbage | parallel -j 20 /opt/magma/magma-2.28-15/magma -b task:={} ~/AbVarFq_LMFDBLabels/tests/20250926_test_canonical_rep_pols.m
+    to run the parallel (current version of magma), only specific examples
+        parallel -j 20 magma -b task:={} ~/AbVarFq_LMFDBLabels/tests/20250926_test_canonical_rep_pols.m ::: 4.3.c_e_k_o 4.4.c_c_ac_d 4.4.f_g_ar_acp 4.4.ae_g_am_bh 
+
+
 */
 
     AttachSpec("~/AlgEt/spec");
     AttachSpec("~/AbVarFq_LMFDBLabels/spec");
-    import "~/AbVarFq_LMFDBLabels/computation/script_pols.m" : print_ivec;
+    // import "~/AbVarFq_LMFDBLabels/computation/script_pols.m" : print_ivec;
+    // causing troubles...copied the function below...go figure...
     SetClassGroupBounds("GRH");
     SetColumns(0);
     _<x>:=PolynomialRing(Integers());
@@ -26,6 +36,23 @@
     babbage_outputs:=fld * "from_babbage/";
     av_fq_pol_columns := ["label", "isog_label", "endomorphism_ring", "isom_label", "degree", "kernel", "degree_rr", "kernel_rr", "degree_rl", "kernel_rl", "degree_lr", "kernel_lr", "degree_ll", "kernel_ll", "aut_group", "geom_aut_group", "is_jacobian", "representative"];
     file_output_test:=fld * "output_of_test";
+
+    function print_ivec(v : json:=false)
+        base := json select "[%o]" else "{%o}";
+        if Type(v) eq SeqEnum or Type(v) eq Tup then
+            return Sprintf(base, Join([$$(c : json:=json) : c in v], ","));
+        end if;
+        return Sprint(v);
+    end function;
+
+    is_tot_pos:=function(x)
+        xb:=ComplexConjugate(x);
+        if not x eq xb then 
+            return false;
+        end if;
+        homs:=HomsToC(Algebra(x));
+        return forall{phi:phi in homs|Re(phi(x)) gt 0};
+    end function;
 
     prep_input:=procedure(N)
         // we clear out the folder
@@ -57,9 +84,20 @@
         A:=EtaleAlgebra(f);
         F:=PrimitiveElement(A);
         ZFV:=LoadSchemaWKClasses(FillSchemaWEClasses(Order([F,q/F])));
+        A:=Algebra(ZFV);
+        F:=PrimitiveElement(A);
+        // Need to make sure that the cm-type is the same.
+        // each polarization determines uniquely the cm-type.
+        // I pick one from original and use it.
+        PHI:=sp[#sp] where sp:=Split(Random(original),":");
+        PHI:=[StringToInteger(z):z in Split(PHI,"[],")];
+        PHI:=DotProduct(ZFVBasis(A),[PHI[i]/PHI[1]:i in [2..#PHI]]);
+        A`pAdicPosCMType:=CMType(PHI);
+
         for ppol in PPolIteration(ZFV) do
             poldata := AssociativeArray();
             we, pic_ctr, I, den, nums, lambda, label_pol := Explode(ppol);
+            assert is_tot_pos(lambda/PHI);
             S := MultiplicatorRing(I);
             split_we:=Split(we, "-");
             assert split_we[1] eq label;
@@ -91,8 +129,12 @@
             fprintf file_output_test,"OK in %o %o\n",t1,label;
             printf "OK in %o %o\n",t1,label;
         else
-            fprintf file_output_test,"ERROR -------------> %o\n",label;
-            printf "ERROR -------------> %o\n",label;
+            fprintf file_output_test,"ERROR -------------> %o\n####\nold minus new:\n%o\n####\nnew minus old\n%o\n#########################################################\n",label,
+            Join(Sort(Setseq(original diff recomputed)),"\n"),
+            Join(Sort(Setseq(recomputed diff original)),"\n");
+            printf "ERROR -------------> %o\n####\nold minus new:\n%o\n####\nnew minus old\n%o\n#########################################################\n",label,
+            Join(Sort(Setseq(original diff recomputed)),"\n"),
+            Join(Sort(Setseq(recomputed diff original)),"\n");
         end if;
     end procedure;
 
