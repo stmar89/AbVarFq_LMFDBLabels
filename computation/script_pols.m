@@ -58,7 +58,7 @@ To compute:
 */
 
 //AttachSpec("~/CHIMP/CHIMP.spec");
-AttachSpec("~/AlgEt/spec");
+//AttachSpec("~/AlgEt/spec");
 AttachSpec("~/AbVarFq_LMFDBLabels/spec");
 SetClassGroupBounds("GRH");
 SetColumns(0);

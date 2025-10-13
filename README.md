@@ -25,6 +25,8 @@ AttachSpec("~/AlgEt/spec");
 AttachSpec("~/AbVarFq_LMFDBLabels/spec");
 ```
 
+`AlgEt` has been included in Magma starting from version 2.29-1. Hence, there is no need to clone it or attach the relative spec.
+
 ### A detailed example
 In the [`example file`](https://github.com/stmar89/AbVarFq_LMFDBLabels/blob/main/detailed_example.md), we exhibit how to use the various intrinsics to compute isomorphism classes, polarizations and labels for a specific isogeny class.
 
