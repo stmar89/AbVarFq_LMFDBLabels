@@ -15,7 +15,14 @@ is_weak_eq_same_mult_ring:=function(I,J)
 end function;
 
 intrinsic ICM_DistinguishedRepresentatives(ZFV::AlgEtQOrd) -> SeqEnum[AlgEtQIdl], Assoc
-{Given the Frobenius order of a squafree isogeny class it returns the distinguished representatives of the isomorphism classes. Each ideal has a label attached to it.}
+{
+Given the Frobenius order of a squarefree isogeny class, return
+ - the distinguished representatives of the isomorphism classes. Each ideal has a label attached to it.
+ - an associative array A with keys the orders S above ZFV.
+   A[S] is an associative array with keys pairs <WE, x> where WE is a distinguished representative of a
+   weak equivalence class with endormophism ring S and x is an element of Pic(S).  The value associated
+   to <WE, x> is WI, which is the product of WE and the distinguished ideal representing x (as a ZFV ideal)
+}
     if assigned ZFV`ICM_DistinguishedRepresentatives then
         return Explode(ZFV`ICM_DistinguishedRepresentatives);
     end if;
@@ -69,9 +76,8 @@ intrinsic ICM_DistinguishedRepresentatives(ZFV::AlgEtQOrd) -> SeqEnum[AlgEtQIdl]
             for trip in pic_iter do
                 I, ctr, Pelt := Explode(trip);
                 WI := ZFVWE * I;
-                if assigned WE`WELabel then
-                    WI`IsomLabel := Sprintf("%o.%o", WE`WELabel, ctr);
-                end if;
+                require assigned WE`WELabel : "WE`Label not assigned. Run FillSchemaWEClasses(ZFV) first.";
+                WI`IsomLabel := Sprintf("%o.%o", WE`WELabel, ctr);
                 WI`WErep := ZFVWE;
                 WI`Pelt := Pelt@@proj;
                 icm_lookup[S][<WE, Pelt>] := WI;
@@ -90,13 +96,19 @@ intrinsic ICM_Identify(L::AlgEtQIdl, icm_lookup::Assoc) -> AlgEtQIdl, AlgEtQElt,
     wkS := WKICM_barDistinguishedRepresentatives(S);
     for i->W in wkS do
         test_wk, cLW, _ := is_weak_eq_same_mult_ring(S!!L,W);
+        assert2 cLW eq ColonIdeal(S!!L,W);
         if test_wk then
             // cLW=(L:W) is invertible, W*cLW = L
             g := cLW@@pS; // in Pic(S)
             I := icm_lookup[S][<W, g>];
             test, x := IsIsomorphic(L, I); // x*I = L
             assert test;
+            assert2 x*I eq L;
             return I, x, S, W, g;
+            // x*I = L, I distinguished
+            // S = (I:I)
+            // W ~ L distinguished
+            // g = (L:W)@@pS in Pic(S)
         end if;
     end for;
 end intrinsic;

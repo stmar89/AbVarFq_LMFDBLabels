@@ -5,10 +5,10 @@ declare verbose AllIsogenies,1;
 
 declare attributes AlgEtQOrd: RepresentativeMinimalIsogeniesTo;
 
-intrinsic DistinguishedCosetRep(g::GrpAbElt, H::GrpAb) -> GrpAbElt, GrpAb
-{Given an element g and a subgroup H of an ambient abelian group G, finds a canonically chosen representative of g+H (and also returns H itself for convenience).  The output only depends on g+H.}
+intrinsic DistinguishedCosetRep(g::GrpAbElt, H::GrpAb) -> GrpAbElt
+{Given an element g and a subgroup H of an ambient abelian group G, finds a canonically chosen representative of g+H.  The output only depends on g+H.}
     if Order(g) eq 1 then
-        return g, H;
+        return g;
     end if;
     G := Parent(g);
     if (#H)^2 le #G then
@@ -17,11 +17,11 @@ intrinsic DistinguishedCosetRep(g::GrpAbElt, H::GrpAb) -> GrpAbElt, GrpAb
         for h in H do
             eh := Eltseq(h);
             if eh lt first then
-                best := h;
+                best := G!h;
                 first := eh;
             end if;
         end for;
-        return best, H;
+        return best;
     else
         // iterate over G until you find an element of g+H
         for h in G do
@@ -33,13 +33,32 @@ intrinsic DistinguishedCosetRep(g::GrpAbElt, H::GrpAb) -> GrpAbElt, GrpAb
     end if;
 end intrinsic;
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// The following two intrinsics give representative isogenies under the action of Pic(Z[F,V]):
+// 
+// More precisely, the philosophy behind is that if J is an ideal with (J:J)=S, N is a positive integer and 
+// I is an invertible S-ideal then there is an S-linear bijection between
+// J/NJ <--> JI/NJI,
+// which sends an ideal L such that NJ < L < J with no L' such that L < L' < J 
+// to a submodule LI satisfying the same property wrt to JI.
+// In other words, it sends maximal subideals of J contaninig NJ to maximal subideals of JI containing NJI.
+// This implies that the minimal isogenies to J are in bijection with the minimal isogenies to JI.
+// 
+// The upshot is that to compute isogenies of bounded degrees (by composing minimal ones) we only need 
+// to loop over the weak equivalence classes, instead of all the isomorphism classes.
+//
+// Since we are not storing Pic(S), but only Pic(ZFV) and the extension maps, we need to keep track of a bunch
+// of additional information to be able to use these bijections. This explainins 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-//TODO The code of the next few intrinsic is very complicated (eg many nested for loops). Needs more explaination.
-
-// The following two intrinsics give representative isogenies under the action of Pic(Z[F,V]).  
 intrinsic RepresentativeMinimalIsogenies(ZFV::AlgEtQOrd, N::RngIntElt : degrees:=[])->Assoc
-{Given the ZFV order of a squarefree isogeny class, it returns an associative array, indexed by the distinguished representatives J of isomorphism classes, in which each entry contains an associative array with data describing isogenies to J. This data consists of a tuple ... 
-//TODO finish descr
+{Given the ZFV order of a squarefree isogeny class, it returns an associative array, indexed by the distinguished representatives J of isomorphism classes, in which each entry contains an associative array with data describing isogenies to J. This data consists of a tuple <deg, x, Ig, Ker, I, L> where
+- deg is the degree of the isogeny
+- x is an element representing the isogeny, ie x*I < J.
+- Ig is an element of Pic(ZFV) mapping to (x*I : W) where W is the distinguished rep of the weak equivalence class of I
+- Ker is the kernel of Pic(ZFV) -> Pic(S), where S is the endomorphism ring of J
+- I is the domain of the isogeny (the distinguished rep of the weak equivalence class)
+- L is x*I, the image of the isogeny
 }
     if not assigned ZFV`RepresentativeMinimalIsogeniesTo then
         ZFV`RepresentativeMinimalIsogeniesTo := AssociativeArray();
@@ -56,6 +75,7 @@ intrinsic RepresentativeMinimalIsogenies(ZFV::AlgEtQOrd, N::RngIntElt : degrees:
     min_isog := AssociativeArray();
     we_reps := &cat[[icm_lookup[S][<WE, P.0>] : WE in WKICM_barDistinguishedRepresentatives(S) ] where P := PicardGroup(S) : S in OverOrders(ZFV)];
     we_hashes := [myHash(J) : J in we_reps];
+    // min_isog[I][J] will be the minimal isogenies from I to J
     for i->I in we_reps do
         min_isog[we_hashes[i]] := AssociativeArray();
         for j->J in we_reps do
@@ -66,16 +86,29 @@ intrinsic RepresentativeMinimalIsogenies(ZFV::AlgEtQOrd, N::RngIntElt : degrees:
         S := MultiplicatorRing(J);
         P := PicardGroup(S);
         _, _, P0Pmap := DistinguishedPicBasis(S);
+        // P0Pmap: Pic(ZFV) -> Pic(S)
         Ls := MaximalIntermediateIdeals(J, N*J);
+        // These are ideals L with N*J < L < J, and no L' with L < L' < J.
         for L in Ls do
             deg := Index(J, L);
             if degrees cmpne [] and not (deg in degrees) then
                 continue;
             end if;
             I, x, IS, IWE, Ig := ICM_Identify(L, icm_lookup);
+            // I : distinguished rep of isom L
+            // x : L=x*I
+            // IWE : we class of L
+            // Ig : (L:IWE)@@pIS where IS:=(I:I)
+            _, _, P0PISmap := DistinguishedPicBasis(IS);
+            assert2 Domain(P0PISmap) eq PicardGroup(ZFV);
+            assert2 Codomain(P0PISmap) eq PicardGroup(IS);
             assert2 Index(J, x*I) eq deg;
-            Ig, Ker := DistinguishedCosetRep(Ig@@P0Pmap, Kernel(P0Pmap));
-            Append(~min_isog[myHash(IWE)][we_hashes[j]], <deg, x, Ig, Ker, I, L>); // x is a minimal isogeny from I to J of degree deg=#(J/L); I = IWE * Ig as distinguished representatives
+            // We store isogenies in terms of ideals of ZFV, but Ig is an element of Pic(S).  To get it back into Pic(ZFV), we need to pick a representative in Pic(ZFV) that maps to it.  To do so, we use DistinguishedCosetRep.
+            Ker := Kernel(P0PISmap);
+            Ig := DistinguishedCosetRep(Ig@@P0PISmap, Ker);
+            Append(~min_isog[myHash(IWE)][we_hashes[j]], <deg, x, Ig, Ker, I, L>); 
+            // x*I = L c J , deg=#(J/L)
+            // I = IWE * Ig as distinguished representatives
         end for;
     end for;
     ZFV`RepresentativeMinimalIsogeniesTo[<N, degrees>] := min_isog;
@@ -83,9 +116,17 @@ intrinsic RepresentativeMinimalIsogenies(ZFV::AlgEtQOrd, N::RngIntElt : degrees:
 end intrinsic;
 
 intrinsic RepresentativeIsogenies(ZFV::AlgEtQOrd, degree_bounds::SeqEnum)->Assoc
-{}
+{
+Returns an associative array isog so that isog[myHash(I)][myHash(J)][d] is a sequence of all isogenies from I to J of degree d.  Here I and J loop over the distinguished representatives of the weak equivalence classes of ZFV, and d>1 loops over divisors of elements of degree_bounds.  Note that, if no such isogeny exists the key d is not assigned (rather than being an empty sequence).
+The value of isog[I][J][d] is a sequence of tuples <x, h, H, L>, where
+- x is an element representing the isogeny, ie x*I < J.
+- h is an element of Pic(ZFV) mapping to (x*I : W) where W is the distinguished rep of the weak equivalence class of I
+- H in the kernel of Pic(ZFV) -> Pic(S), where S is the endomorphism ring of J
+- L is x*I, the image of the isogeny
+}
     N := LCM(degree_bounds);
     degrees := {};
+    // construct the set of nontrivial divisors of the elements in degree_bounds
     for B in degree_bounds do
         for d in Divisors(B) do
             if d eq 1 then continue; end if;
@@ -101,164 +142,80 @@ intrinsic RepresentativeIsogenies(ZFV::AlgEtQOrd, degree_bounds::SeqEnum)->Assoc
     we_hashes := [myHash(J) : J in we_reps];
     we_proj := &cat[[P0Pmap where _,_,P0Pmap := DistinguishedPicBasis(S) : WE in WKICM_barDistinguishedRepresentatives(S) ] : S in OverOrders(ZFV)];
     isog := AssociativeArray();
-    for i->I in we_reps do
-        hshI := we_hashes[i];
-        isog[hshI] := AssociativeArray();
-        for j->J in we_reps do
-            hshJ := we_hashes[j];
-            isog[hshI][hshJ] := AssociativeArray();
-            for data in min_isog[hshI][hshJ] do
-                d, x, h, H, _, L := Explode(data);
-                if not IsDefined(isog[hshI][hshJ], d) then
-                    isog[hshI][hshJ][d] := [];
+    // We initialize the output isog using minimal isogenies computed by RepresentativeMinimalIsogenies
+    for i->WI in we_reps do
+        hshWI := we_hashes[i];
+        isog[hshWI] := AssociativeArray();
+        for j->WJ in we_reps do
+            hshWJ := we_hashes[j];
+            isog[hshWI][hshWJ] := AssociativeArray();
+            for data in min_isog[hshWI][hshWJ] do
+                d, x, h, H, I, L := Explode(data);
+                // x*I = L c WJ with d=[WJ:x*I]
+                // I~L~WI (wk eq)
+                // h = (L:WI) in Pic(WJ:WJ), pulled back in Pic(ZFV) //TODO check assert below
+                // H = Ker( Pic(ZFV)->Pic(S) ) where S=(WJ:WJ)
+                assert x*I eq L;
+                assert d eq Index(WJ,L);
+                //assert we_proj[j](h) eq ColonIdeal(L,WI)@@mS where _,mS:=PicardGroup(MultiplicatorRing(WJ)); // FAILS
+                if not IsDefined(isog[hshWI][hshWJ], d) then
+                    isog[hshWI][hshWJ][d] := [];
                 end if;
-                Append(~isog[hshI][hshJ][d], <x, h, H, L>);
+                Append(~isog[hshWI][hshWJ][d], <x, h, H, L>);
             end for;
         end for;
     end for;
+    // We add to isog all possible compositions with degree in degrees.
     while true do
         added_something := false;
-        for i->I in we_reps do
-            hshI := we_hashes[i]; projI := we_proj[i];
-            SI := MultiplicatorRing(I);
-            for j->J in we_reps do
-                hshJ := we_hashes[j]; projJ := we_proj[j];
-                for k->K in we_reps do
-                    hshK := we_hashes[k]; projK := we_proj[k];
-                    for m->known in isog[hshK][hshJ] do
+        for i->WI in we_reps do
+            hshWI := we_hashes[i]; projWI := we_proj[i];
+            S := MultiplicatorRing(WI);
+            SWI:=S!!WI;
+            for j->WJ in we_reps do
+                hshWJ := we_hashes[j]; projWJ := we_proj[j];
+                for k->WK in we_reps do
+                    hshWK := we_hashes[k]; projWK := we_proj[k];
+                    for m->known in isog[hshWK][hshWJ] do
                         for yL0 in known do
                             y, g, G, L0 := Explode(yL0);
-                            for data in min_isog[hshI][hshK] do
-                                d, x, h, H := Explode(data);
+                            // y*K = L0 c WJ with m=[WJ:y*K]
+                            // g = (L0:WK) in Pic(ZFV) //TODO
+                            // G = Ker( Pic(ZFV)-> Pic(WK:WK) )
+                            assert m eq Index(WJ,L0);
+                            //assert g eq ColonIdeal(L0,WK)@@mZFV where _,mZFV:=PicardGroup(ZFV); //FAILS
+                            for data in min_isog[hshWI][hshWK] do
+                                d, x, h, H , I, L:= Explode(data); // I and L are used only in the tests
+                                // x*I = L c WK with [WK:x*I] = d
+                                // I ~ WI (wk eq)
+                                // h = (L:WI) in Pic(ZFV) //TODO check assert below
+                                // H = Ker(Pic(ZFV)->Pic((WK:WK)))
+                                assert x*I eq L;
+                                assert d eq Index(WK,L);
+                                //assert h eq ColonIdeal(L,WI)@@mZFV where _,mZFV:=PicardGroup(ZFV); //FAILS
                                 dm := d*m;
                                 if dm in degrees then
-                                    gh, GH := DistinguishedCosetRep(g+h, G+H);
-                                    I0 := icm_lookup[SI][<I, projI(gh)>];
+                                    GH := G + H;
+                                    gh := DistinguishedCosetRep(g+h, GH);
+                                    I0 := icm_lookup[S][<SWI, projWI(gh)>];
+                                    // I0 is the dist. rep. of the isom class of WI * projWI(gh)
+                                    // so [I0] = [WI * (L:WI) * (L0:WK) ] = [ L * (L0:WK) ]
+                                    //    = [ x*I * (y*J:WK) ];
+                                    // TODO S: I hope I got it right
+                                    //         what do we get out of this ?
+                                    assert (gh - h - g) in GH;
                                     xy := x*y;
-                                    L := (xy) * I0;
-                                    if not IsDefined(isog[hshI][hshJ], dm) then
-                                        isog[hshI][hshJ][dm] := [<xy, gh, GH, L>];
+                                    LL := (xy) * I0;
+                                    if not IsDefined(isog[hshWI][hshWJ], dm) then
+                                        isog[hshWI][hshWJ][dm] := [<xy, gh, GH, LL>];
                                         added_something := true;
                                     else
-                                        hsh := myHash(L);
-                                        hashes := {myHash(M[4]) : M in isog[hshI][hshJ][dm]};
+                                        hsh := myHash(LL);
+                                        hashes := {myHash(M[4]) : M in isog[hshWI][hshWJ][dm]};
                                         if not hsh in hashes then
                                             // myHash is collision free
-                                            Append(~isog[hshI][hshJ][dm], <xy, gh, GH, L>);
-                                            assert2 Index(J, L) eq dm;
-                                            added_something := true;
-                                        end if;
-                                    end if;
-                                end if;
-                            end for;
-                        end for;
-                    end for;
-                end for;
-            end for;
-        end for;
-        if not added_something then
-            break;
-        end if;
-    end while;
-    return isog;
-end intrinsic;
-
-// Old version for comparison; use RepresentativeMinimalIsogenies instead
-intrinsic AllMinimalIsogenies(ZFV::AlgEtQOrd, N::RngIntElt : degrees:=0)->Assoc
-{Given the ZFV order of a squarefree isogeny class, it returns an associative array, indexed by the distinguished representatives J of isomorphism classes, in which each entry contains an associative array with data describing isogenies to J. This data consists of a tuple ... 
-//TODO finish descr
-}
-    isom_cl, icm_lookup := ICM_DistinguishedRepresentatives(ZFV);
-    min_isog:=AssociativeArray();
-    for I in isom_cl do
-        min_isog[myHash(I)] := AssociativeArray();
-        for J in isom_cl do
-            min_isog[myHash(I)][myHash(J)] := [];
-        end for;
-    end for;
-    for J in isom_cl do
-        // J is over ZFV
-        Ls := MaximalIntermediateIdeals(J,N*J);
-        for L in Ls do
-            deg := Index(J, L);
-            if degrees cmpne 0 and not (deg in degrees) then
-                continue;
-            end if;
-            I, x := ICM_Identify(L, icm_lookup);
-            assert2 Index(J,x*I) eq deg;
-            Append(~min_isog[myHash(I)][myHash(J)], <deg, x, L>); // x is a minimal isogeny from I to J of degree deg=#(J/L)
-        end for;
-    end for;
-    return min_isog;
-end intrinsic;
-
-intrinsic IsogeniesByDegree(ZFV::AlgEtQOrd, degree_bounds::SeqEnum : important_pairs:=0) -> Assoc
-{Given the ZFV order of a squarefree isogeny class, together with a sequence of integers, return an associative array A so that A[I][J][d] consists of all isogenies of degree d from I to J for all integers d dividing any element of degree_bounds.  Each isogeny is stored as a pair <x,L> where x is an element mapping I into J and L = x*I (which is a submodule of J of an appropriate index).}
-    // imporant pairs, if given, should be a list of tuples <I,J> of distinguished representatives (see note below for how they're used)
-    N := LCM(degree_bounds);
-    degrees := {};
-    proper_degrees := {};
-    for B in degree_bounds do
-        for d in Divisors(B) do
-            if d eq 1 then continue; end if;
-            Include(~degrees, d);
-            // When looking for isogenies from I to Iv, we only care about isogenies between other ideals in that they help build these.  Since we'll always be composing with an extra minimal isogeny, we can drop the degree bounds for isogenies from I to J when J ne Iv (see keep_degree function below)
-            if d eq B then continue; end if;
-            Include(~proper_degrees, d);
-        end for;
-    end for;
-    function keep_degree(I,J,d)
-        if important_pairs cmpeq 0 or <I,J> in important_pairs then
-            return d in degrees;
-        else
-            return d in proper_degrees;
-        end if;
-    end function;
-    t0:=Cputime();
-    min_isog := AllMinimalIsogenies(ZFV, N : degrees:=degrees);
-    vprintf AllIsogenies : "time spent on AllMinimalIsogenies %o\n",Cputime(t0);
-    isog := AssociativeArray();
-    isom_cl:=ICM_DistinguishedRepresentatives(ZFV);
-    for I in isom_cl do
-        isog[myHash(I)] := AssociativeArray();
-        for J in isom_cl do
-            isog[myHash(I)][myHash(J)] := AssociativeArray();
-            for dxL in min_isog[myHash(I)][myHash(J)] do
-                d, x, L := Explode(dxL);
-                if keep_degree(I, J, d) then
-                    if not IsDefined(isog[myHash(I)][myHash(J)], d) then
-                        isog[myHash(I)][myHash(J)][d] := [];
-                    end if;
-                    assert2 Index(J,L) eq d;
-                    assert2 x*I eq L;
-                    Append(~isog[myHash(I)][myHash(J)][d], <x, L>);
-                end if;
-            end for;
-        end for;
-    end for;
-    while true do
-        added_something := false;
-        for J in isom_cl do
-            for I in isom_cl do
-                for K in isom_cl do
-                    for m -> known in isog[myHash(I)][myHash(K)] do
-                        for yL0 in known do
-                            y, L0 := Explode(yL0);
-                            for dxL in min_isog[myHash(K)][myHash(J)] do
-                                d, x := Explode(dxL);
-                                dm := d*m;
-                                if keep_degree(I, J, dm) then
-                                    L := x * L0;
-                                    if not IsDefined(isog[myHash(I)][myHash(J)], dm) then
-                                        isog[myHash(I)][myHash(J)][dm] := [<x*y, L>];
-                                        added_something := true;
-                                    else
-                                        hsh := myHash(L);
-                                        hashes := {myHash(M[2]) : M in isog[myHash(I)][myHash(J)][dm]};
-                                        if not hsh in hashes then
-                                            // myHash is collision free
-                                            Append(~isog[myHash(I)][myHash(J)][dm], <x*y, L>);
-                                            assert2 Index(J,x*y*I) eq dm;
+                                            Append(~isog[hshWI][hshWJ][dm], <xy, gh, GH, LL>);
+                                            assert Index(WJ, LL) eq dm; //TODO is this correct?
                                             added_something := true;
                                         end if;
                                     end if;

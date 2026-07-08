@@ -43,7 +43,7 @@ But we believe that there is a bug: in RepresentativeIsogenies there an assert f
 In the extremely near future (week after LuCaNT), we decided to:
     TODO
         -) Add to AbVarFq_integration.m intrinsics for polarizations.
-        -) David has bunch of TODOs for the interface, on his computer.
+        -) David has bunch of TODOs for the interface, on his computer. Also on Zulip abvar_private
         -) Then we can send into production.
     DONE 
         -) Write the missing Knowls.
@@ -67,8 +67,8 @@ Update August 27 2025:
 DONE - I started moving stuff from diophantus to babbage. I have copied files which contain the data about principal and non-principal pols for non-3.25 data onto the new data. I should remove the irrelevant lines from the files. The data about princ pols is reliable, so it should not be a problem.
 DONE - Move all the data for 3_25 to babbage.
 DONE - Clean up space on diophantus
-- continue from the file file script_missing_ppol.m to restart the computation for the missing ppols.
-- zip the folder /data/stmar/from_diophantus
-- can remove the folder output_after_broken_rsync
+DONE - continue from the file file script_missing_ppol.m to restart the computation for the missing ppols.
+DONE - zip the folder /data/stmar/from_diophantus
+DONE - can remove the folder output_after_broken_rsync
 
 

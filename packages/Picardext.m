@@ -158,8 +158,12 @@ Note that the returned generators are not independent; see DistinguishedPicBasis
 end intrinsic;
 
 intrinsic GensToBasis(S::AlgEtQOrd, gens::SeqEnum) -> SeqEnum, SeqEnum
-{Takes as input an order S in an etale algebra and a sequence gens of generators of Pic(S), and returns a basis of Pic(S) (aligning with the structure described by AbelianInvariants(Pic(S))).
-//TODO there are two outputs. What is the second one?
+{
+Takes as input an order S in an etale algebra and a sequence gens of generators of Pic(S), and returns
+ - a basis of Pic(S) (aligning with the structure described by AbelianInvariants(Pic(S))).
+ - a pair <invs, construction> where
+   - invs is the abelian invariants of Pic(S)
+   - construction is a sequence of sequences of integers giving a triangular matrix defining how the basis is constructed from the generators
 }
     P := PicardGroup(S);
     invs := AbelianInvariants(P);
@@ -280,10 +284,14 @@ intrinsic DistinguishedPicBases(ZFV::AlgEtQOrd) -> List, List, List, List
     return bases, basis_constructions, pic_maps, basis_ideals;
 end intrinsic;
 
-intrinsic DistinguishedPicBasis(S::AlgEtQOrd) -> SeqEnum, SeqEnum, Map
+intrinsic DistinguishedPicBasis(S::AlgEtQOrd) -> SeqEnum, SeqEnum, Map, SeqEnum[AlgEtQIdl]
 {
-//TODO
-    }
+Given an order S, returns
+ - the stored basis of Pic(S)
+ - the pair <invs, construction> as output by GensToBasis: invs are the abelian invariants of Pic(S) and constructions defines how the basis is constructed from the generators
+ - the map from Pic(ZFV) to Pic(S)
+ - a sequence of ideals of S corresponding to the given basis.
+}
     if not assigned S`DistinguishedPicBasis then
         error "You must first call DistinguishedPicBases(ZFV) on the Frobenius order ZFV";
     end if;
@@ -350,9 +358,16 @@ intrinsic DistinguishedPicardGroup(S::AlgEtQOrd) -> GrpAb, Map
 end intrinsic;
 
 intrinsic PicIteration(S::AlgEtQOrd, basis::SeqEnum : filter:=0, include_pic_elt:=false) -> SeqEnum
-{Iterates over the elements of the Picard group in a consistent order, using a filter function on Pic(S).  basis_info should be an entry in the *first* part of the output of DistinguishedPicBases(S), and filter should take a single element of Pic(S) as input and return a boolean (the ideal is included if the output is true).  The output is a sequence of pairs <I,i>, where I is an ideal and i is the index of that ideal in the overall iteration.
-// TODO the output consists of triples if include_pic_elt is true. Please add a comment about this vararg.
-// TODO Is the Ideal in the output distinguished? It should be for our purposes.
+{
+ Iterates over the elements of the Picard group in a consistent order, using a filter function on Pic(S).
+ INPUT:
+ - S -- an overorder of ZFV
+ - basis_info -- an entry in the *first* part of the output of DistinguishedPicBases(S)
+ - filter a function that takes a single element of Pic(S) as input and return a boolean (the ideal is included if the output is true).
+ - include_pic_elt -- a boolean, whether to include the Picard group element in the output
+ OUTPUT:
+ - if include_elt -- a sequence of triples <I,i,x> where x varies over elements of Pic(x) in a consistent order, i is the index of that element in the iteration, and I is the distinguished ideal in the equivalence class.  I is defined as the product of distingished generating ideals corresponding to the expression of x as a product of basis elements from the distinguished basis.
+ - otherwise -- a sequence of pairs <I,i> as defined above.
 }
     P, pmap := DistinguishedPicardGroup(S);
     if #P eq 1 then

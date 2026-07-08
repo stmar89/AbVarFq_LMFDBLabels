@@ -17,7 +17,7 @@ def create_upload_files(infolder, parallelopts="-j32 --timeout 60"):
     polcnts = Counter()
     infolder = Path(infolder)
 
-    updated_isog_cols = "label:zfv_singular_primes:zfv_singular_count:zfv_pic_size:pic_prime_gens:size:weak_equivalence_count:endomorphism_ring_count:group_structure_count:all_unpolarized_product:all_polarized_product:cohen_macaulay_max:principal_polarization_count".split(":")
+    updated_isog_cols = "label:zfv_singular_primes:zfv_singular_count:zfv_pic_size:pic_prime_gens:size:weak_equivalence_count:endomorphism_ring_count:group_structure_count:all_unpolarized_product:all_polarized_product:cohen_macaulay_max:principal_polarization_count:principal_polarization_count_weighted".split(":")
 
     we_folder = infolder / "output_wk"
     we_cols = "label:we_number:pic_size:multiplicator_ring:isog_label:ideal_basis_numerators:ideal_basis_denominator:is_invertible:cohen_macaulay_type:dimensions:minimal_overorders:rational_invariants:higher_invariants:conductor:conductor_is_Sprime:conductor_is_Oprime:conductor_Sindex:conductor_Oindex:conductor_class".split(":")
@@ -123,8 +123,10 @@ def create_upload_files(infolder, parallelopts="-j32 --timeout 60"):
             assert len(ZFV) == 1
             ZFV = ZFV[0]
             ISOG["zfv_pic_size"] = ZFV["pic_size"]
+            by_aut = defaultdict(Counter)
             for D in POL.values():
                 D["pol_ctr"] = D["label"].split(".")[-1]
+                by_aut[D["endomorphism_ring"]][QQ(D["aut_group"].split(".")[0])] += 1
 
             # Whether all isomorphism classes are a nontrivial product.  In the case so far (commutative endomorphism ring), this doesn't depend on whether you're considering them as polarized or unpolarized abelian varieties.
             pcnt = Counter(rec["is_product"] for rec in ORDERS)
@@ -132,9 +134,14 @@ def create_upload_files(infolder, parallelopts="-j32 --timeout 60"):
             for col in ["all_unpolarized_product", "all_polarized_product"]:
                 ISOG[col] = "t" if pcnt["f"] == 0 else "f"
             ISOG["principal_polarization_count"] = str(len([D for D in POL.values() if D["degree"] == "1"]))
-
+            ISOG["principal_polarization_count_weighted"] = str(sum(
+                    sum(cnt_with_aut / aut_size for (aut_size, cnt_with_aut) in by_end.items())
+                    for by_end in by_aut.values()))
+            for D in WE:
+                D["principal_polarization_count_weighted"] = str(
+                    sum(cnt_with_aut / aut_size for (aut_size, cnt_with_aut) in by_aut[D["label"]].items()))
         else:
-            for col in ["all_unpolarized_product", "all_polarized_product", "zfv_pic_size", "principal_polarization_count"]:
+            for col in ["all_unpolarized_product", "all_polarized_product", "zfv_pic_size", "principal_polarization_count", "principal_polarization_count_weighted"]:
                 ISOG[col] = r"\N"
     print(f"Computing columns, done in {time.time()-t0}s                                 ")
 
