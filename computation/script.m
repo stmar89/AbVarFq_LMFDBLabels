@@ -1,0 +1,331 @@
+/*
+    variables:
+        issues              # we collect here the issues
+        fld_comp            # where the computation is running
+        fld_out_wk          # output folder of wk script
+        fld_out_cm          # output folder of cm script
+        fld_out_sing_primes # output folder of this computation
+        fld_out_pols        # output folder for this script
+        s = string of integers, eg [ 101, -20, 1 ] 
+        degree_bounds = string of square integers, eg [ 4, 9, 25 ] 
+*/
+
+/*
+    TODO
+    - check folders
+    - 1 single try catch
+    - do not redifine ZFV or loaded things
+    - new Makefile
+    - new README
+*/
+
+function print_ivec(v : json:=false)
+    base := json select "[%o]" else "{%o}";
+    if Type(v) eq SeqEnum or Type(v) eq Tup then
+        return Sprintf(base, Join([$$(c : json:=json) : c in v], ","));
+    end if;
+    return Sprint(v);
+end function;
+
+//AttachSpec("~/CHIMP/CHIMP.spec");
+AttachSpec("~/AbVarFq_LMFDBLabels/spec");
+SetClassGroupBounds("GRH");
+SetColumns(0);
+
+PP<x>:=PolynomialRing(Integers());
+h:=PP!eval(s);
+label_isog:=IsogenyLabel(h);
+split:=Split(label_isog,".");
+g:=eval(split[1]);
+q:=eval(split[2]);
+_,p:=IsPrimePower(q);
+is_ordinary:=IsCoprime(Coefficients(h)[(Degree(h) div 2)+1], p);
+
+try 
+    if not OpenTest(file_out_wk,"r") then
+        t0:=Cputime();
+        A:=EtaleAlgebra(h);
+        F:=PrimitiveElement(A);
+        ZFV:=Order([F,q/F]);
+        str:=FillSchemaWEClasses(ZFV);
+        fprintf file_out_wk,"%o",str;
+        //printf "%o: done in %o\n",label_isog,Cputime(t0);
+    end if;
+catch e
+    printf "*********************************************\n%o\n%o\n", label_isog,e;
+    fprintf issues, "*********************************************\n%o\n%o\n", label_isog,e;
+end try;
+
+/*
+
+Singular Primes
+
+To compute:
+* av_fq_isog:
+    label_isog              # for matching, of format g.q.coeffs
+    singular_primes         # text[], a list of strings describing the singular ideal ideals, sorted using 
+                            # SortPrimes
+                            # eg. ["2,1/8*(1 + 129*F - 501*V + 7*F^2)", "5, 1/5*(1 + 3F)", "5,1/25*(2+5*F + F^2)"]
+* av_fq_weak_equivalences: 
+    label_we                # for matching, of format g.q.coeffs.N.i.w
+    singular_support        # \\N unless the we class is an order
+                            # 0 for Z[F,V]
+                            # base codification of a sting of binary bits where ith vlaues is 1 
+                            # precisely when (Z[F,V]:S) has support at the ith singular_primes 
+
+*/
+
+
+av_fq_we_output := Sprintf("%oav_fq_we/%o", fld_out_sing_primes, label_isog);
+av_fq_isog_output := Sprintf("%oav_fq_isog/%o", fld_out_sing_primes, label_isog);
+
+// early exit if already done
+if OpenTest(av_fq_isog_output,"r") then
+    quit;
+end if;
+
+
+// we start by loading the data that was already computed
+try
+    str_we:=Read(Sprintf("%o_wk.txt", fld_out_wk * label_isog));
+    ZFV := LoadSchemaWKClasses(str_we);
+    A := Algebra(ZFV);
+catch e
+    printf "*********************************************\nmissing some precomputed data for %o\n%o\n", label_isog,e;
+    fprintf issues, "*********************************************\nmissing some precomputed data%o\n%o\n", label_isog,e;
+end try;
+
+try
+    t0:=Cputime();
+    //printf "%o : starting\n",label_isog; 
+    assert assigned ZFV`WKICM;
+    ss:=SortSingularPrimes(ZFV);
+    singular_primes:=[];
+    for P in ss do
+        _,str:=SmallMinimalGensPrimeZFV(P);
+        Append(~singular_primes,"\"" * RemoveBlanks(Join(str,",")) * "\"");
+    end for;
+    singular_primes:="[" * Join(singular_primes,",") * "]";
+
+    av_fq_isog := label_isog * ":" * singular_primes;
+
+    av_fq_we := [];
+    wk:=WKICM(ZFV);
+    assert forall{I:I in wk|assigned I`WELabel};
+    for I in wk do
+        label_we:=WELabel(I); //g.q.coeff-N.i.w
+        w:=Split(label_we,".");
+        w:=w[#w];
+        is_order:=w eq "1";
+        if is_order then
+            S:=MultiplicatorRing(I);
+            assert OneIdeal(S) eq S!!I;
+            assert assigned S`WELabel;
+            rel_cond:=ColonIdeal(OneIdeal(ZFV),ZFV!!OneIdeal(S));
+            assert rel_cond subset ZFV;
+            pp:=PrimesAbove(rel_cond);
+            if #pp eq 0 then
+                assert S eq ZFV;
+                singular_support:="0";
+            else
+                singular_support:=&cat([P in pp select "1" else "0" : P in ss ]);
+                singular_support:=Sprint(StringToInteger(singular_support,2));
+            end if;
+        else
+            singular_support:="\\N";
+        end if;
+        string_I:=Join([label_we,singular_support],":");
+        Append(~av_fq_we,string_I);
+    end for;
+        
+    // we print all outputs
+    fprintf av_fq_isog_output, "%o\n", av_fq_isog;
+    for we_line in av_fq_we do
+        fprintf av_fq_we_output, "%o\n", we_line;
+    end for;
+    t1:=Cputime(t0);
+    printf "%o : done in %o seconds\n",label_isog,t1; 
+catch e
+    printf "*********************************************\n%o\n%o\n", label_isog,e;
+    fprintf issues, "*********************************************\n%o\n%o\n", label_isog,e;
+end try;
+
+
+/*
+
+Polarizations
+
+To compute:
+* av_fq_pol: 
+    label,              -- label of polarization, of the form g.q.coefffs-N.i.w.j-d.k)
+    isog_label,         -- g.q.coeffs
+    endomorphism_ring,  -- N.i
+    isom_label,         -- w.j
+    degree,             -- d 
+    kernel,
+    degree_rr,
+    kernel_rr,
+    degree_rl,
+    kernel_rl,
+    degree_lr,
+    kernel_lr,
+    degree_ll,
+    kernel_ll,
+    aut_group, 
+    geom_aut_group (can say that it is equal to aut_group when End^0(Fqbar) is commutative; 
+                   can check this from av_fq_endalg_data->divalg_dim for each factor in av_fq_endalg_factors), 
+    is_jacobian (say false if a product at all, none otherwise)
+    representative
+
+* av_fq_weak_equivalences: 
+    label (for matching), 
+    pic_invs, 
+    pic_basis, 
+    is_product, 
+    product_partition, 
+    is_conjugate_stable, 
+    generator_over_ZFV, 
+    is_Zconductor_sum
+    is_ZFVconductor_sum
+
+* av_fq_isog: 
+    pic_prime_gens,
+    size
+
+* allproduct: if IsProductOfOrdersLMFDB is true for all orders, we record the number of princ polarizations
+                //is this info in some table?
+                //NO: it was supposed to be used as a test:
+                //    if everything is a product then the polarizations are so as well.
+
+*/
+
+av_fq_pol_output := Sprintf("%oav_fq_pol/%o", fld_out_pols, label_isog);
+av_fq_we_output := Sprintf("%oav_fq_we/%o", fld_out_pols, label_isog);
+av_fq_isog_output := Sprintf("%oav_fq_isog/%o", fld_out_pols, label_isog);
+allproduct_output := Sprintf("%oallproduct/%o", fld_out_pols, label_isog);
+cmfile := Sprintf("%o_cm.txt", fld_out_cm * label_isog);
+degree_bounds := eval(degree_bounds);
+
+// early exit if already done
+if OpenTest(av_fq_isog_output,"r") then
+    quit;
+end if;
+
+av_fq_we_columns := ["label", "pic_invs", "pic_basis", "is_product", "product_partition", "is_conjugate_stable", "generator_over_ZFV", "is_Zconductor_sum", "is_ZFVconductor_sum"];
+
+av_fq_isog_columns := ["pic_prime_gens","size"];
+
+av_fq_pol_columns := ["label", "isog_label", "endomorphism_ring", "isom_label", "degree", "kernel", "degree_rr", "kernel_rr", "degree_rl", "kernel_rl", "degree_lr", "kernel_lr", "degree_ll", "kernel_ll", "aut_group", "geom_aut_group", "is_jacobian", "representative"];
+
+// we start by loading the data that was already computed,
+// including commutative_geom_endalg data
+try
+    commlines := Split(Read(Sprintf("%ocommutative_geom_endalg/%o.%o", fld_comp, g, q)), "\n");
+    ZFV := LoadSchemaWKClasses(Read(Sprintf("%o_wk.txt", fld_out_wk * label_isog)));
+    A := Algebra(ZFV);
+    if is_ordinary then
+        assert OpenTest(cmfile, "r");
+        cmdata := Read(cmfile);
+        PHI := LoadpAdicPosCMType(A, cmdata);
+        assert assigned A`pAdicPosCMType;
+    else
+        PHI:=""; //to avoid an error
+    end if;
+catch e
+    printf "*********************************************\nmissing some precomputed data for %o\n%o\n", label_isog,e;
+    fprintf issues, "*********************************************\nmissing some precomputed data%o\n%o\n", label_isog,e;
+end try;
+
+try
+    t0:=Cputime();
+    allproduct := true;
+    geom_endalg_is_comm := 0;
+    for line in commlines do
+        llabel, iscomm := Explode(Split(line, " "));
+        if label_isog eq llabel then
+            geom_endalg_is_comm := (iscomm[1] eq "t");
+            break;
+        end if;
+    end for;
+    assert geom_endalg_is_comm cmpne 0;
+    av_fq_pol := [];
+    av_fq_we := [];
+    av_fq_isog := AssociativeArray();
+    _, cangens := DistinguishedPicGenerators(ZFV);
+    _ := DistinguishedPicBases(ZFV); // sets DistinguishedPicBasis for each S
+    av_fq_isog["pic_prime_gens"] := print_ivec(cangens);
+    isogeny_size:=0;
+    for S in OverOrders(ZFV) do
+        Pbasis, construction := DistinguishedPicBasis(S);
+        invs, construction := Explode(construction);
+        Sdata := AssociativeArray();
+        Sdata["label"] := WELabel(S);
+        Sdata["pic_invs"] := print_ivec(invs);
+        Sdata["pic_basis"] := print_ivec(construction);
+        product, _, partition := IsProductOfOrdersLMFDB(S);
+        allproduct := allproduct and product;
+        Sdata["is_product"] := product select "t" else "f";
+        Sdata["product_partition"] := print_ivec(partition: json:=true);
+        Sdata["is_conjugate_stable"] := IsConjugateStable(S) select "t" else "f";
+        _, dens, nums := SmallestMonogenicGeneratorOverZFV(S, ZFV);
+        if #dens eq 0 then
+            Sdata["generator_over_ZFV"] := "\\N";
+        else
+            Sdata["generator_over_ZFV"] := Sprintf("[%o,%o]", dens[1], print_ivec(nums[1] : json:=true));
+        end if;
+        Sdata["is_Zconductor_sum"] := (S eq Order(ZBasis(Conductor(S)))) select "t" else "f";
+        Sdata["is_ZFVconductor_sum"] := (S eq Order(ZBasis(Conductor(S)) cat ZBasis(ZFV))) select "t" else "f";
+        assert assigned S`WKICM_bar;
+        assert assigned S`PicardGroup;
+        isogeny_size +:= #WKICM_bar(S) * #PicardGroup(S);
+        Append(~av_fq_we, Sdata);
+    end for;
+    av_fq_isog["size"] := Sprint(isogeny_size);
+    if is_ordinary then
+        for ppol in PPolIteration(ZFV) do
+            poldata := AssociativeArray();
+            we, pic_ctr, I, den, nums, lambda, label_pol := Explode(ppol);
+            S := MultiplicatorRing(I);
+            split_we:=Split(we, "-");
+            assert split_we[1] eq label_isog;
+            pieces := Split(split_we[2],"."); //N i w
+            poldata["label"] := label_pol; //label of the polarization
+            poldata["isog_label"] := label_isog;
+            poldata["endomorphism_ring"] := Join(pieces[1..2], "."); //N.i
+            poldata["isom_label"] := Sprintf("%o.%o", pieces[3], pic_ctr); //w.j
+            poldata["degree"] := "1";
+            Iv:=TraceDualIdeal(ComplexConjugate(I));
+            kerinfo:=DecompositionKernelOfIsogeny(I,Iv,lambda);
+            FillKernelInfo(~poldata, kerinfo);
+            aut_grp := IdentifyGroup(TorsionSubgroup(UnitGroup(S)));
+            aut_grp := Sprintf("%o.%o", aut_grp[1], aut_grp[2]);
+            poldata["aut_group"] := aut_grp;
+            if geom_endalg_is_comm then
+                poldata["geom_aut_group"] := aut_grp;
+            else
+                poldata["geom_aut_group"] := "\\N";
+            end if;
+            poldata["is_jacobian"] := IsProductOfOrdersLMFDB(S) select "f" else "\\N";
+            poldata["representative"] := Sprintf("[%o,%o]", den, print_ivec(nums: json:=true));
+            Append(~av_fq_pol, poldata);
+        end for;
+        number_of_princ_pols:=#av_fq_pol;
+    end if;
+
+    // we print all outputs
+    if is_ordinary and allproduct then
+        fprintf allproduct_output, "%o\n", number_of_princ_pols;
+    end if;
+    for pol_line in av_fq_pol do
+        fprintf av_fq_pol_output, "%o\n", Join([pol_line[col] : col in av_fq_pol_columns], ":");
+    end for;
+    for we_line in av_fq_we do
+        fprintf av_fq_we_output, "%o\n", Join([we_line[col] : col in av_fq_we_columns], ":");
+    end for;
+    fprintf av_fq_isog_output, "%o\n", Join([av_fq_isog[col] : col in av_fq_isog_columns], ":");
+    printf "%o : done in %o\n",label_isog,Cputime(t0); 
+catch e
+    printf "*********************************************\n%o\n%o\n", label_isog,e;
+    fprintf issues, "*********************************************\n%o\n%o\n", label_isog,e;
+end try;
+quit;
