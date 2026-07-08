@@ -112,24 +112,6 @@ function Base26Decode(s)
         return n;
 end function;
 
-intrinsic IsogenyLabel(f::RngUPolElt) -> MonStgElt
-{returns the LMFDB label of the isogeny class determined by f.}
-    g:=Degree(f) div 2;
-    q:=Integers() ! (Coefficients(f)[1]^(2/Degree(f)));
-    str1:=Reverse(Prune(Coefficients(f)))[1..g];
-    str2:="";
-    for a in str1 do
-        if a lt 0 then
-            str2:=str2 cat "a" cat Base26Encode(-a) cat "_";
-            else
-            str2:=str2 cat Base26Encode(a) cat "_";
-        end if;
-    end for;
-    str2:=Prune(str2);
-    isog_label:=Sprintf("%o.%o.",g,q) cat str2;
-    return isog_label;
-end intrinsic;
-
 intrinsic LabelToPoly(lab::MonStgElt) -> RngIntElt,RngIntElt,RngUPolElt
 {given a an isogeny label g.q.xxx returns the integers g and q and the Weil polynomial}
     PP:=PolynomialRing(Integers());

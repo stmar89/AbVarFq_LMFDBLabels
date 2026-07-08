@@ -1,16 +1,19 @@
 packages
 {
-IsProductOfOrdersLMFDB.m
-MonGenOrd.m
-Primes.m
-WeakClassesOrders.m
-Picardext.m
-ICMDistinguishedRep.m
-padictocc.m
-pAdicPosCMType.m
-Isogenies.m
-KernelsOfIsogenies.m
-Polarizations.m
-genus2matching.m
-misc.m
+  IsProductOfOrdersLMFDB.m
+  MonGenOrd.m
+  Primes.m
+  WeakClassesOrders.m
+  Picardext.m
+  ICMDistinguishedRep.m
+  padictocc.m
+  pAdicPosCMType.m
+  KernelsOfIsogenies.m
+  Polarizations.m
+  genus2matching.m
+  misc.m
+  AbVarFqIsogenies
+  {
+    +spec
+  }
 }
