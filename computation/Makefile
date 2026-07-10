@@ -2,7 +2,7 @@
 # Folders
 ##################
 
-TODO update next
+# TODO update next line, depending on where the computation is running.
 fld_comp = /data/stmar/287_abvarfq_lmfdb_recomputation/
 # where all the scripts are
 fld_scripts = ~/AbVarFq_LMFDBLabels/computation/
@@ -12,16 +12,7 @@ fld_scripts = ~/AbVarFq_LMFDBLabels/computation/
 ##################
 
 input = ${fld_scripts}weil_poly_sqfree_ord_cs.txt
-
-##################
-# my log and issue files
-##################
-
-# we collect here the issue from the scripts
-issues_wk = ${fld_comp}issues_wk
-issues_cm = ${fld_comp}issues_cm
-issues_pols = ${fld_comp}issues_pols
-issues_sing_primes = ${fld_comp}issues_sing_primes
+issues = ${fld_comp}issues
 
 ##################
 # output folders
