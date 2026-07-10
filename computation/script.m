@@ -96,9 +96,11 @@ end try;
 To compute:
 * av_fq_isog:
     label_isog              # for matching, of format g.q.coeffs
-    singular_primes         # text[], a list of strings describing the singular ideal ideals, sorted using 
+    singular_primes         # text[], a list of strings describing the singular ideals, sorted using 
                             # SortPrimes
                             # eg. ["2,1/8*(1 + 129*F - 501*V + 7*F^2)", "5, 1/5*(1 + 3F)", "5,1/25*(2+5*F + F^2)"]
+    small_regular_primes    # text[], a list of string describing the small regular ideals, sorted using
+                            # SortPrimes
 * av_fq_weak_equivalences: 
     label_we                # for matching, of format g.q.coeffs.N.i.w
     singular_support        # \\N unless the we class is an order
@@ -119,8 +121,15 @@ if not OpenTest(av_fq_isog_output,"r") then
             _,str:=SmallMinimalGensPrimeZFV(P);
             Append(~singular_primes,"\"" * RemoveBlanks(Join(str,",")) * "\"");
         end for;
+        sr:=SortSmallRegularPrimes(ZFV);
+        small_regular:=[];
+        for P in sr do
+            _,str:=SmallMinimalGensPrimeZFV(P);
+            Append(~small_regular,"\"" * RemoveBlanks(Join(str,",")) * "\"");
+        end for;
         singular_primes:="[" * Join(singular_primes,",") * "]";
-        av_fq_isog := label_isog * ":" * singular_primes;
+        small_regular:="[" * Join(small_regular,",") * "]";
+        av_fq_isog := Join([label_isog, singular_primes, small_regular], ":");
         av_fq_we := [];
         wk:=WKICM(ZFV);
         assert forall{I:I in wk|assigned I`WELabel};
@@ -149,7 +158,7 @@ if not OpenTest(av_fq_isog_output,"r") then
             string_I:=Join([label_we,singular_support],":");
             Append(~av_fq_we,string_I);
         end for;
-            
+
         // we print all outputs
         fprintf av_fq_isog_output, "%o\n", av_fq_isog;
         for we_line in av_fq_we do

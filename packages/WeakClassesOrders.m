@@ -327,8 +327,8 @@ intrinsic FillSchemaWEClasses(R::AlgEtQOrd)->MonStgElt
 
         N:=indices_oo[iS];
         pic_size:=#PicardGroup(S);
-        multiplicator_ring:=labels_oo[iS];
-        labelS:=Sprintf("%o",multiplicator_ring);
+        multiplicator_ring:=Split(labels_oo[iS], "-")[2];
+        labelS:=labels_oo[iS];
         S`WELabel:=labelS;
         for j in [1..#wkS] do
             I:=wkS[j];

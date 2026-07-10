@@ -298,6 +298,16 @@ Given an order S, returns
     return Explode(S`DistinguishedPicBasis);
 end intrinsic;
 
+intrinsic DistinguishedCoordinates(S::AlgEtQOrd, x::AbGrpElt) -> SeqEnum
+{The coordinates of an element x of Pic(S) in terms of the chosen distinguished basis for Pic(S)}
+    PicS := PicardGroup(S);
+    basis, bcon := Explode(S`DistinguishedPicBasis);
+    invs := bcon[1];
+    A := AbelianGroup(invs);
+    phi := hom<A -> PicS | [<A.i, basis[i]> : i in [1..#basis]]>;
+    return EltSeq(x @@ phi);
+end intrinsic;
+
 intrinsic DistinguishedPicBasis(S::AlgEtQOrd, gens::SeqEnum, basis_info::Tup) -> SeqEnum
 {Given an order S, a sequence gens of ideals of the maximal order of S (as output by DistinguishedPicGenerators(ZFV, gen_info)) that generate Pic(ZFV), and basis_info as output by the other version of DistinguishedPicBasis, return a sequence of ideals of S that forms a basis for Pic(S)}
     invs, construction := Explode(basis_info);

@@ -21,7 +21,7 @@ def create_upload_files(infolder, parallelopts="-j32 --timeout 60"):
 
     we_folder = infolder / "output_wk"
     we_cols = "label:we_number:pic_size:multiplicator_ring:isog_label:ideal_basis_numerators:ideal_basis_denominator:is_invertible:cohen_macaulay_type:dimensions:minimal_overorders:rational_invariants:higher_invariants:conductor:conductor_is_Sprime:conductor_is_Oprime:conductor_Sindex:conductor_Oindex:conductor_class".split(":")
-    labels = set(path.name.replace("_wk.txt", "") for path in we_folder.iterdir())
+    labels = set(path.name for path in we_folder.iterdir())
     label_todo = sorted(labels, key=sort_key)
 
     sing_folder_isog = infolder / "output_sing_primes" / "av_fq_isog"
@@ -42,13 +42,13 @@ def create_upload_files(infolder, parallelopts="-j32 --timeout 60"):
     assert pol_labels.issubset(labels)
 
     data = {tbl: defaultdict(lambda: defaultdict(dict)) for tbl in ["weak_equivalences", "isog", "pol"]}
-    for these_labels, folder, fname, tbl, cols, suff in [
-            (label_todo, we_folder, "wk", "weak_equivalences", we_cols, "_wk.txt"),
-            (label_todo, sing_folder_isog, "sing_isog", "isog", sing_isog_cols, ""),
-            (label_todo, sing_folder_we, "sing_we", "weak_equivalences", sing_we_cols, ""),
-            (pol_label_todo, pol_folder_isog, "pol_isog", "isog", pol_isog_cols, ""),
-            (pol_label_todo, pol_folder_we, "pol_we", "weak_equivalences", pol_we_cols, ""),
-            (pol_label_todo, pol_folder_pol, "pol_pol", "pol", pol_pol_cols, ""),
+    for these_labels, folder, fname, tbl, cols in [
+            (label_todo, we_folder, "wk", "weak_equivalences", we_cols),
+            (label_todo, sing_folder_isog, "sing_isog", "isog", sing_isog_cols),
+            (label_todo, sing_folder_we, "sing_we", "weak_equivalences", sing_we_cols),
+            (pol_label_todo, pol_folder_isog, "pol_isog", "isog", pol_isog_cols),
+            (pol_label_todo, pol_folder_we, "pol_we", "weak_equivalences", pol_we_cols),
+            (pol_label_todo, pol_folder_pol, "pol_pol", "pol", pol_pol_cols),
     ]:
         print(f"Reading {fname}, {len(these_labels)} files to load")
         T = db["av_fq_"+tbl]
@@ -57,7 +57,7 @@ def create_upload_files(infolder, parallelopts="-j32 --timeout 60"):
         for i, label in enumerate(these_labels):
             if i % 1000 == 0:
                 print(f"Reading {fname}, {i} {label:20} {time.time()-t0}s           ", end="\r")
-            with open(folder / (label + suff)) as F:
+            with open(folder / label) as F:
                 for line in F:
                     pieces = line.strip().split(":")
                     assert len(pieces) == len(cols)
@@ -84,8 +84,6 @@ def create_upload_files(infolder, parallelopts="-j32 --timeout 60"):
         # Add index, number_of_we to the weak equivalence and isogeny data
         we_cnt = len(WE)
         for D in ORDERS:
-            if "-" in D["multiplicator_ring"]:
-                D["multiplicator_ring"] = D["multiplicator_ring"].split("-")[1] # Discussing on Zulip now....    
             D["index"] = D["multiplicator_ring"].split(".")[0]
         for D in WE:
             D["number_of_we"] = str(we_cnt)
@@ -134,23 +132,21 @@ def create_upload_files(infolder, parallelopts="-j32 --timeout 60"):
             for col in ["all_unpolarized_product", "all_polarized_product"]:
                 ISOG[col] = "t" if pcnt["f"] == 0 else "f"
             ISOG["principal_polarization_count"] = str(len([D for D in POL.values() if D["degree"] == "1"]))
-            ISOG["principal_polarization_count_weighted"] = str(sum(
-                    sum(cnt_with_aut / aut_size for (aut_size, cnt_with_aut) in by_end.items())
-                    for by_end in by_aut.values()))
+            ppcw = sum(
+                sum(cnt_with_aut / aut_size for (aut_size, cnt_with_aut) in by_end.items())
+                for by_end in by_aut.values())
+            ISOG["pp_count_weighted"] = str(float(ppcw))
+            ISOG["pp_count_weightedQ"] = str(ppcw)
             for D in WE:
-                D["principal_polarization_count_weighted"] = str(
-                    sum(cnt_with_aut / aut_size for (aut_size, cnt_with_aut) in by_aut[D["label"]].items()))
+                ppcw = sum(cnt_with_aut / aut_size for (aut_size, cnt_with_aut) in by_aut[D["label"]].items())
+                D["pp_count_weighted"] = str(float(ppcw))
+                D["pp_count_weightedQ"] = str(ppcw)
         else:
             for col in ["all_unpolarized_product", "all_polarized_product", "zfv_pic_size", "principal_polarization_count", "principal_polarization_count_weighted"]:
                 ISOG[col] = r"\N"
     print(f"Computing columns, done in {time.time()-t0}s                                 ")
 
     compute_diagramx(data, parallelopts)
-    #print("Setting diagramx")
-    #for label in label_todo:
-    #    for wlabel, W in data["weak_equivalences"][label].items():
-    #        if W["is_invertible"] == "t":
-    #            W["diagramx"] = diagramx[wlabel]
 
     for tbl, these_labels, cols in [
             ("isog", label_todo, updated_isog_cols),
@@ -275,3 +271,7 @@ splines=line;
                     Rlabel = f"{label}-{mring}.1"
                     data["weak_equivalences"][label][Rlabel]["diagramx"] = str(diagram_x)
     print(f"Reading graphviz, done in {time.time()-t0}s                     ")
+
+
+# av_fq_weak_equivalences: out_edges (for each representative minimal isogeny, store the degree, the label of the codomain (as a we), an element of Pic(ZFV) giving the translation, the unique maximal ideal of R in the support of the quotient as an R-module (constant on the G_S,T orbit))
+# connected, volcano or not, all edges bidirectional, number of cycles, vertical complete, horizontal complete

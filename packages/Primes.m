@@ -5,7 +5,8 @@
 declare verbose PrimesLMFDB,1;
 declare attributes AlgEtQIdl : SortKey; //See SortKeyPrime for a description.
 
-declare attributes AlgEtQOrd : SingularPrimesSorted;  // singular primes of the order, according to the their SortKey.
+declare attributes AlgEtQOrd : SingularPrimesSorted,  // singular primes of the order, sorted according to their SortKey.
+        SmallRegularPrimesSorted;  // small regular primes of the order, sorted according to their SortKey
 
 intrinsic SortKeyPrime(P::AlgEtQIdl)->SeqEnum[RngIntElt]
 {Given a P of the maximal order of an etale algebra K over Q, returns a sequence of 3 integers [ j , N , i ], in the following way:
@@ -78,6 +79,21 @@ intrinsic SortSingularPrimes(S::AlgEtQOrd) -> SeqEnum[AlgEtIdl]
         end if;
     end if;
     return S`SingularPrimesSorted;
+end intrinsic;
+
+intrinsic SortSmallRegularPrimes(S::AlgEtQOrd) -> SeqEnum[AlgEtIdl]
+{It sorts the small regular primes of the order S according the lexicographic order of their sort keys.}
+    if not assigned S`SingularPrimesSorted then
+        S`SmallRegularPrimesSorted:=[PowerStructure(AlgEtQIdl)|];
+        for p in [2, 3, 5] do // TODO : This should be configurable rather than hardcoded
+            for P in PrimesAbove(p*S) do
+                if IsInvertible(P) then
+                    Append(~S`SmallRegularPrimesSorted, P);
+                end if;
+            end for;
+        end for;
+    end if;
+    return S`SmallRegularPrimesSorted;
 end intrinsic;
 
 intrinsic SmallMinimalGensPrimeZFV(P::AlgEtQIdl)->SeqEnum[AlgEtQElt],SeqEnum[MonStgElt]
